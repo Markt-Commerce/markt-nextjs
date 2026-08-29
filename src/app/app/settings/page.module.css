@@ -1,0 +1,107 @@
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.35rem;
+}
+
+.title svg { color: var(--markt-primary, #E94C2A); }
+
+.subtitle {
+  color: var(--gray-text);
+  font-size: 0.9rem;
+  margin: 0 0 1.75rem;
+}
+
+.section {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.sectionHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.25rem;
+}
+
+.sectionTitle { font-size: 0.95rem; font-weight: 700; margin: 0; }
+.sectionDesc { font-size: 0.8rem; color: var(--gray-text); margin: 0 0 1rem; }
+
+.linkCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  text-decoration: none;
+  color: inherit;
+}
+
+.linkCard:hover .sectionTitle { color: var(--markt-primary, #E94C2A); }
+
+.field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+.field label { font-size: 0.8rem; font-weight: 600; color: #374151; }
+
+.formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+.input {
+  border: 1px solid var(--gray-border);
+  border-radius: 8px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.submitBtn {
+  background: var(--markt-primary, #E94C2A);
+  color: #fff;
+  border: 0;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.outlineBtn {
+  background: #fff;
+  color: var(--markt-primary, #E94C2A);
+  border: 1px solid var(--markt-primary, #E94C2A);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.outlineBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.errorText { color: #dc2626; font-size: 0.82rem; margin-top: 0.75rem; }
+.successText { color: #059669; font-size: 0.82rem; margin-top: 0.75rem; }
+
+.roleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.currentRole {
+  font-size: 0.85rem;
+  color: var(--gray-text);
+}
+
+.currentRole strong { color: #181211; text-transform: capitalize; }

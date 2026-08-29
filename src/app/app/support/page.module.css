@@ -1,0 +1,59 @@
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0 0 0.35rem;
+}
+
+.title svg { color: var(--markt-primary, #E94C2A); }
+
+.subtitle {
+  color: var(--gray-text);
+  font-size: 0.9rem;
+  margin: 0 0 1.75rem;
+}
+
+.faqItem {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 0.85rem;
+}
+
+.faqQuestion { font-size: 0.92rem; font-weight: 700; margin: 0 0 0.4rem; }
+.faqAnswer { font-size: 0.85rem; color: var(--gray-text); margin: 0; line-height: 1.5; }
+
+.contactCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  background: #fcece9;
+  border: 1px solid #f4c9bf;
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.contactCard p { margin: 0; font-size: 0.88rem; }
+
+.contactBtn {
+  background: var(--markt-primary, #E94C2A);
+  color: #fff;
+  text-decoration: none;
+  padding: 0.55rem 1.1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}

@@ -1,0 +1,50 @@
+.page {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.breadcrumb { font-size: 0.8rem; color: var(--gray-text); margin-bottom: 1rem; }
+.breadcrumb a { color: inherit; text-decoration: none; }
+.breadcrumb a:hover { color: var(--markt-primary, #E94C2A); }
+
+.card {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.headRow { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+.requestTitle { font-size: 1.15rem; font-weight: 800; margin: 0 0 0.3rem; }
+.requestDesc { font-size: 0.85rem; color: #374151; margin: 0 0 1rem; line-height: 1.5; }
+
+.statusBadge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  text-transform: capitalize;
+  flex-shrink: 0;
+}
+
+.statusOpen { background: #ecfdf5; color: #059669; }
+.statusFulfilled { background: #e0e7ff; color: #3730a3; }
+.statusClosed { background: #f3f4f6; color: #6b7280; }
+
+.offerPrice { font-size: 1.4rem; font-weight: 800; color: var(--markt-primary, #E94C2A); margin: 0 0 0.5rem; }
+.offerMessage { font-size: 0.88rem; color: #181211; line-height: 1.5; margin: 0 0 1rem; }
+
+.withdrawBtn {
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.withdrawBtn:disabled { opacity: 0.5; cursor: not-allowed; }

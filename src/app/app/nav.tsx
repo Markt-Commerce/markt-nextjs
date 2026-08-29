@@ -1,0 +1,160 @@
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { useSyncExternalStore } from 'react';
+import {
+  Home,
+  Store,
+  Users,
+  MessageCircle,
+  Receipt,
+  Tag,
+  Clipboard,
+  ShoppingCart,
+  Settings,
+  HelpCircle,
+  Mail,
+  Star,
+  Heart,
+  CreditCard,
+  ImagePlus,
+  UserCircle,
+  type LucideIcon,
+} from 'lucide-react';
+import { cn } from '@/lib/cn';
+import { getSidebarServerSnapshot, getSidebarSnapshot, subscribeSidebar } from '@/lib/sidebar-storage';
+import styles from './layout.module.css';
+
+interface NavLinkDef {
+  href: string;
+  icon: LucideIcon;
+  label: string;
+  badgeKey?: 'cart' | 'messages';
+}
+
+// Shared by both roles.
+const COMMON_LINKS: NavLinkDef[] = [
+  { href: '/app/dashboard', icon: Home, label: 'Dashboard' },
+  { href: '/app/community/social-feed', icon: Users, label: 'Feed' },
+  { href: '/app/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/app/community', icon: Users, label: 'Community' },
+  { href: '/app/chat', icon: MessageCircle, label: 'Messages', badgeKey: 'messages' },
+  { href: '/app/orders', icon: Receipt, label: 'Orders' },
+  { href: '/app/payments', icon: CreditCard, label: 'Payment History' },
+  { href: '/app/requests', icon: Clipboard, label: 'Requests' },
+];
+
+// Buying is buyer-only (cart/checkout are gated to buyer accounts server-side too).
+const BUYER_LINKS: NavLinkDef[] = [
+  { href: '/app/favorites', icon: Heart, label: 'Saved Items' },
+  { href: '/app/cart', icon: ShoppingCart, label: 'Cart', badgeKey: 'cart' },
+];
+
+// Selling to buy requests and managing product photos are seller-only.
+const SELLER_LINKS: NavLinkDef[] = [
+  { href: '/app/offers', icon: Tag, label: 'My Offers' },
+  { href: '/app/media', icon: ImagePlus, label: 'Media Library' },
+];
+
+const ACCOUNT_LINKS: NavLinkDef[] = [
+  { href: '/app/profile', icon: UserCircle, label: 'My Profile' },
+  { href: '/app/reviews', icon: Star, label: 'My Reviews' },
+  { href: '/app/support', icon: HelpCircle, label: 'Help & Support' },
+  { href: '/app/contact', icon: Mail, label: 'Contact Us' },
+  { href: '/app/settings', icon: Settings, label: 'Settings' },
+];
+
+const BUYER_BOTTOM_LINKS: NavLinkDef[] = [
+  { href: '/app/community/social-feed', icon: Users, label: 'Feed' },
+  { href: '/app/marketplace', icon: Store, label: 'Market' },
+  { href: '/app/cart', icon: ShoppingCart, label: 'Cart', badgeKey: 'cart' },
+  { href: '/app/chat', icon: MessageCircle, label: 'Chat', badgeKey: 'messages' },
+  { href: '/app/orders', icon: Receipt, label: 'Orders' },
+];
+
+const SELLER_BOTTOM_LINKS: NavLinkDef[] = [
+  { href: '/app/community/social-feed', icon: Users, label: 'Feed' },
+  { href: '/app/marketplace', icon: Store, label: 'Market' },
+  { href: '/app/offers', icon: Tag, label: 'Offers' },
+  { href: '/app/chat', icon: MessageCircle, label: 'Chat', badgeKey: 'messages' },
+  { href: '/app/orders', icon: Receipt, label: 'Orders' },
+];
+
+interface NavProps {
+  cartCount: number;
+  messageCount: number;
+  isSeller: boolean;
+}
+
+function isActive(pathname: string, href: string) {
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
+
+function badgeValue(def: NavLinkDef, counts: Record<'cart' | 'messages', number>) {
+  return def.badgeKey ? counts[def.badgeKey] : 0;
+}
+
+export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
+  const pathname = usePathname();
+  const collapsed = useSyncExternalStore(subscribeSidebar, getSidebarSnapshot, getSidebarServerSnapshot);
+  const counts = { cart: cartCount, messages: messageCount };
+  const primaryLinks = [...COMMON_LINKS, ...(isSeller ? SELLER_LINKS : BUYER_LINKS)];
+
+  return (
+    <nav className={styles.nav}>
+      {primaryLinks.map((def) => {
+        const badge = badgeValue(def, counts);
+        return (
+          <Link
+            key={def.href}
+            href={def.href}
+            className={cn(styles.navLink, isActive(pathname, def.href) && styles.navLinkActive)}
+            title={collapsed ? def.label : undefined}
+          >
+            <def.icon size={16} />
+            {!collapsed && <span>{def.label}</span>}
+            {!collapsed && badge > 0 && <span className={styles.navBadge}>{badge}</span>}
+            {collapsed && badge > 0 && <span className={styles.navDot} />}
+          </Link>
+        );
+      })}
+
+      <div className={styles.navSection}>
+        {!collapsed && <p className={styles.navSectionTitle}>Account</p>}
+        {ACCOUNT_LINKS.map((def) => (
+          <Link
+            key={def.href}
+            href={def.href}
+            className={cn(styles.navLink, isActive(pathname, def.href) && styles.navLinkActive)}
+            title={collapsed ? def.label : undefined}
+          >
+            <def.icon size={16} />
+            {!collapsed && <span>{def.label}</span>}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+export function BottomNav({ cartCount, messageCount, isSeller }: NavProps) {
+  const pathname = usePathname();
+  const counts = { cart: cartCount, messages: messageCount };
+  const links = isSeller ? SELLER_BOTTOM_LINKS : BUYER_BOTTOM_LINKS;
+
+  return (
+    <nav className={styles.bottomNav}>
+      {links.map((def) => {
+        const badge = badgeValue(def, counts);
+        return (
+          <Link key={def.href} href={def.href} className={cn(styles.bottomNavLink, isActive(pathname, def.href) && styles.bottomNavLinkActive)}>
+            <def.icon size={18} />
+            <span>{def.label}</span>
+            {badge > 0 && <span className={styles.badge}>{badge}</span>}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}

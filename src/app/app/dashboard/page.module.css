@@ -1,0 +1,121 @@
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.hero {
+  background: #181211;
+  color: #fff;
+  border-radius: 16px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.heroEyebrow {
+  color: var(--markt-primary, #E94C2A);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.heroTitle {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+}
+
+.heroSub {
+  color: rgba(255,255,255,0.75);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+
+.cardIcon { color: var(--markt-primary, #E94C2A); }
+.cardTitle { font-weight: 700; font-size: 0.95rem; margin: 0; }
+.cardDesc { font-size: 0.82rem; color: var(--gray-text); margin: 0; }
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+}
+
+.startCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.startCard {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.startCardHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+}
+
+.startCardTitle { font-size: 0.9rem; font-weight: 700; margin: 0; }
+.startCardDesc { font-size: 0.8rem; color: var(--gray-text); margin: 0 0 0.75rem; }
+
+.completedTag {
+  font-size: 0.7rem;
+  color: #059669;
+  background: #ecfdf5;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.startCardCta {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--markt-primary, #E94C2A);
+  text-decoration: none;
+}
+
+.analyticsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.stat {
+  background: #fff;
+  border: 1px solid var(--gray-border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.statLabel { font-size: 0.75rem; color: var(--gray-text); margin: 0 0 0.25rem; }
+.statValue { font-size: 1.4rem; font-weight: 800; margin: 0; }

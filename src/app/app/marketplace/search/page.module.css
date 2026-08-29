@@ -1,0 +1,25 @@
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+}
+
+.title {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin: 0 0 0.25rem;
+}
+
+.subtitle {
+  color: var(--gray-text);
+  font-size: 0.9rem;
+  margin: 0 0 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.emptyState { text-align: center; color: var(--gray-text); padding: 3rem 1rem; }

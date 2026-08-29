@@ -1,0 +1,74 @@
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+import { ApiError } from '@/lib/api/client';
+import { createBuyerAccount, createSellerAccount, switchRole, updateAddress } from '@/lib/api/account';
+import { getForwardedCookie } from '@/lib/api/session';
+
+export interface SettingsFormState {
+  error?: string;
+  success?: boolean;
+}
+
+export async function updateAddressAction(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {
+  const cookie = await getForwardedCookie();
+  const body = {
+    street: String(formData.get('street') ?? ''),
+    house_number: String(formData.get('house_number') ?? ''),
+    city: String(formData.get('city') ?? ''),
+    state: String(formData.get('state') ?? ''),
+    postal_code: String(formData.get('postal_code') ?? ''),
+    country: String(formData.get('country') ?? ''),
+  };
+
+  try {
+    await updateAddress(body, cookie);
+  } catch (err) {
+    return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not save address.' };
+  }
+
+  revalidatePath('/app/settings');
+  return { success: true };
+}
+
+export async function switchRoleAction(): Promise<void> {
+  try {
+    await switchRole(await getForwardedCookie());
+  } catch {
+    // Surfaced implicitly — the role badge just won't change.
+  }
+  revalidatePath('/app', 'layout');
+  redirect('/app/dashboard');
+}
+
+export async function enableBuyerAction(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {
+  const buyername = String(formData.get('buyername') ?? '').trim();
+  if (!buyername) return { error: 'Enter a display name.' };
+
+  try {
+    await createBuyerAccount(buyername, await getForwardedCookie());
+  } catch (err) {
+    return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not enable buyer account.' };
+  }
+
+  revalidatePath('/app/settings');
+  revalidatePath('/app', 'layout');
+  return { success: true };
+}
+
+export async function enableSellerAction(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {
+  const shopName = String(formData.get('shop_name') ?? '').trim();
+  const description = String(formData.get('description') ?? '').trim();
+  if (!shopName || !description) return { error: 'Shop name and description are required.' };
+
+  try {
+    await createSellerAccount({ shop_name: shopName, description, category_ids: [] }, await getForwardedCookie());
+  } catch (err) {
+    return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not enable seller account.' };
+  }
+
+  revalidatePath('/app/settings');
+  revalidatePath('/app', 'layout');
+  return { success: true };
+}
