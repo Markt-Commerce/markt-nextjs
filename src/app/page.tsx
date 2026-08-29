@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import styles from './page.module.css';
 
 const STEPS = [
@@ -28,9 +29,7 @@ export default function LandingPage() {
           <a href="#featured">Featured finds</a>
         </nav>
         <div className={styles.headerActions}>
-          <button className={styles.themeButton} type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
-            ◐
-          </button>
+          <ThemeToggle className={styles.themeButton} size={16} />
           <Link href={'/app/marketplace'} className={styles.appButton}>
             Explore Markt <span aria-hidden="true">↗</span>
           </Link>

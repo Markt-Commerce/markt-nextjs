@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { HelpCircle } from 'lucide-react';
 import styles from './page.module.css';
 
 // The real API has no FAQ/support-content endpoint — this is static content,
@@ -30,8 +29,7 @@ const FAQS = [
 export default function SupportPage() {
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <HelpCircle size={22} /> Help &amp; Support
+      <h1 className={styles.title}>Help &amp; Support
       </h1>
       <p className={styles.subtitle}>Answers to common questions. Can&apos;t find what you need? Reach out directly.</p>
 

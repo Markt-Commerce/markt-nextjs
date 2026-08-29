@@ -24,7 +24,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #e5e7eb;
+  background-color: var(--border);
   border-radius: 24px;
   transition: all 0.3s ease;
   cursor: pointer;
@@ -44,7 +44,7 @@
 }
 
 .toggle-switch-slider.checked {
-  background-color: #E94C2A;
+  background-color: var(--brand);
 }
 
 .toggle-switch-slider.checked:before {
@@ -52,7 +52,7 @@
 }
 
 .toggle-switch-container:hover .toggle-switch-slider:not(.checked) {
-  background-color: #d1d5db;
+  background-color: var(--border-strong);
 }
 
 .toggle-switch-container:hover .toggle-switch-slider.checked {
@@ -60,9 +60,9 @@
 }
 
 .toggle-switch-container.disabled:hover .toggle-switch-slider {
-  background-color: #e5e7eb;
+  background-color: var(--border);
 }
 
 .toggle-switch-container.disabled:hover .toggle-switch-slider.checked {
-  background-color: #E94C2A;
+  background-color: var(--brand);
 }

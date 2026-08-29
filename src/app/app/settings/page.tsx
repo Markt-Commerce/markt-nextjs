@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Settings, ShieldCheck, MapPin, UserCog, ChevronRight } from 'lucide-react';
+import { ShieldCheck, MapPin, UserCog, ChevronRight } from 'lucide-react';
 import { requireSession } from '@/lib/api/session';
 import { AddressForm } from './address-form';
 import { RolePanel } from './role-panel';
@@ -10,8 +10,7 @@ export default async function SettingsPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <Settings size={22} /> Settings
+      <h1 className={styles.title}>Settings
       </h1>
       <p className={styles.subtitle}>Manage your account, address, and privacy.</p>
 

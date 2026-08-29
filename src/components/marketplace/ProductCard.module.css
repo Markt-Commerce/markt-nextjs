@@ -1,65 +1,122 @@
+/* Person-first product card.
+
+   The seller sits on TOP of the card where a social post's author header
+   would be — on Markt a listing is something a person is offering, not an
+   anonymous SKU. */
+
 .card {
-  background: #fff;
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   text-decoration: none;
   color: inherit;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-strong);
+}
+
+/* --- Seller header --- */
+.seller {
   display: flex;
-  flex-direction: column;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem 0.6rem;
+  min-width: 0;
 }
 
-.card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
-
-.imageWrap { position: relative; width: 100%; height: 170px; background: #eee; }
-.image { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-.discountBadge {
-  position: absolute;
-  top: 0.5rem;
-  left: 0.5rem;
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
-  font-size: 0.7rem;
-  font-weight: 700;
-  padding: 0.15rem 0.5rem;
-  border-radius: 6px;
+.sellerAvatar {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  background: var(--surface-sunken);
+  flex-shrink: 0;
 }
 
-.favoriteWrap {
+.sellerName {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.verified { color: var(--info); flex-shrink: 0; }
+
+.distance {
+  margin-left: auto;
+  font-size: 0.68rem;
+  color: var(--text-subtle);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* --- Image ---
+   Fixed ratio + a warm sunken ground, so a transparent PNG, a dim phone
+   photo, and a studio shot all sit on something intentional. Seller
+   imagery is inconsistent by nature; the frame is what stays constant. */
+.imageWrap {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--surface-sunken);
+  margin: 0 0.5rem;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.favorite {
   position: absolute;
   top: 0.5rem;
   right: 0.5rem;
+  z-index: 1;
 }
 
-.outOfStockBadge {
+.tag {
   position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.8rem;
+  top: 0.5rem;
+  left: 0.5rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
+  padding: 0.2rem 0.45rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: var(--shadow-sm);
 }
 
-.body { padding: 0.85rem; display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+.tagDeal { background: var(--brand); color: var(--brand-contrast); }
+.tagOut  { background: var(--text); color: var(--text-inverse); }
 
-.sellerRow {
+/* --- Body --- */
+.body {
+  padding: 0.7rem 0.85rem 0.85rem;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 0.35rem;
-  font-size: 0.72rem;
-  color: var(--gray-text);
+  flex: 1;
 }
 
 .name {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 600;
+  line-height: 1.35;
   margin: 0;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -67,16 +124,36 @@
   overflow: hidden;
 }
 
-.priceRow { display: flex; align-items: baseline; gap: 0.4rem; margin-top: auto; }
-.price { font-size: 1rem; font-weight: 800; color: var(--markt-primary, #E94C2A); }
-.comparePrice { font-size: 0.78rem; color: var(--gray-text); text-decoration: line-through; }
-
-.ratingRow {
+.meta {
   display: flex;
   align-items: center;
-  gap: 0.25rem;
-  font-size: 0.75rem;
-  color: var(--gray-text);
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 
-.ratingRow svg { color: #f59e0b; }
+.meta svg { color: var(--warning); }
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+/* Price as a confident filled pill, not grey small print. */
+.price {
+  background: var(--text);
+  color: var(--text-inverse);
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-full);
+}
+
+.comparePrice {
+  font-size: 0.75rem;
+  color: var(--text-subtle);
+  text-decoration: line-through;
+}

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { requireSession, getForwardedCookie } from '@/lib/api/session';
 import { apiFetch } from '@/lib/api/client';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { HeaderSearch } from './header-search';
 import { UserMenu } from './user-menu';
 import { SidebarShell } from './sidebar-shell';
@@ -45,6 +46,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           <HeaderSearch />
 
           <div className={styles.actions}>
+            <ThemeToggle className={styles.iconButton} />
+
             <Link href="/app/notifications" className={styles.iconButton} aria-label="Notifications">
               <Bell size={20} />
               {notifications > 0 && <span className={styles.badge}>{notifications}</span>}

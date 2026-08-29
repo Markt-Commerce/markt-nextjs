@@ -1,10 +1,10 @@
 .shell {
-  background: #f9fafb;
+  background: var(--bg);
   min-height: 100vh;
 }
 
 .header {
-  background: #fff;
+  background: var(--surface);
   border-bottom: 1px solid var(--gray-border);
   position: sticky;
   top: 0;
@@ -41,7 +41,7 @@
   border-radius: 8px;
 }
 
-.searchInput:focus { outline: 2px solid var(--markt-primary, #E94C2A); outline-offset: -1px; }
+.searchInput:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
 
 .searchIcon { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); color: var(--gray-text); }
 
@@ -50,12 +50,12 @@
 .iconButton {
   border: 0;
   background: none;
-  color: #181211;
+  color: var(--text);
   cursor: pointer;
   position: relative;
 }
 
-.iconButton:hover { color: var(--markt-primary, #E94C2A); }
+.iconButton:hover { color: var(--brand); }
 
 .badge {
   position: absolute;
@@ -63,8 +63,8 @@
   right: -0.25rem;
   width: 1.1rem;
   height: 1.1rem;
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   font-size: 0.65rem;
   border-radius: 9999px;
   display: flex;
@@ -85,7 +85,7 @@
   border-radius: 8px;
 }
 
-.userButton:hover { background: #f4f1f0; }
+.userButton:hover { background: var(--surface-hover); }
 
 .avatar { width: 2rem; height: 2rem; border-radius: 9999px; object-fit: cover; }
 
@@ -95,7 +95,7 @@
   .userMeta { display: block; }
 }
 
-.userName { font-size: 0.85rem; font-weight: 600; color: #181211; }
+.userName { font-size: 0.85rem; font-weight: 600; color: var(--text); }
 .userRole { font-size: 0.7rem; color: var(--gray-text); text-transform: capitalize; }
 
 .dropdown {
@@ -103,7 +103,7 @@
   right: 0;
   margin-top: 0.5rem;
   width: 12rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--gray-border);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
@@ -117,21 +117,21 @@
   text-align: left;
   padding: 0.5rem 1rem;
   font-size: 0.85rem;
-  color: #374151;
+  color: var(--text-muted);
   border: 0;
   background: none;
   cursor: pointer;
   text-decoration: none;
 }
 
-.dropdown a:hover, .dropdown button:hover { background: #f4f1f0; }
+.dropdown a:hover, .dropdown button:hover { background: var(--surface-hover); }
 .dropdown hr { border-color: var(--gray-border); margin: 0.25rem 0; }
 
 .body { display: flex; }
 
 .sidebar {
   width: 16rem;
-  background: #fff;
+  background: var(--surface);
   border-right: 1px solid var(--gray-border);
   height: calc(100vh - 4.25rem);
   position: sticky;
@@ -161,13 +161,15 @@
   margin-bottom: 1.5rem;
 }
 
+.sidebarTopCollapsed { justify-content: center; }
+
 .collapseBtn {
-  border: 1px solid var(--gray-border);
-  background: #fff;
-  color: var(--gray-text);
-  border-radius: 8px;
-  width: 1.75rem;
-  height: 1.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+  width: 2.1rem;
+  height: 2.1rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -175,14 +177,14 @@
   flex-shrink: 0;
 }
 
-.collapseBtn:hover { color: var(--markt-primary, #E94C2A); border-color: var(--markt-primary, #E94C2A); }
+.collapseBtn:hover { color: var(--brand); border-color: var(--brand); }
 
 .roleBadge {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #fcece9;
-  color: var(--markt-primary, #E94C2A);
+  background: var(--brand-soft);
+  color: var(--brand);
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
   font-size: 0.85rem;
@@ -200,7 +202,7 @@
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
   border-radius: 8px;
-  color: #181211;
+  color: var(--text);
   text-decoration: none;
   font-size: 0.9rem;
   white-space: nowrap;
@@ -209,24 +211,33 @@
 
 .navLink svg { flex-shrink: 0; }
 
+/* Collapsed: icon-only, centered, square-ish tap target. */
+.navLinkCollapsed { justify-content: center; padding: 0.55rem 0; position: relative; }
+.navLinkCollapsed .navDot {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.7rem;
+  margin: 0;
+}
+
 .navDot {
   margin-left: auto;
   width: 0.4rem;
   height: 0.4rem;
   border-radius: 9999px;
-  background: var(--markt-primary, #E94C2A);
+  background: var(--brand);
   flex-shrink: 0;
 }
 
-.navLink:hover { background: #f4f1f0; }
+.navLink:hover { background: var(--surface-hover); }
 
-.navLinkActive { background: var(--markt-primary, #E94C2A); color: #fff; }
-.navLinkActive:hover { background: var(--markt-primary, #E94C2A); }
+.navLinkActive { background: var(--brand); color: var(--brand-contrast); }
+.navLinkActive:hover { background: var(--brand); }
 
 .navBadge {
   margin-left: auto;
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   font-size: 0.7rem;
   padding: 0.1rem 0.45rem;
   border-radius: 9999px;
@@ -260,7 +271,7 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background: #fff;
+  background: var(--surface);
   border-top: 1px solid var(--gray-border);
   display: flex;
   justify-content: space-around;
@@ -284,7 +295,7 @@
   position: relative;
 }
 
-.bottomNavLinkActive { color: var(--markt-primary, #E94C2A); }
+.bottomNavLinkActive { color: var(--brand); }
 
 .gate {
   min-height: 100vh;

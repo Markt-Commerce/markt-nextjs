@@ -82,7 +82,7 @@ export function Thread({
           <Send size={16} />
         </button>
       </form>
-      {error && <p style={{ padding: '0 1rem', fontSize: '0.75rem', color: '#b91c1c' }}>{error}</p>}
+      {error && <p style={{ padding: '0 1rem', fontSize: '0.75rem', color: 'var(--danger-text)' }}>{error}</p>}
     </>
   );
 }

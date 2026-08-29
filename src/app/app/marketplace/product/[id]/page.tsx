@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Star, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, Star } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { apiFetch } from '@/lib/api/client';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
@@ -54,13 +54,16 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
 
         <div>
           {product.seller && (
-            <div className={styles.sellerRow}>
-              <span>{product.seller.shop_name}</span>
-              {product.seller.verification_status === 'verified' && (
-                <span className={styles.verifiedTag}>
-                  <ShieldCheck size={13} /> Verified
-                </span>
-              )}
+            <div className={styles.sellerCard}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={product.seller.profile_picture_url || '/Logo.png'} alt="" className={styles.sellerAvatar} />
+              <div className={styles.sellerInfo}>
+                <p className={styles.sellerName}>
+                  {product.seller.shop_name}
+                  {product.seller.verification_status === 'verified' && <BadgeCheck size={14} className={styles.verifiedIcon} />}
+                </p>
+                <p className={styles.sellerMeta}>Seller on Markt</p>
+              </div>
             </div>
           )}
 
@@ -100,18 +103,24 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           {reviews.items.map((review) => (
             <article key={review.id} className={styles.reviewCard}>
               <div className={styles.reviewHead}>
-                <div className={styles.ratingRow} style={{ marginBottom: 0 }}>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} size={12} fill={i < review.rating ? 'currentColor' : 'none'} />
-                  ))}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={review.user?.profile_picture_url || '/Logo.png'} alt="" className={styles.reviewAvatar} />
+                <div className={styles.reviewer}>
+                  <p className={styles.reviewerName}>{review.user?.username ?? 'Verified buyer'}</p>
+                  <div className={styles.reviewStars}>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={11} fill={i < review.rating ? 'currentColor' : 'none'} />
+                    ))}
+                  </div>
                 </div>
+                {review.is_verified && <span className={styles.verifiedPurchase}>Verified purchase</span>}
               </div>
               {review.title && <p className={styles.reviewTitle}>{review.title}</p>}
               <p className={styles.reviewContent}>{review.content}</p>
               <p className={styles.reviewDate}>{new Date(review.created_at).toLocaleDateString()}</p>
             </article>
           ))}
-          {reviews.items.length === 0 && <p className={styles.noteText}>No reviews yet — be the first to write one.</p>}
+          {reviews.items.length === 0 && <div className={styles.emptyReviews}>No reviews yet — be the first to write one.</div>}
         </div>
       </section>
 

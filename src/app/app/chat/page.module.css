@@ -15,20 +15,20 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0;
 }
 
-.title svg { color: var(--markt-primary, #E94C2A); }
+.title svg { color: var(--brand); }
 
 .newChatBtn {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   text-decoration: none;
   padding: 0.5rem 1rem;
   border-radius: 8px;
@@ -42,7 +42,7 @@
   display: flex;
   align-items: center;
   gap: 0.85rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--gray-border);
   border-radius: 12px;
   padding: 0.85rem 1rem;
@@ -50,7 +50,7 @@
   color: inherit;
 }
 
-.avatar { width: 2.75rem; height: 2.75rem; border-radius: 9999px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.avatar { width: 2.75rem; height: 2.75rem; border-radius: 9999px; object-fit: cover; background: var(--surface-sunken); flex-shrink: 0; }
 
 .rowBody { flex: 1; min-width: 0; }
 
@@ -67,13 +67,13 @@
   text-overflow: ellipsis;
 }
 
-.previewUnread { color: #181211; font-weight: 600; }
+.previewUnread { color: var(--text); font-weight: 600; }
 
-.productTag { font-size: 0.72rem; color: var(--markt-primary, #E94C2A); margin-top: 0.15rem; }
+.productTag { font-size: 0.72rem; color: var(--brand); margin-top: 0.15rem; }
 
 .unreadBadge {
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   font-size: 0.7rem;
   font-weight: 700;
   min-width: 1.2rem;
@@ -87,4 +87,4 @@
 }
 
 .emptyState { text-align: center; color: var(--gray-text); padding: 3rem 1rem; }
-.emptyState a { color: var(--markt-primary, #E94C2A); font-weight: 700; text-decoration: none; }
+.emptyState a { color: var(--brand); font-weight: 700; text-decoration: none; }

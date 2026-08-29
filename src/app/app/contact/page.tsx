@@ -8,8 +8,7 @@ import styles from './page.module.css';
 export default function ContactPage() {
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <Mail size={22} /> Contact Us
+      <h1 className={styles.title}>Contact Us
       </h1>
       <p className={styles.subtitle}>The fastest ways to reach us.</p>
 

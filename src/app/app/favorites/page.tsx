@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Heart, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { getFavoriteIds } from '@/lib/favorites-storage';
 import { primaryImageUrl, type Product } from '@/lib/types/product';
 import { getFavoriteProductsAction } from './actions';
@@ -17,8 +17,7 @@ export default function FavoritesPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <Heart size={22} fill="currentColor" /> Saved Items
+      <h1 className={styles.title}>Saved Items
       </h1>
 
       {products === null && <Loader2 className="animate-spin" size={20} />}

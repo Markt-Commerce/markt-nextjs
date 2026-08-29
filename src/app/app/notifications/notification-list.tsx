@@ -38,8 +38,7 @@ export function NotificationList({ notifications }: { notifications: Notificatio
   return (
     <div className={styles.page}>
       <div className={styles.headRow}>
-        <h1 className={styles.title}>
-          <Bell size={22} /> Notifications
+        <h1 className={styles.title}>Notifications
         </h1>
         <button
           type="button"

@@ -21,9 +21,16 @@ export interface SellerOffer {
   created_at: string;
 }
 
+export interface RequestUser {
+  id: string;
+  username: string;
+  profile_picture_url?: string;
+}
+
 export interface BuyerRequest {
   id: string;
   user_id: string;
+  user?: RequestUser;
   title: string;
   description: string;
   budget?: number;

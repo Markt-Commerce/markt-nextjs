@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { ShieldCheck, Loader2, CheckCircle2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { ToggleSwitch } from '@/components/ui/ToggleSwitch';
 import { updatePrivacySettingAction } from './actions';
@@ -41,8 +41,7 @@ export function PrivacyForm({ initial }: { initial: PrivacySettings }) {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <ShieldCheck size={22} /> Privacy
+      <h1 className={styles.title}>Privacy
       </h1>
       <p className={styles.subtitle}>Control who can see your profile and how people can reach you.</p>
 

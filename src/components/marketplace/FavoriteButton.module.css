@@ -2,19 +2,23 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  border-radius: 9999px;
-  border: 1px solid var(--gray-border);
-  background: rgba(255, 255, 255, 0.9);
-  color: #374151;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  /* Sits over product imagery, so it needs its own opaque ground rather
+     than inheriting whatever the photo happens to be. */
+  background: var(--surface);
+  color: var(--text-muted);
   cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: color var(--transition-fast), border-color var(--transition-fast);
 }
 
-.button:hover { color: var(--markt-primary, #E94C2A); }
+.button:hover { color: var(--brand); border-color: var(--brand); }
 .button:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .buttonActive {
-  color: var(--markt-primary, #E94C2A);
-  border-color: var(--markt-primary, #E94C2A);
+  color: var(--brand);
+  border-color: var(--brand);
 }

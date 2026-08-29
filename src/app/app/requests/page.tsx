@@ -1,8 +1,9 @@
 import Link from 'next/link';
-import { Clipboard, Plus, Eye, ThumbsUp, MessageSquare } from 'lucide-react';
+import { Plus, MessageSquare, Eye } from 'lucide-react';
 import { getForwardedCookie } from '@/lib/api/session';
 import { listRequests } from '@/lib/api/requests';
 import { safeFetch } from '@/lib/api/safe';
+import type { BuyerRequest } from '@/lib/types/request';
 import { cn } from '@/lib/cn';
 import styles from './page.module.css';
 
@@ -12,6 +13,45 @@ const STATUS_CLASS: Record<string, string> = {
   CLOSED: 'statusClosed',
   EXPIRED: 'statusExpired',
 };
+
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const day = 86_400_000;
+  if (diff < day) return 'today';
+  if (diff < 2 * day) return 'yesterday';
+  return `${Math.floor(diff / day)} days ago`;
+}
+
+export function RequestCard({ request }: { request: BuyerRequest }) {
+  const replies = request.offers.length;
+  return (
+    <Link href={`/app/requests/${request.id}`} className={styles.card}>
+      <span className={cn(styles.statusBadge, styles[STATUS_CLASS[request.status]])}>{request.status.toLowerCase()}</span>
+
+      <div className={styles.asker}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={request.user?.profile_picture_url || '/Logo.png'} alt="" className={styles.askerAvatar} />
+        <span className={styles.askerText}>
+          <strong>{request.user?.username ?? 'A buyer'}</strong> is looking for · {timeAgo(request.created_at)}
+        </span>
+      </div>
+
+      <h2 className={styles.cardTitle}>{request.title}</h2>
+      <p className={styles.cardDesc}>{request.description}</p>
+
+      <div className={styles.cardFooter}>
+        {!!request.budget && <span className={styles.budgetChip}>Budget ${request.budget.toFixed(2)}</span>}
+        <span className={cn(styles.repliesChip, replies > 0 ? styles.repliesActive : styles.repliesNone)}>
+          <MessageSquare size={13} />
+          {replies === 0 ? 'No offers yet' : `${replies} offer${replies === 1 ? '' : 's'}`}
+        </span>
+        <span className={styles.metaDot}>
+          <Eye size={13} /> {request.views}
+        </span>
+      </div>
+    </Link>
+  );
+}
 
 export default async function RequestsPage() {
   const cookie = await getForwardedCookie();
@@ -23,41 +63,19 @@ export default async function RequestsPage() {
   return (
     <div className={styles.page}>
       <div className={styles.headRow}>
-        <h1 className={styles.title}>
-          <Clipboard size={22} /> Buy Requests
-        </h1>
+        <h1 className={styles.title}>Buy requests</h1>
         <Link href="/app/requests/create" className={styles.newBtn}>
-          <Plus size={14} /> New Request
+          <Plus size={15} /> Post a request
         </Link>
       </div>
+      <p className={styles.subtitle}>People asking for things. Have it? Send them an offer.</p>
 
-      {data.items.length === 0 && <div className={styles.emptyState}>No open requests right now.</div>}
-
-      {data.items.length > 0 && (
+      {data.items.length === 0 ? (
+        <div className={styles.emptyState}>No open requests right now. Check back soon.</div>
+      ) : (
         <div className={styles.list}>
           {data.items.map((request) => (
-            <Link key={request.id} href={`/app/requests/${request.id}`} className={styles.card}>
-              <div className={styles.cardHead}>
-                <p className={styles.cardTitle}>{request.title}</p>
-                <span className={cn(styles.statusBadge, styles[STATUS_CLASS[request.status]])}>{request.status.toLowerCase()}</span>
-              </div>
-              <p className={styles.cardDesc}>{request.description}</p>
-              <div className={styles.metaRow}>
-                {!!request.budget && <span className={styles.budgetTag}>Budget: ${request.budget.toFixed(2)}</span>}
-                <span>
-                  <Eye size={12} style={{ display: 'inline', marginRight: 3 }} />
-                  {request.views}
-                </span>
-                <span>
-                  <ThumbsUp size={12} style={{ display: 'inline', marginRight: 3 }} />
-                  {request.upvotes}
-                </span>
-                <span>
-                  <MessageSquare size={12} style={{ display: 'inline', marginRight: 3 }} />
-                  {request.offers.length} offer{request.offers.length === 1 ? '' : 's'}
-                </span>
-              </div>
-            </Link>
+            <RequestCard key={request.id} request={request} />
           ))}
         </div>
       )}

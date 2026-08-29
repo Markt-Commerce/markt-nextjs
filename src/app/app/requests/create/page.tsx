@@ -1,7 +1,6 @@
 'use client';
 
 import { useActionState } from 'react';
-import { ClipboardPlus } from 'lucide-react';
 import { createRequestAction, type CreateRequestState } from './actions';
 import styles from './page.module.css';
 
@@ -12,8 +11,7 @@ export default function CreateRequestPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <ClipboardPlus size={22} /> Post a Buy Request
+      <h1 className={styles.title}>Post a Buy Request
       </h1>
 
       <form className={styles.formCard} action={formAction}>

@@ -34,11 +34,13 @@ interface NavLinkDef {
 }
 
 // Shared by both roles.
+// Note: there is exactly ONE community surface — /app/community is just a
+// redirect to the feed — so it gets one nav entry pointing straight at the
+// real page rather than two entries racing for the active state.
 const COMMON_LINKS: NavLinkDef[] = [
   { href: '/app/dashboard', icon: Home, label: 'Dashboard' },
-  { href: '/app/community/social-feed', icon: Users, label: 'Feed' },
   { href: '/app/marketplace', icon: Store, label: 'Marketplace' },
-  { href: '/app/community', icon: Users, label: 'Community' },
+  { href: '/app/community/social-feed', icon: Users, label: 'Community' },
   { href: '/app/chat', icon: MessageCircle, label: 'Messages', badgeKey: 'messages' },
   { href: '/app/orders', icon: Receipt, label: 'Orders' },
   { href: '/app/payments', icon: CreditCard, label: 'Payment History' },
@@ -87,8 +89,21 @@ interface NavProps {
   isSeller: boolean;
 }
 
-function isActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(`${href}/`);
+/**
+ * Returns the single href that should read as active — the LONGEST one that
+ * matches. Plain `startsWith` lights up every ancestor, so a nested route
+ * like /app/community/social-feed would highlight both itself and any
+ * /app/community entry. Longest-match keeps exactly one lit no matter how
+ * nav routes nest in future.
+ */
+function activeHref(pathname: string, hrefs: string[]): string | null {
+  let best: string | null = null;
+  for (const href of hrefs) {
+    if (pathname === href || pathname.startsWith(`${href}/`)) {
+      if (best === null || href.length > best.length) best = href;
+    }
+  }
+  return best;
 }
 
 function badgeValue(def: NavLinkDef, counts: Record<'cart' | 'messages', number>) {
@@ -100,6 +115,9 @@ export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
   const collapsed = useSyncExternalStore(subscribeSidebar, getSidebarSnapshot, getSidebarServerSnapshot);
   const counts = { cart: cartCount, messages: messageCount };
   const primaryLinks = [...COMMON_LINKS, ...(isSeller ? SELLER_LINKS : BUYER_LINKS)];
+  // Resolved across primary AND account links together, so the two groups
+  // can't each light up an entry for the same page.
+  const active = activeHref(pathname, [...primaryLinks, ...ACCOUNT_LINKS].map((l) => l.href));
 
   return (
     <nav className={styles.nav}>
@@ -109,7 +127,7 @@ export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
           <Link
             key={def.href}
             href={def.href}
-            className={cn(styles.navLink, isActive(pathname, def.href) && styles.navLinkActive)}
+            className={cn(styles.navLink, collapsed && styles.navLinkCollapsed, active === def.href && styles.navLinkActive)}
             title={collapsed ? def.label : undefined}
           >
             <def.icon size={16} />
@@ -126,7 +144,7 @@ export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
           <Link
             key={def.href}
             href={def.href}
-            className={cn(styles.navLink, isActive(pathname, def.href) && styles.navLinkActive)}
+            className={cn(styles.navLink, collapsed && styles.navLinkCollapsed, active === def.href && styles.navLinkActive)}
             title={collapsed ? def.label : undefined}
           >
             <def.icon size={16} />
@@ -142,13 +160,14 @@ export function BottomNav({ cartCount, messageCount, isSeller }: NavProps) {
   const pathname = usePathname();
   const counts = { cart: cartCount, messages: messageCount };
   const links = isSeller ? SELLER_BOTTOM_LINKS : BUYER_BOTTOM_LINKS;
+  const active = activeHref(pathname, links.map((l) => l.href));
 
   return (
     <nav className={styles.bottomNav}>
       {links.map((def) => {
         const badge = badgeValue(def, counts);
         return (
-          <Link key={def.href} href={def.href} className={cn(styles.bottomNavLink, isActive(pathname, def.href) && styles.bottomNavLinkActive)}>
+          <Link key={def.href} href={def.href} className={cn(styles.bottomNavLink, active === def.href && styles.bottomNavLinkActive)}>
             <def.icon size={18} />
             <span>{def.label}</span>
             {badge > 0 && <span className={styles.badge}>{badge}</span>}

@@ -1,12 +1,11 @@
 import Link from 'next/link';
-import { MessageSquareText, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function MyReviewsPage() {
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <MessageSquareText size={22} /> My Reviews
+      <h1 className={styles.title}>My Reviews
       </h1>
 
       <div className={styles.formCard}>

@@ -16,7 +16,7 @@ export function CommentForm({ postId }: { postId: string }) {
       <button type="submit" className={styles.commentSubmit} disabled={pending}>
         {pending ? 'Posting…' : 'Post'}
       </button>
-      {state.error && <p style={{ fontSize: '0.78rem', color: '#b91c1c', width: '100%' }}>{state.error}</p>}
+      {state.error && <p style={{ fontSize: '0.78rem', color: 'var(--danger-text)', width: '100%' }}>{state.error}</p>}
     </form>
   );
 }

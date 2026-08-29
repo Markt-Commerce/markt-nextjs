@@ -62,7 +62,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
             <Link
               href={`/app/marketplace/product/${taggedProductId}`}
               className={styles.caption}
-              style={{ display: 'block', color: '#E94C2A', fontWeight: 700 }}
+              style={{ display: 'block', color: 'var(--brand-text)', fontWeight: 700 }}
             >
               View tagged product
             </Link>

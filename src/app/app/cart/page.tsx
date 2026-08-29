@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { getCart } from '@/lib/api/cart';
 import { safeFetch } from '@/lib/api/safe';
@@ -27,9 +26,7 @@ export default async function CartPage() {
   if (cart.items.length === 0) {
     return (
       <div className={styles.page}>
-        <h1 className={styles.title}>
-          <ShoppingCart size={22} /> Cart
-        </h1>
+        <h1 className={styles.title}>Cart</h1>
         <div className={styles.emptyState}>
           Your cart is empty. <Link href="/app/marketplace">Browse the marketplace</Link> to find something you like.
         </div>
@@ -42,9 +39,7 @@ export default async function CartPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <ShoppingCart size={22} /> Cart
-      </h1>
+      <h1 className={styles.title}>Cart</h1>
 
       <div className={styles.layout}>
         <div className={styles.itemList}>
@@ -68,6 +63,7 @@ export default async function CartPage() {
               <span>-${discount.toFixed(2)}</span>
             </div>
           )}
+          <div className={styles.tearLine} />
           <div className={styles.summaryTotal}>
             <span>Total</span>
             <span>${(subtotal - discount).toFixed(2)}</span>

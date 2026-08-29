@@ -1,84 +1,94 @@
 .page {
-  max-width: 1000px;
+  max-width: 1020px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 1.75rem 1.5rem 4rem;
 }
 
 .title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0 0 1.5rem;
 }
-
-.title svg { color: var(--markt-primary, #E94C2A); }
 
 .layout {
   display: grid;
   grid-template-columns: 1fr 320px;
-  gap: 2rem;
+  gap: 1.75rem;
+  align-items: start;
 }
 
 @media (max-width: 800px) {
   .layout { grid-template-columns: 1fr; }
 }
 
-.itemList { display: flex; flex-direction: column; gap: 1rem; }
+.itemList { display: flex; flex-direction: column; gap: 0.85rem; }
 
 .item {
-  background: #fff;
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
-  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 0.9rem;
   display: flex;
-  gap: 1rem;
+  gap: 0.9rem;
 }
 
-.itemImage { width: 84px; height: 84px; border-radius: 8px; object-fit: cover; background: #eee; flex-shrink: 0; }
+.itemImage {
+  width: 80px;
+  height: 80px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--surface-sunken);
+  flex-shrink: 0;
+}
 
 .itemBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.3rem; }
 .itemName { font-weight: 700; font-size: 0.92rem; margin: 0; }
-.itemMeta { font-size: 0.78rem; color: var(--gray-text); margin: 0; }
-.itemUnitPrice { font-size: 0.82rem; color: var(--gray-text); }
+.itemMeta { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+.itemUnitPrice { font-size: 0.82rem; color: var(--text-muted); }
 
 .itemFooter { display: flex; align-items: center; justify-content: space-between; margin-top: auto; }
 
 .qtyControl {
   display: flex;
   align-items: center;
-  border: 1px solid var(--gray-border);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
   overflow: hidden;
 }
 
-.qtyBtn { border: 0; background: #f9fafb; width: 1.9rem; height: 1.9rem; cursor: pointer; }
+.qtyBtn { border: 0; background: var(--surface-2); width: 1.9rem; height: 1.9rem; cursor: pointer; color: var(--text); }
+.qtyBtn:hover:not(:disabled) { background: var(--surface-hover); }
 .qtyBtn:disabled { opacity: 0.4; cursor: not-allowed; }
 .qtyValue { width: 2rem; text-align: center; font-weight: 700; font-size: 0.85rem; }
 
-.itemSubtotal { font-weight: 800; color: var(--markt-primary, #E94C2A); }
+.itemSubtotal { font-weight: 800; color: var(--text); }
 
 .removeBtn {
   border: 0;
   background: none;
-  color: var(--gray-text);
+  color: var(--text-subtle);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   font-size: 0.75rem;
+  padding: 0;
+  margin-top: 0.5rem;
 }
 
-.removeBtn:hover { color: #dc2626; }
+.removeBtn:hover { color: var(--danger-text); }
 
-.invalidTag { color: #dc2626; font-size: 0.75rem; }
+.invalidTag { color: var(--danger-text); font-size: 0.75rem; }
 
+/* --- Receipt-style summary ---
+   A quiet, tactile nod to a real receipt rather than another grey totals
+   box — the dashed tear line marks "here's the math" without decoration
+   for its own sake. */
 .summary {
-  background: #fff;
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   height: fit-content;
   position: sticky;
@@ -92,54 +102,77 @@
   justify-content: space-between;
   font-size: 0.85rem;
   margin-bottom: 0.5rem;
-  color: #374151;
+  color: var(--text-muted);
+}
+
+.tearLine {
+  height: 1px;
+  margin: 0.85rem -1.25rem 0.85rem;
+  background-image: repeating-linear-gradient(to right, var(--border-strong) 0 6px, transparent 6px 13px);
 }
 
 .summaryTotal {
   display: flex;
   justify-content: space-between;
   font-weight: 800;
-  font-size: 1rem;
-  padding-top: 0.75rem;
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--gray-border);
+  font-size: 1.05rem;
 }
 
 .couponRow { display: flex; gap: 0.5rem; margin: 1rem 0; }
 
 .couponInput {
   flex: 1;
-  border: 1px solid var(--gray-border);
-  border-radius: 8px;
-  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  padding: 0.45rem 0.65rem;
   font-size: 0.85rem;
 }
 
 .couponBtn {
-  border: 1px solid var(--gray-border);
-  background: #f9fafb;
-  border-radius: 8px;
-  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  border-radius: var(--radius-md);
+  padding: 0.45rem 0.85rem;
   font-size: 0.8rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
+.couponBtn:hover { border-color: var(--border-strong); }
+
 .couponMessage { font-size: 0.78rem; margin-bottom: 0.75rem; }
-.couponSuccess { color: #059669; }
-.couponError { color: #dc2626; }
+.couponSuccess { color: var(--success-text); }
+.couponError { color: var(--danger-text); }
 
 .checkoutBtn {
   width: 100%;
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  display: block;
+  text-align: center;
+  background: var(--brand);
+  color: var(--brand-contrast);
   border: 0;
   padding: 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
 }
 
+.checkoutBtn:hover { background: var(--brand-hover); }
 .checkoutBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.emptyState { text-align: center; color: var(--gray-text); padding: 3rem 1rem; }
-.emptyState a { color: var(--markt-primary, #E94C2A); font-weight: 700; text-decoration: none; }
+.emptyState {
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.emptyState a { color: var(--brand-text); font-weight: 700; text-decoration: none; }
+.emptyState a:hover { text-decoration: underline; }

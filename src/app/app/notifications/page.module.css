@@ -17,17 +17,17 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0;
 }
 
-.title svg { color: var(--markt-primary, #E94C2A); }
+.title svg { color: var(--brand); }
 
 .markAllBtn {
   border: 1px solid var(--gray-border);
-  background: #fff;
+  background: var(--surface);
   border-radius: 8px;
   padding: 0.45rem 0.85rem;
   font-size: 0.82rem;
@@ -43,7 +43,7 @@
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--gray-border);
   border-radius: 12px;
   padding: 0.85rem 1rem;
@@ -54,32 +54,32 @@
   font: inherit;
 }
 
-.rowUnread { background: #fffaf8; border-color: #f4c9bf; }
+.rowUnread { background: var(--brand-soft); border-color: var(--brand-soft-border); }
 
 .iconWrap {
   width: 2.3rem;
   height: 2.3rem;
   border-radius: 9999px;
-  background: #f4f1f0;
-  color: #886A63;
+  background: var(--surface-hover);
+  color: var(--text-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.rowUnread .iconWrap { background: #fcece9; color: var(--markt-primary, #E94C2A); }
+.rowUnread .iconWrap { background: var(--brand-soft); color: var(--brand); }
 
 .rowBody { flex: 1; min-width: 0; }
 .rowTitle { font-weight: 700; font-size: 0.88rem; margin: 0; }
-.rowMessage { font-size: 0.82rem; color: #374151; margin: 0.15rem 0 0; }
+.rowMessage { font-size: 0.82rem; color: var(--text-muted); margin: 0.15rem 0 0; }
 .rowTime { font-size: 0.72rem; color: var(--gray-text); margin-top: 0.3rem; }
 
 .unreadDot {
   width: 8px;
   height: 8px;
   border-radius: 9999px;
-  background: var(--markt-primary, #E94C2A);
+  background: var(--brand);
   flex-shrink: 0;
   margin-top: 0.35rem;
 }

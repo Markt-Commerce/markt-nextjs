@@ -1,20 +1,21 @@
 .page {
-  max-width: 900px;
+  max-width: 920px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 1.75rem 1.5rem 4rem;
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0 0 1.5rem;
 }
 
 .layout {
   display: grid;
   grid-template-columns: 1fr 300px;
-  gap: 2rem;
+  gap: 1.75rem;
+  align-items: start;
 }
 
 @media (max-width: 800px) {
@@ -22,14 +23,14 @@
 }
 
 .section {
-  background: #fff;
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
 }
 
-.sectionTitle { font-size: 0.95rem; font-weight: 700; margin: 0 0 1rem; }
+.sectionTitle { font-size: 0.92rem; font-weight: 700; margin: 0 0 1rem; }
 
 .formGrid {
   display: grid;
@@ -38,24 +39,30 @@
 }
 
 .field { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 0.75rem; }
-.field label { font-size: 0.78rem; font-weight: 600; color: #374151; }
+.field label { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
 
 .input, .textarea {
-  border: 1px solid var(--gray-border);
-  border-radius: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
   padding: 0.5rem 0.7rem;
   font-size: 0.88rem;
   font-family: inherit;
 }
 
+.input:focus, .textarea:focus { outline: 2px solid var(--brand); outline-offset: -1px; }
+
 .textarea { resize: vertical; min-height: 70px; }
 
 .checkboxRow { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; margin-bottom: 1rem; }
+.checkboxRow input { accent-color: var(--brand); }
 
+/* --- Receipt-style summary --- */
 .summary {
-  background: #fff;
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 1.25rem;
   height: fit-content;
   position: sticky;
@@ -65,34 +72,53 @@
 .summaryItem {
   display: flex;
   justify-content: space-between;
+  gap: 0.75rem;
   font-size: 0.82rem;
   margin-bottom: 0.4rem;
-  color: #374151;
+  color: var(--text-muted);
+}
+
+.summaryItem span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.summaryItem span:last-child { flex-shrink: 0; }
+
+.tearLine {
+  height: 1px;
+  margin: 0.85rem -1.25rem 0.85rem;
+  background-image: repeating-linear-gradient(to right, var(--border-strong) 0 6px, transparent 6px 13px);
 }
 
 .summaryTotal {
   display: flex;
   justify-content: space-between;
   font-weight: 800;
-  font-size: 1rem;
-  padding-top: 0.75rem;
-  margin-top: 0.5rem;
-  border-top: 1px solid var(--gray-border);
+  font-size: 1.05rem;
 }
 
 .placeOrderBtn {
   width: 100%;
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   border: 0;
   padding: 0.75rem;
-  border-radius: 10px;
+  border-radius: var(--radius-full);
   font-weight: 700;
   cursor: pointer;
-  margin-top: 1rem;
+  margin-top: 1.1rem;
 }
 
+.placeOrderBtn:hover { background: var(--brand-hover); }
 .placeOrderBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-.errorText { color: #dc2626; font-size: 0.82rem; margin-top: 0.5rem; }
-.emptyState { text-align: center; color: var(--gray-text); padding: 3rem 1rem; }
+.errorText { color: var(--danger-text); font-size: 0.82rem; margin-top: 0.5rem; }
+
+.emptyState {
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.emptyState a { color: var(--brand-text); font-weight: 700; text-decoration: none; }

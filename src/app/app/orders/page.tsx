@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Receipt } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie } from '@/lib/api/session';
 import { listOrders } from '@/lib/api/orders';
@@ -25,9 +24,7 @@ export default async function OrdersPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <Receipt size={22} /> Orders
-      </h1>
+      <h1 className={styles.title}>Orders</h1>
 
       {orders.length === 0 && (
         <div className={styles.emptyState}>

@@ -1,4 +1,4 @@
-import { UserCircle, ShieldCheck, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, ShieldAlert } from 'lucide-react';
 import { requireSession } from '@/lib/api/session';
 import { AvatarUploader } from './avatar-uploader';
 import { ProfileForm } from './profile-form';
@@ -9,8 +9,7 @@ export default async function ProfilePage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <UserCircle size={22} /> My Profile
+      <h1 className={styles.title}>My Profile
       </h1>
 
       <div className={styles.avatarCard}>

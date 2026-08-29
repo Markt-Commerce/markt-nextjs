@@ -8,13 +8,13 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0 0 0.35rem;
 }
 
-.title svg { color: var(--markt-primary, #E94C2A); }
+.title svg { color: var(--brand); }
 
 .subtitle {
   color: var(--gray-text);
@@ -23,7 +23,7 @@
 }
 
 .section {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--gray-border);
   border-radius: 12px;
   padding: 1.25rem;
@@ -63,9 +63,9 @@
 .radioOption input { display: none; }
 
 .radioOptionActive {
-  border-color: var(--markt-primary, #E94C2A);
-  background: #fcece9;
-  color: var(--markt-primary, #E94C2A);
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand);
   font-weight: 700;
 }
 
@@ -74,12 +74,12 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.65rem 0;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--surface-2);
 }
 
 .toggleRow:first-of-type { border-top: 0; padding-top: 0; }
 
-.toggleLabel { font-size: 0.88rem; color: #181211; }
+.toggleLabel { font-size: 0.88rem; color: var(--text); }
 .toggleHint { font-size: 0.75rem; color: var(--gray-text); margin-top: 0.1rem; }
 
 .savedBar {
@@ -88,8 +88,8 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  background: #181211;
-  color: #fff;
+  background: var(--text);
+  color: var(--brand-contrast);
   padding: 0.7rem 1rem;
   border-radius: 10px;
   font-size: 0.85rem;

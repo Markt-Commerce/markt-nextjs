@@ -31,9 +31,7 @@ export default async function PaymentsPage() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <CreditCard size={22} /> Payment History
-      </h1>
+      <h1 className={styles.title}>Payment History</h1>
 
       {data.payments.length === 0 && <div className={styles.emptyState}>No payments yet. They&apos;ll show up here after you check out.</div>}
 

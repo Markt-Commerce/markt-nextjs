@@ -36,6 +36,17 @@ export async function getRecommendedProducts(opts: { perPage?: number } = {}, co
   return apiFetch<Product[]>(`/products/recommended?${params.toString()}`, { cookie, cache: 'no-store' });
 }
 
+// A seller's own catalogue — used to let them tag a product in a post. The
+// endpoint's envelope isn't pinned in the spec, so accept array or {items}.
+export async function listMyProducts(cookie: string | undefined): Promise<Product[]> {
+  const res = await apiFetch<unknown>('/products/seller/my-products?per_page=50', { cookie, cache: 'no-store' });
+  if (Array.isArray(res)) return res as Product[];
+  if (res && typeof res === 'object' && Array.isArray((res as { items?: unknown }).items)) {
+    return (res as { items: Product[] }).items;
+  }
+  return [];
+}
+
 export async function getProductReviews(
   id: string,
   opts: { page?: number; perPage?: number } = {},

@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MessageCircle, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { getForwardedCookie } from '@/lib/api/session';
 import { listChatRooms } from '@/lib/api/chat';
 import { safeFetch } from '@/lib/api/safe';
@@ -13,8 +13,7 @@ export default async function ChatOverviewPage() {
   return (
     <div className={styles.page}>
       <div className={styles.headRow}>
-        <h1 className={styles.title}>
-          <MessageCircle size={22} /> Messages
+        <h1 className={styles.title}>Messages
         </h1>
         <Link href="/app/chat/start" className={styles.newChatBtn}>
           <Plus size={14} /> New Chat

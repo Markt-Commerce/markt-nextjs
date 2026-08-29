@@ -93,9 +93,9 @@ function VerifyEmailContent() {
   };
 
   const iconWrap =
-    status === 'success' ? 'bg-green-100' : status === 'error' ? 'bg-red-100' : status === 'pending' ? 'bg-blue-100' : 'bg-gray-100';
+    status === 'success' ? 'bg-success-soft' : status === 'error' ? 'bg-danger-soft' : status === 'pending' ? 'bg-surface-2' : 'bg-surface-2';
   const iconColor =
-    status === 'success' ? 'text-green-600' : status === 'error' ? 'text-red-600' : status === 'pending' ? 'text-blue-600' : 'text-gray-600';
+    status === 'success' ? 'text-success' : status === 'error' ? 'text-danger' : status === 'pending' ? 'text-primary' : 'text-muted';
   const HeaderIcon = status === 'success' ? CheckCircle2 : status === 'error' ? AlertTriangle : Mail;
 
   const primaryLabel =
@@ -136,10 +136,10 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col bg-white overflow-x-hidden font-sans">
+    <div className="relative flex size-full min-h-screen flex-col bg-surface overflow-x-hidden font-sans">
       <div className="flex h-full grow flex-col">
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-[#f4f1f0] px-10">
-          <div className="flex items-center gap-6 text-[#181211]">
+        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-border px-10">
+          <div className="flex items-center gap-6 text-dark">
             <div className="h-12 lg:h-16 xl:h-20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/markt-text-logo.png" alt="Markt" className="h-full w-auto object-contain drop-shadow-lg" />
@@ -147,7 +147,7 @@ function VerifyEmailContent() {
           </div>
           <Link
             href="/auth/login"
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-[#f4f1f0] text-[#181211] text-sm font-bold leading-normal tracking-[0.015em]"
+            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-light text-dark text-sm font-bold leading-normal tracking-[0.015em]"
           >
             <span className="truncate">Back to Login</span>
           </Link>
@@ -157,32 +157,32 @@ function VerifyEmailContent() {
           <div className="flex flex-col w-full max-w-[512px] py-5 flex-1">
             <div className="w-full" style={{ height: 80 }} />
 
-            <div className="flex w-full grow bg-white p-4">
-              <div className={`w-full gap-1 overflow-hidden bg-white aspect-[3/2] rounded-lg flex flex-1 items-center justify-center ${iconWrap}`}>
+            <div className="flex w-full grow bg-surface p-4">
+              <div className={`w-full gap-1 overflow-hidden bg-surface aspect-[3/2] rounded-lg flex flex-1 items-center justify-center ${iconWrap}`}>
                 <HeaderIcon size={64} className={iconColor} />
               </div>
             </div>
 
-            <h2 className="text-[#181211] tracking-tight text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">{copy.title}</h2>
-            <p className="text-[#181211] text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">{copy.main}</p>
+            <h2 className="text-dark tracking-tight text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">{copy.title}</h2>
+            <p className="text-dark text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">{copy.main}</p>
             {copy.secondary && (
-              <p className="text-[#181211] text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">{copy.secondary}</p>
+              <p className="text-dark text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">{copy.secondary}</p>
             )}
 
             {status === 'error' && errorMessage && (
-              <div className="mx-4 my-3 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm text-center">{errorMessage}</div>
+              <div className="mx-4 my-3 p-3 bg-danger-soft border border-danger-border text-danger rounded-lg text-sm text-center">{errorMessage}</div>
             )}
 
             {status === 'success' && (
-              <div className="mx-4 my-3 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg text-sm text-center">
+              <div className="mx-4 my-3 p-3 bg-success-soft border border-success-border text-success rounded-lg text-sm text-center">
                 Your email has been verified successfully! You can now access all features of your Markt account.
               </div>
             )}
 
             {isVerifying && (
               <div className="text-center py-4">
-                <Loader2 size={24} className="text-[#e85530] animate-spin mb-2 mx-auto" />
-                <p className="text-[#886a63] text-sm">Verifying your email address...</p>
+                <Loader2 size={24} className="text-primary animate-spin mb-2 mx-auto" />
+                <p className="text-subtle text-sm">Verifying your email address...</p>
               </div>
             )}
 
@@ -190,7 +190,7 @@ function VerifyEmailContent() {
               <button
                 onClick={handlePrimary}
                 disabled={isResending || (status === 'pending' && resendCooldown > 0)}
-                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-[#e85530] text-white text-sm font-bold leading-normal tracking-[0.015em] disabled:opacity-50"
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] disabled:opacity-50"
               >
                 {isResending && <Loader2 size={14} className="animate-spin mr-2" />}
                 <span className="truncate">{primaryLabel}</span>
@@ -200,14 +200,14 @@ function VerifyEmailContent() {
             <div className="flex px-4 py-3">
               <button
                 onClick={handleSecondary}
-                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-[#f4f1f0] text-[#181211] text-sm font-bold leading-normal tracking-[0.015em]"
+                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-light text-dark text-sm font-bold leading-normal tracking-[0.015em]"
               >
                 <span className="truncate">{secondaryLabel}</span>
               </button>
             </div>
 
-            <p className="text-[#886a63] text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">
-              <a href="mailto:support@marktcommerce.com" className="underline hover:text-[#e85530]">
+            <p className="text-subtle text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">
+              <a href="mailto:support@marktcommerce.com" className="underline hover:text-primary">
                 Need help? Contact Support
               </a>
             </p>

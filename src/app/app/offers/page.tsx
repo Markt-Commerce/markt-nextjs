@@ -1,12 +1,11 @@
 import Link from 'next/link';
-import { Tag, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
 import styles from './page.module.css';
 
 export default function MyOffersPage() {
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>
-        <Tag size={22} /> My Offers
+      <h1 className={styles.title}>My Offers
       </h1>
 
       <div className={styles.emptyState} style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', textAlign: 'left' }}>

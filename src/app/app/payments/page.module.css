@@ -1,41 +1,39 @@
 .page {
-  max-width: 800px;
+  max-width: 780px;
   margin: 0 auto;
-  padding: 2rem 1.5rem 4rem;
+  padding: 1.75rem 1.5rem 4rem;
 }
 
 .title {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0 0 1.5rem;
 }
-
-.title svg { color: var(--markt-primary, #E94C2A); }
 
 .list { display: flex; flex-direction: column; gap: 0.75rem; }
 
 .row {
-  background: #fff;
-  border: 1px solid var(--gray-border);
-  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
   padding: 1rem 1.1rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   text-decoration: none;
   color: inherit;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
+
+.row:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
 
 .iconWrap {
   width: 2.4rem;
   height: 2.4rem;
-  border-radius: 9999px;
-  background: #fcece9;
-  color: var(--markt-primary, #E94C2A);
+  border-radius: var(--radius-full);
+  background: var(--brand-soft);
+  color: var(--brand-text);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,22 +42,31 @@
 
 .rowBody { flex: 1; min-width: 0; }
 .rowTitle { font-weight: 700; font-size: 0.88rem; margin: 0; }
-.rowMeta { font-size: 0.78rem; color: var(--gray-text); margin: 0.15rem 0 0; text-transform: capitalize; }
+.rowMeta { font-size: 0.78rem; color: var(--text-subtle); margin: 0.15rem 0 0; text-transform: capitalize; }
 
-.amount { font-weight: 800; font-size: 0.95rem; }
+.amount { font-weight: 800; font-size: 0.95rem; color: var(--text); }
 
 .statusBadge {
   font-size: 0.7rem;
   font-weight: 700;
   padding: 0.2rem 0.55rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   text-transform: capitalize;
   margin-left: 0.75rem;
+  border: 1px solid transparent;
 }
 
-.statusCompleted { background: #ecfdf5; color: #059669; }
-.statusPending, .statusProcessing { background: #fef3c7; color: #92400e; }
-.statusFailed { background: #fee2e2; color: #b91c1c; }
-.statusRefunded, .statusPartially_refunded { background: #e0e7ff; color: #3730a3; }
+.statusCompleted { background: var(--success-soft); color: var(--success-text); border-color: var(--success-border); }
+.statusPending, .statusProcessing { background: var(--warning-soft); color: var(--warning-text); border-color: var(--warning-border); }
+.statusFailed { background: var(--danger-soft); color: var(--danger-text); border-color: var(--danger-border); }
+.statusRefunded, .statusPartially_refunded { background: var(--info-soft); color: var(--info-text); border-color: var(--info-border); }
 
-.emptyState { text-align: center; color: var(--gray-text); padding: 3rem 1rem; }
+.emptyState {
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}

@@ -12,10 +12,14 @@ export function SidebarShell({ role, children }: { role: string; children: React
 
   return (
     <aside className={cn(styles.sidebar, collapsed && styles.sidebarCollapsed)}>
-      <div className={styles.sidebarTop}>
-        <div className={styles.roleBadge}>
-          <UserIcon size={16} /> {!collapsed && role}
-        </div>
+      <div className={cn(styles.sidebarTop, collapsed && styles.sidebarTopCollapsed)}>
+        {/* The role badge only earns its space when expanded; collapsed, the
+            column is just icons + a centered toggle. */}
+        {!collapsed && (
+          <div className={styles.roleBadge}>
+            <UserIcon size={16} /> {role}
+          </div>
+        )}
         <button
           type="button"
           className={styles.collapseBtn}
@@ -23,7 +27,7 @@ export function SidebarShell({ role, children }: { role: string; children: React
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+          {collapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
         </button>
       </div>
       {children}

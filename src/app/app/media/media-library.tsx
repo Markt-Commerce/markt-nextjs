@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from 'react';
 import type { ChangeEvent, DragEvent } from 'react';
-import { ImagePlus, Trash2, UploadCloud } from 'lucide-react';
+import { Trash2, UploadCloud } from 'lucide-react';
 import type { Media, MediaStats } from '@/lib/types/media';
 import { deleteMediaAction, uploadMediaAction } from './actions';
 import styles from './page.module.css';
@@ -44,8 +44,7 @@ export function MediaLibrary({ initialMedia, stats }: { initialMedia: Media[]; s
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <h1 className={styles.title}>
-            <ImagePlus size={22} /> Media Library
+          <h1 className={styles.title}>Media Library
           </h1>
           {stats && (
             <div className={styles.stats}>

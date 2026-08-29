@@ -18,11 +18,11 @@
 
 .backLink { color: var(--gray-text); display: flex; }
 
-.avatar { width: 2.4rem; height: 2.4rem; border-radius: 9999px; object-fit: cover; background: #eee; }
+.avatar { width: 2.4rem; height: 2.4rem; border-radius: 9999px; object-fit: cover; background: var(--surface-sunken); }
 
 .headerBody { flex: 1; min-width: 0; }
 .username { font-weight: 700; font-size: 0.95rem; margin: 0; }
-.productTag { font-size: 0.78rem; color: var(--markt-primary, #E94C2A); margin: 0.1rem 0 0; text-decoration: none; }
+.productTag { font-size: 0.78rem; color: var(--brand); margin: 0.1rem 0 0; text-decoration: none; }
 
 .messages {
   flex: 1;
@@ -42,13 +42,13 @@
   border-radius: 14px;
   font-size: 0.88rem;
   line-height: 1.4;
-  background: #f4f1f0;
-  color: #181211;
+  background: var(--surface-hover);
+  color: var(--text);
 }
 
 .bubbleMine {
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
 }
 
 .bubbleTime {
@@ -74,8 +74,8 @@
 }
 
 .sendBtn {
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   border: 0;
   width: 2.6rem;
   height: 2.6rem;

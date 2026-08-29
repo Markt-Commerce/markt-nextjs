@@ -18,8 +18,22 @@ export async function getPostComments(id: string, cookie: string | undefined): P
   return apiFetch<PostComments>(`/socials/posts/${encodeURIComponent(id)}/comments?per_page=50`, { cookie, cache: 'no-store' });
 }
 
-export async function createPost(caption: string, cookie: string | undefined): Promise<PostDetail> {
-  return apiFetch<PostDetail>('/socials/posts', { method: 'POST', cookie, body: { caption, status: 'active' } });
+export async function createPost(
+  caption: string,
+  mediaIds: number[],
+  productIds: string[],
+  cookie: string | undefined
+): Promise<PostDetail> {
+  return apiFetch<PostDetail>('/socials/posts', {
+    method: 'POST',
+    cookie,
+    body: {
+      caption,
+      status: 'active',
+      ...(mediaIds.length ? { media_ids: mediaIds } : {}),
+      ...(productIds.length ? { products: productIds.map((product_id) => ({ product_id })) } : {}),
+    },
+  });
 }
 
 export async function togglePostLike(id: string, cookie: string | undefined): Promise<void> {

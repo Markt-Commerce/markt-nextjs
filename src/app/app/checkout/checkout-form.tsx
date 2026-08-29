@@ -73,6 +73,7 @@ export function CheckoutForm({ cart, subtotal, discount }: { cart: Cart; subtota
               <span>-${discount.toFixed(2)}</span>
             </div>
           )}
+          <div className={styles.tearLine} />
           <div className={styles.summaryTotal}>
             <span>Total</span>
             <span>${(subtotal - discount).toFixed(2)}</span>

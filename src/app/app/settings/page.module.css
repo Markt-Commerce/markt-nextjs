@@ -8,13 +8,13 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-size: 1.5rem;
+  font-size: 1.9rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
   margin: 0 0 0.35rem;
 }
 
-.title svg { color: var(--markt-primary, #E94C2A); }
+.title svg { color: var(--brand); }
 
 .subtitle {
   color: var(--gray-text);
@@ -23,7 +23,7 @@
 }
 
 .section {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--gray-border);
   border-radius: 12px;
   padding: 1.25rem;
@@ -48,10 +48,10 @@
   color: inherit;
 }
 
-.linkCard:hover .sectionTitle { color: var(--markt-primary, #E94C2A); }
+.linkCard:hover .sectionTitle { color: var(--brand); }
 
 .field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
-.field label { font-size: 0.8rem; font-weight: 600; color: #374151; }
+.field label { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
 
 .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
@@ -64,8 +64,8 @@
 }
 
 .submitBtn {
-  background: var(--markt-primary, #E94C2A);
-  color: #fff;
+  background: var(--brand);
+  color: var(--brand-contrast);
   border: 0;
   padding: 0.6rem 1.1rem;
   border-radius: 8px;
@@ -77,9 +77,9 @@
 .submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .outlineBtn {
-  background: #fff;
-  color: var(--markt-primary, #E94C2A);
-  border: 1px solid var(--markt-primary, #E94C2A);
+  background: var(--surface);
+  color: var(--brand);
+  border: 1px solid var(--brand);
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: 700;
@@ -89,8 +89,8 @@
 
 .outlineBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.errorText { color: #dc2626; font-size: 0.82rem; margin-top: 0.75rem; }
-.successText { color: #059669; font-size: 0.82rem; margin-top: 0.75rem; }
+.errorText { color: var(--danger-text); font-size: 0.82rem; margin-top: 0.75rem; }
+.successText { color: var(--success-text); font-size: 0.82rem; margin-top: 0.75rem; }
 
 .roleRow {
   display: flex;
@@ -104,4 +104,4 @@
   color: var(--gray-text);
 }
 
-.currentRole strong { color: #181211; text-transform: capitalize; }
+.currentRole strong { color: var(--text); text-transform: capitalize; }

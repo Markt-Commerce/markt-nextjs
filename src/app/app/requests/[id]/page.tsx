@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Eye, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, Eye } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { getRequest } from '@/lib/api/requests';
@@ -23,6 +23,14 @@ const OFFER_STATUS_CLASS: Record<string, string> = {
   WITHDRAWN: 'statusClosed',
 };
 
+function timeAgo(iso: string): string {
+  const diff = Date.now() - new Date(iso).getTime();
+  const day = 86_400_000;
+  if (diff < day) return 'today';
+  if (diff < 2 * day) return 'yesterday';
+  return `${Math.floor(diff / day)} days ago`;
+}
+
 export default async function RequestDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const cookie = await getForwardedCookie();
@@ -42,6 +50,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   const isOwner = request.user_id === user.id;
   const isSeller = user.current_role === 'seller';
   const myOffer = user.seller_account ? request.offers.find((o) => o.seller_id === user.seller_account!.id) : undefined;
+  const replies = request.offers.length;
 
   return (
     <div className={styles.page}>
@@ -49,60 +58,79 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         <Link href="/app/requests">Requests</Link> / {request.title}
       </nav>
 
+      {/* The ask */}
       <div className={styles.headCard}>
-        <div className={styles.headRow}>
-          <h1 className={styles.title}>{request.title}</h1>
-          <span className={cn(styles.statusBadge, styles[STATUS_CLASS[request.status]])}>{request.status.toLowerCase()}</span>
+        <span className={cn(styles.statusBadge, styles[STATUS_CLASS[request.status]])}>{request.status.toLowerCase()}</span>
+
+        <div className={styles.asker}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={request.user?.profile_picture_url || '/Logo.png'} alt="" className={styles.askerAvatar} />
+          <div>
+            <p className={styles.askerName}>{request.user?.username ?? 'A buyer'}</p>
+            <p className={styles.askerMeta}>is looking for this · {timeAgo(request.created_at)}</p>
+          </div>
         </div>
+
+        <h1 className={styles.title}>{request.title}</h1>
         <p className={styles.description}>{request.description}</p>
+
         <div className={styles.metaRow}>
-          {!!request.budget && <span className={styles.budgetTag}>Budget: ${request.budget.toFixed(2)}</span>}
-          <span>
-            <Eye size={13} style={{ display: 'inline', marginRight: 3 }} />
-            {request.views} views
+          {!!request.budget && <span className={styles.budgetChip}>Budget ${request.budget.toFixed(2)}</span>}
+          <span className={styles.views}>
+            <Eye size={13} /> {request.views} views
           </span>
           <UpvoteButton requestId={request.id} count={request.upvotes} />
         </div>
       </div>
 
+      {/* Seller composer */}
       {isSeller && !isOwner && canAcceptOffers(request) && !myOffer && <OfferForm requestId={request.id} />}
 
       {myOffer && !isOwner && (
         <div className={styles.myOfferNote}>
-          You offered {myOffer.price ? `$${myOffer.price.toFixed(2)}` : ''} — status:{' '}
+          You offered {myOffer.price ? `$${myOffer.price.toFixed(2)}` : ''} —{' '}
           <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[myOffer.status]])}>{myOffer.status.toLowerCase()}</span>
         </div>
       )}
 
-      <h2 className={styles.sectionTitle}>Offers ({request.offers.length})</h2>
+      {/* Offers as a reply thread */}
+      <h2 className={styles.sectionTitle}>
+        {replies === 0 ? 'Offers' : `${replies} offer${replies === 1 ? '' : 's'}`}
+      </h2>
 
-      {request.offers.length === 0 && <div className={styles.emptyState}>No offers yet.</div>}
+      {replies === 0 ? (
+        <div className={styles.emptyOffers}>
+          {isOwner ? 'No sellers have replied yet. Hang tight — offers show up here.' : 'Be the first to make an offer.'}
+        </div>
+      ) : (
+        <div className={styles.offerList}>
+          {request.offers.map((offer) => (
+            <div key={offer.id} className={styles.offerCard}>
+              <div className={styles.offerInner}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={offer.seller?.profile_picture_url ?? '/Logo.png'} alt="" className={styles.avatar} />
+                <div className={styles.offerBody}>
+                  <div className={styles.offerHead}>
+                    <p className={styles.sellerName}>
+                      {offer.seller?.shop_name ?? 'Seller'}
+                      {offer.seller?.verification_status === 'verified' && (
+                        <BadgeCheck size={13} style={{ marginLeft: 4, color: 'var(--info)' }} />
+                      )}
+                    </p>
+                    <span className={styles.offerPrice}>${offer.price.toFixed(2)}</span>
+                  </div>
+                  {offer.message && <p className={styles.offerMessage}>{offer.message}</p>}
+                  <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[offer.status]])}>{offer.status.toLowerCase()}</span>
 
-      <div className={styles.offerList}>
-        {request.offers.map((offer) => (
-          <div key={offer.id} className={styles.offerCard}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={offer.seller?.profile_picture_url ?? '/Logo.png'} alt="" className={styles.avatar} />
-            <div className={styles.offerBody}>
-              <div className={styles.offerHead}>
-                <p className={styles.sellerName}>
-                  {offer.seller?.shop_name ?? 'Seller'}
-                  {offer.seller?.verification_status === 'verified' && (
-                    <ShieldCheck size={13} style={{ display: 'inline', marginLeft: 4, color: '#059669' }} />
+                  {isOwner && offer.status === 'PENDING' && canAcceptOffers(request) && (
+                    <OfferActions requestId={request.id} offerId={offer.id} />
                   )}
-                </p>
-                <span className={styles.offerPrice}>${offer.price.toFixed(2)}</span>
+                </div>
               </div>
-              {offer.message && <p className={styles.offerMessage}>{offer.message}</p>}
-              <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[offer.status]])}>{offer.status.toLowerCase()}</span>
-
-              {isOwner && offer.status === 'PENDING' && canAcceptOffers(request) && (
-                <OfferActions requestId={request.id} offerId={offer.id} />
-              )}
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

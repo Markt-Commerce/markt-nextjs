@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Truck } from 'lucide-react';
+import { Check, Truck, XCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie } from '@/lib/api/session';
 import { getOrder, trackOrder } from '@/lib/api/orders';
@@ -21,6 +21,18 @@ const STATUS_CLASS: Record<string, string> = {
 };
 
 const CANCELLABLE = new Set(['pending_payment', 'pending', 'processing']);
+const STOPPED = new Set(['cancelled', 'returned', 'failed']);
+
+// The many backend statuses collapse to a 4-stop journey a person can read
+// at a glance — "where is my order", not "what enum value is this".
+const JOURNEY = ['Placed', 'Preparing', 'Shipped', 'Delivered'];
+function journeyIndex(status: string): number {
+  if (status === 'pending_payment' || status === 'pending') return 0;
+  if (status === 'ready_for_delivery' || status === 'processing') return 1;
+  if (status === 'shipped') return 2;
+  if (status === 'delivered') return 3;
+  return 0;
+}
 
 function str(record: Record<string, unknown> | undefined, key: string): string | undefined {
   const value = record?.[key];
@@ -46,6 +58,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const products = await Promise.all(order.items.map((item) => getProduct(item.product_id, cookie).catch(() => null)));
 
   const address = order.shipping_address;
+  const stopped = STOPPED.has(order.status);
+  const currentStep = journeyIndex(order.status);
 
   return (
     <div className={styles.page}>
@@ -60,6 +74,33 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
         <span className={cn(styles.statusBadge, styles[STATUS_CLASS[order.status]])}>{order.status.replace('_', ' ')}</span>
       </div>
+
+      {stopped ? (
+        <div className={styles.stoppedBanner}>
+          <XCircle size={18} />
+          {order.status === 'cancelled' && 'This order was cancelled.'}
+          {order.status === 'returned' && 'This order was returned.'}
+          {order.status === 'failed' && 'This order could not be completed.'}
+        </div>
+      ) : (
+        <div className={styles.journey}>
+          <div className={styles.journeyTrack}>
+            {JOURNEY.map((label, i) => {
+              const done = i < currentStep;
+              const current = i === currentStep;
+              return (
+                <div key={label} className={styles.journeyStep}>
+                  <span className={cn(styles.journeyLine, i <= currentStep && styles.journeyLineDone)} />
+                  <span className={cn(styles.journeyDot, done && styles.journeyDotDone, current && styles.journeyDotCurrent)}>
+                    {done ? <Check size={12} /> : i + 1}
+                  </span>
+                  <p className={cn(styles.journeyLabel, i <= currentStep && styles.journeyLabelActive)}>{label}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <div className={styles.section}>
         <p className={styles.sectionTitle}>Items</p>
@@ -100,19 +141,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {tracking && tracking.timeline.length > 0 && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>
-            <Truck size={14} style={{ display: 'inline', marginRight: 4 }} /> Tracking
+            <Truck size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: -2 }} /> Activity
           </p>
-          <div className={styles.timeline}>
-            {tracking.timeline.map((cp, i) => (
-              <div key={i} className={styles.checkpoint}>
-                <span className={styles.checkpointDot} />
-                <span>{str(cp, 'status') ?? tracking.status}</span>
-                <span className={styles.checkpointDate}>
-                  {str(cp, 'occurred_at') ? new Date(str(cp, 'occurred_at')!).toLocaleDateString() : ''}
-                </span>
-              </div>
-            ))}
-          </div>
+          {tracking.timeline.map((cp, i) => (
+            <div key={i} className={styles.item} style={{ alignItems: 'baseline' }}>
+              <span style={{ flex: 1, fontSize: '0.85rem' }}>{str(cp, 'status') ?? tracking.status}</span>
+              <span className={styles.noteText}>{str(cp, 'occurred_at') ? new Date(str(cp, 'occurred_at')!).toLocaleDateString() : ''}</span>
+            </div>
+          ))}
         </div>
       )}
 
@@ -134,6 +170,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             <span>-${order.discount.toFixed(2)}</span>
           </div>
         )}
+        <div className={styles.tearLine} />
         <div className={styles.totalsGrand}>
           <span>Total</span>
           <span>${order.total.toFixed(2)}</span>

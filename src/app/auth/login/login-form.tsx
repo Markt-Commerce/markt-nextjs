@@ -58,7 +58,7 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
         </div>
       </section>
 
-      <section className="w-full lg:w-2/5 flex items-center justify-center p-8 bg-white">
+      <section className="w-full lg:w-2/5 flex items-center justify-center p-8 bg-surface">
         <div className="w-full max-w-md">
           <div className="lg:hidden text-center mb-8">
             <h1 className="text-3xl font-bold text-dark mb-2">MARKT</h1>
@@ -126,7 +126,7 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
             </div>
 
             {state.error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{state.error}</div>
+              <div className="bg-danger-soft border border-danger-border text-danger px-4 py-3 rounded-lg text-sm">{state.error}</div>
             )}
 
             <button
@@ -148,9 +148,9 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
             </div>
           </form>
 
-          <div className="mt-6 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm">
-            <p className="font-medium text-amber-900">Real login is temporarily broken</p>
-            <p className="mt-1 text-amber-800">
+          <div className="mt-6 rounded-lg border border-warning-border bg-warning-soft p-4 text-sm">
+            <p className="font-medium text-warning">Real login is temporarily broken</p>
+            <p className="mt-1 text-warning">
               The backend has a known bug (missing database column) that 500s every login/register attempt — not
               something fixable from this app. Use a mock session to test the rest of the app in the meantime.
             </p>
@@ -159,7 +159,7 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
                 type="submit"
                 name="role"
                 value="buyer"
-                className="flex-1 rounded-md border border-amber-300 bg-white py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+                className="flex-1 rounded-md border border-warning-border bg-surface py-2 text-xs font-semibold text-warning hover:bg-warning-soft"
               >
                 Continue as mock buyer
               </button>
@@ -167,7 +167,7 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
                 type="submit"
                 name="role"
                 value="seller"
-                className="flex-1 rounded-md border border-amber-300 bg-white py-2 text-xs font-semibold text-amber-900 hover:bg-amber-100"
+                className="flex-1 rounded-md border border-warning-border bg-surface py-2 text-xs font-semibold text-warning hover:bg-warning-soft"
               >
                 Continue as mock seller
               </button>
@@ -177,10 +177,10 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
           <div className="mt-8 pt-6 border-t border-border">
             <div className="flex items-center justify-center space-x-6 text-xs text-muted">
               <div className="flex items-center">
-                <ShieldCheck size={14} className="text-green-500 mr-1" /> SSL Encrypted
+                <ShieldCheck size={14} className="text-success mr-1" /> SSL Encrypted
               </div>
               <div className="flex items-center">
-                <Lock size={14} className="text-green-500 mr-1" /> Secure Login
+                <Lock size={14} className="text-success mr-1" /> Secure Login
               </div>
               <div className="flex items-center">
                 <Users size={14} className="text-primary mr-1" /> Campus Verified
