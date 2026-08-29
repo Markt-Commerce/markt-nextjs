@@ -38,29 +38,3 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
-
-### 4. Sign in
-
-**Real login and register are currently broken on the backend** (a database migration issue on their end — see [`NEXTJS_NATIVE_REWRITE.md`](./NEXTJS_NATIVE_REWRITE.md) for details, and don't spend time debugging it locally, it isn't this app's code). Until that's fixed, use the amber banner on the [login page](http://localhost:3000/auth/login) — **"Continue as mock buyer"** or **"Continue as mock seller"** — to get into the app without a real account. This sets a local-only session cookie and skips the real backend's auth entirely; every other page still talks to the real API normally.
-
-### Scripts
-
-| Command | What it does |
-|---|---|
-| `npm run dev` | Start the dev server (Turbopack) |
-| `npm run build` | Production build + typecheck |
-| `npm run start` | Serve a production build (`build` first) |
-| `npm run lint` | ESLint |
-
-### Before you write code here
-
-This is **Next.js 16**, not the Next.js you're used to from training data — App Router conventions, caching defaults, and several APIs changed from earlier versions (see `AGENTS.md`, which points at `node_modules/next/dist/docs/` for the version actually installed). Read the relevant guide there before assuming how something works.
-
-### Project structure, in short
-
-- `src/app/` — routes. Pages are Server Components by default; `'use client'` only where something is genuinely interactive.
-- `src/lib/api/` — the only code that calls the real backend (`client.ts`, plus one file per domain: `products.ts`, `cart.ts`, `orders.ts`, etc.). The browser never talks to the backend directly — see `src/lib/api/session.ts` for why.
-- `src/lib/types/` — plain TypeScript types matching the real API's schemas. No classes.
-- `src/app/**/actions.ts` — Server Actions, one file per route that needs mutations.
-- `src/components/` — shared UI (`ui/` for primitives, `marketplace/` for feature components).
-
