@@ -4,6 +4,7 @@ import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { getPost, getPostComments } from '@/lib/api/social';
 import { safeFetch } from '@/lib/api/safe';
 import { postThumbnail } from '@/lib/types/post';
+import { imageOrFallback } from '@/lib/img';
 import { LikeButton } from '../../like-button';
 import { FollowButton } from '../../follow-button';
 import { CommentForm } from './comment-form';
@@ -43,7 +44,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
       <article className={styles.postCard}>
         <div className={styles.postHead}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={post.user?.profile_picture_url ?? '/Logo.png'} alt="" className={styles.avatar} />
+          <img src={imageOrFallback(post.user?.profile_picture_url)} alt="" className={styles.avatar} />
           <div>
             <p className={styles.authorName}>{post.user?.username ?? 'User'}</p>
             <p className={styles.postTime}>{new Date(post.created_at).toLocaleString()}</p>
@@ -84,7 +85,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
         {comments.items.map((c) => (
           <div key={c.id} className={styles.comment}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={c.user?.profile_picture_url ?? '/Logo.png'} alt="" className={styles.commentAvatar} />
+            <img src={imageOrFallback(c.user?.profile_picture_url)} alt="" className={styles.commentAvatar} />
             <div className={styles.commentBubble}>
               <p className={styles.commentAuthor}>{c.user?.username ?? 'User'}</p>
               <p className={styles.commentContent}>{c.content}</p>

@@ -50,6 +50,15 @@ export interface PostDetailSearchResult {
   pagination: Pagination;
 }
 
+/** Lighter list shape (e.g. a user's own published posts). */
+export interface PostList {
+  items: Post[];
+  pagination: Pagination;
+}
+
+/** Status actions the post-status endpoint accepts. */
+export type PostStatusAction = 'publish' | 'archive' | 'unarchive' | 'delete';
+
 export interface PostComments {
   items: PostComment[];
   pagination: Pagination;

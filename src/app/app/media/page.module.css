@@ -142,12 +142,105 @@
   font-size: 0.8rem;
 }
 
+.subtitle {
+  max-width: 1100px;
+  margin: 0.6rem auto 0;
+  padding: 0 1.5rem;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* --- Inventory attachment --- */
+.attachments {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.15rem;
+}
+
+.unattached {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: var(--text-subtle);
+}
+
+.attachChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--brand-text);
+  background: var(--brand-soft);
+  border-radius: var(--radius-full);
+  padding: 0.2rem 0.3rem 0.2rem 0.5rem;
+  max-width: 100%;
+}
+
+.attachName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 8rem;
+}
+
+.attachRemove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: none;
+  color: var(--brand-text);
+  cursor: pointer;
+  padding: 0.1rem;
+  border-radius: var(--radius-full);
+}
+
+.attachRemove:hover { background: rgba(0, 0, 0, 0.08); }
+.attachRemove:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.attachControl { flex: 1; min-width: 0; }
+
+.attachBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  border-radius: var(--radius-full);
+  padding: 0.3rem 0.75rem;
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.attachBtn:hover { border-color: var(--brand); color: var(--brand-text); }
+.attachBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.attachSelect {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  padding: 0.3rem 0.5rem;
+  font-size: 0.78rem;
+  font-family: inherit;
+}
+
 .cardActions {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
   margin-top: 0.25rem;
 }
+
+.deleteBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .deleteBtn {
   border: 0;

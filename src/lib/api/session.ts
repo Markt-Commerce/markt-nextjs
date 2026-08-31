@@ -120,8 +120,18 @@ export const getSession = cache(async (): Promise<UserProfile | null> => {
   try {
     return await apiFetch<UserProfile>('/users/profile', { cookie, cache: 'no-store' });
   } catch (err) {
-    if (err instanceof ApiError && err.status === 401) return null;
-    throw err;
+    // Any failure to resolve the session means we have no usable user —
+    // whether that's a 401 (genuinely signed out), a 5xx while the backend
+    // is mid-migration, or the backend being unreachable entirely. Treat all
+    // of them as signed-out rather than letting a raw fetch error crash the
+    // whole /app subtree: requireSession() then routes to /auth/login, where
+    // the mock-login fallback lives while the backend is down. A 401 is
+    // expected and stays quiet; anything else is logged so it's still visible
+    // in the dev console.
+    if (!(err instanceof ApiError && err.status === 401)) {
+      console.error('[session] could not resolve /users/profile:', err);
+    }
+    return null;
   }
 });
 

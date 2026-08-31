@@ -1,7 +1,35 @@
 .page {
-  max-width: 620px;
+  max-width: 1040px;
   margin: 0 auto;
   padding: 1.75rem 1.5rem 4rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.feedCol { min-width: 0; }
+
+/* The right rail rides alongside the feed and stays put as it scrolls. */
+.side {
+  position: sticky;
+  top: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.sideCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  padding: 1rem 1rem 1.1rem;
+}
+
+/* Below tablet width the rail drops away (as X does), feed goes full-width. */
+@media (max-width: 880px) {
+  .page { grid-template-columns: 1fr; }
+  .side { display: none; }
 }
 
 .title {
@@ -66,6 +94,106 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* --- Discover: people to follow --- */
+.discoverHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.discoverTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.livePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-full);
+  padding: 0.25rem 0.6rem;
+}
+
+/* X-style "who to follow": a vertical list, Follow beside the name. */
+.peopleList {
+  display: flex;
+  flex-direction: column;
+}
+
+.personRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0;
+}
+
+.personRow + .personRow { border-top: 1px solid var(--border); }
+
+.personAvatar {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  background: var(--surface-sunken);
+  flex-shrink: 0;
+}
+
+.personMeta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.personName {
+  font-size: 0.86rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.personHandle {
+  font-size: 0.76rem;
+  color: var(--text-subtle);
+}
+
+/* --- Feed tabs --- */
+.tabs {
+  display: flex;
+  gap: 0.3rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.25rem;
+}
+
+.tab,
+.tabActive {
+  padding: 0.55rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--text); }
+
+.tabActive {
+  color: var(--brand-text);
+  border-bottom-color: var(--brand);
 }
 
 /* --- Composer --- */
@@ -240,59 +368,69 @@
 /* --- Feed --- */
 .feed { display: flex; flex-direction: column; gap: 1.25rem; }
 
+/* X-style timeline row: avatar in a left gutter, everything else flows to
+   the right of it. Kept inside Markt's warm card rather than borderless. */
 .postCard {
+  display: flex;
+  gap: 0.75rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  overflow: hidden;
+  padding: 1rem;
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .postCard:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); }
 
-.postHead {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  padding: 0.9rem 1rem;
-}
-
 .avatar {
-  width: 2.3rem;
-  height: 2.3rem;
+  width: 2.6rem;
+  height: 2.6rem;
   border-radius: var(--radius-full);
   object-fit: cover;
   background: var(--surface-sunken);
   flex-shrink: 0;
 }
 
-.authorName { font-weight: 700; font-size: 0.87rem; margin: 0; }
-.postTime { font-size: 0.72rem; color: var(--text-subtle); margin: 0.1rem 0 0; }
+.postMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.postTopRow {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-bottom: 0.35rem;
+}
+
+.authorName { font-weight: 700; font-size: 0.9rem; }
+.postDot { color: var(--text-subtle); }
+.postTime { font-size: 0.78rem; color: var(--text-subtle); }
 
 /* Framed on a warm ground — user-posted photos vary wildly, so the frame
    is what stays constant. */
 .postImageWrap {
-  margin: 0 0.6rem;
+  margin-top: 0.65rem;
+  border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--surface-sunken);
-  max-height: 420px;
+  max-height: 460px;
 }
 
 .postImage {
   width: 100%;
-  max-height: 420px;
+  max-height: 460px;
   object-fit: cover;
   display: block;
 }
 
-.postBody { padding: 0.9rem 1rem 1rem; }
-
 .caption {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   color: var(--text);
-  margin: 0 0 0.7rem;
+  margin: 0;
   line-height: 1.55;
+  white-space: pre-wrap;
 }
 
 .productTag {
@@ -307,7 +445,7 @@
   font-weight: 600;
   text-decoration: none;
   color: var(--text);
-  margin-bottom: 0.7rem;
+  margin-top: 0.7rem;
 }
 
 .productTag:hover { border-color: var(--brand); color: var(--brand-text); }
@@ -316,8 +454,7 @@
   display: flex;
   align-items: center;
   gap: 1.5rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+  margin-top: 0.75rem;
 }
 
 .actionBtn {

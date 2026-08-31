@@ -1,6 +1,6 @@
 import 'server-only';
 import { apiFetch } from './client';
-import type { Product, ProductReviews, ProductSearchResult } from '@/lib/types/product';
+import type { Product, ProductImage, ProductReviews, ProductSearchResult } from '@/lib/types/product';
 
 export interface ProductListFilters {
   search?: string;
@@ -45,6 +45,37 @@ export async function listMyProducts(cookie: string | undefined): Promise<Produc
     return (res as { items: Product[] }).items;
   }
   return [];
+}
+
+/** Images attached to a product (each links a media_id to the product). */
+export async function listProductImages(productId: string, cookie: string | undefined): Promise<ProductImage[]> {
+  return apiFetch<ProductImage[]>(`/media/products/${encodeURIComponent(productId)}/images`, { cookie, cache: 'no-store' });
+}
+
+/**
+ * Attach an existing library image to a product. The API's OpenAPI entry for
+ * this POST has no documented body, but ProductImage links a product to a
+ * `media_id`, so we send that. `is_featured`/`sort_order` are optional hints.
+ */
+export async function attachMediaToProduct(
+  productId: string,
+  mediaId: number,
+  cookie: string | undefined
+): Promise<void> {
+  await apiFetch(`/media/products/${encodeURIComponent(productId)}/images`, {
+    method: 'POST',
+    cookie,
+    body: { media_id: mediaId },
+  });
+}
+
+/** Remove an image from a product (does not delete the underlying media). */
+export async function detachProductImage(
+  productId: string,
+  imageId: number,
+  cookie: string | undefined
+): Promise<void> {
+  await apiFetch(`/media/products/${encodeURIComponent(productId)}/images/${imageId}`, { method: 'DELETE', cookie });
 }
 
 export async function getProductReviews(
