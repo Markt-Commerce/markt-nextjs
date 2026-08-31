@@ -104,20 +104,42 @@
 }
 
 /* --- Purchase controls --- */
-.qtyRow { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
+.qtyRow { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1.25rem; }
+.qtyLabel { font-size: 0.85rem; font-weight: 600; color: var(--text); }
 
 .qtyControl {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
   overflow: hidden;
+  background: var(--surface);
 }
 
-.qtyBtn { border: 0; background: var(--surface-2); width: 2.2rem; height: 2.2rem; cursor: pointer; font-size: 1rem; color: var(--text); }
+.qtyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: var(--surface-2);
+  width: 2.4rem;
+  height: 2.4rem;
+  cursor: pointer;
+  color: var(--text);
+  transition: background var(--transition-fast);
+}
 .qtyBtn:hover:not(:disabled) { background: var(--surface-hover); }
 .qtyBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-.qtyValue { width: 2.5rem; text-align: center; font-weight: 700; }
+.qtyValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  height: 2.4rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+}
 
 .actionRow { display: flex; gap: 0.75rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
 
@@ -167,6 +189,8 @@
 }
 
 .iconBtn:hover { border-color: var(--brand); color: var(--brand-text); }
+/* Favorite (heart) shares .iconBtn; when active it flags data-favorited. */
+.iconBtn[data-favorited] { border-color: var(--brand); color: var(--brand); }
 
 .noteText { font-size: 0.78rem; color: var(--text-subtle); }
 

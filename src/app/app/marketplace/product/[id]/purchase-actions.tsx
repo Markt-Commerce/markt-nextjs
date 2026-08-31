@@ -27,6 +27,7 @@ export function PurchaseActions({
     <>
       {isBuyer && (
         <div className={styles.qtyRow}>
+          <span className={styles.qtyLabel}>Quantity</span>
           <div className={styles.qtyControl}>
             <button
               type="button"
@@ -71,7 +72,7 @@ export function PurchaseActions({
         )}
 
         <ShareButton productId={productId} productName={productName} />
-        <FavoriteButton productId={productId} size={18} />
+        <FavoriteButton productId={productId} size={16} className={styles.iconBtn} />
       </form>
 
       {state.error && <p className={styles.noteText}>{state.error}</p>}

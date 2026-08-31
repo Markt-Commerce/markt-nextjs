@@ -1,12 +1,14 @@
 'use client';
 
 import { Suspense, useEffect, useRef, useState, useTransition } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Mail, CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ArrowRight, CheckCircle2, Loader2, MailCheck } from 'lucide-react';
+import { cn } from '@/lib/cn';
 import { verifyEmailAction, resendVerificationAction } from '../actions';
+import styles from './verify-email.module.css';
 
-type Status = 'pending' | 'success' | 'error' | null;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function VerifyEmailPage() {
   return (
@@ -19,200 +21,203 @@ export default function VerifyEmailPage() {
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const urlEmail = searchParams.get('email') ?? '';
+  const urlCode = searchParams.get('code') ?? '';
 
-  const code = searchParams.get('code');
-  const email = searchParams.get('email');
+  const [email, setEmail] = useState(urlEmail);
+  const [digits, setDigits] = useState<string[]>(() => {
+    // Prefill the boxes if a 6-digit code arrived in the link.
+    const seed = urlCode.replace(/\D/g, '').slice(0, 6);
+    return ['', '', '', '', '', ''].map((_, i) => seed[i] ?? '');
+  });
+  const inputsRef = useRef<(HTMLInputElement | null)[]>([]);
 
-  const [status, setStatus] = useState<Status>(code && email ? null : 'pending');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [isVerifying, startVerifying] = useTransition();
-  const [isResending, startResending] = useTransition();
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState('');
+  const [verifying, startVerify] = useTransition();
+  const [resending, startResend] = useTransition();
+  const [cooldown, setCooldown] = useState(0);
   const cooldownRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
-
-  const runVerify = (targetEmail: string, targetCode: string) => {
-    startVerifying(async () => {
-      const result = await verifyEmailAction(targetEmail, targetCode);
-      if (result.ok) {
-        setStatus('success');
-      } else {
-        setStatus('error');
-        setErrorMessage(result.error ?? 'An error occurred during email verification. Please try again.');
-        console.error('[verify-email]', result.error);
-      }
-    });
-  };
-
-  useEffect(() => {
-    if (code && email) runVerify(email, code);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const autoRan = useRef(false);
 
   useEffect(() => () => clearInterval(cooldownRef.current), []);
 
-  const startCooldown = () => {
-    setResendCooldown(60);
-    cooldownRef.current = setInterval(() => {
-      setResendCooldown((s) => {
-        if (s <= 1) {
-          clearInterval(cooldownRef.current);
-          return 0;
-        }
-        return s - 1;
-      });
-    }, 1000);
-  };
+  const code = digits.join('');
+  const emailValid = EMAIL_PATTERN.test(email.trim());
+  const canSubmit = emailValid && code.length === 6;
 
-  const resend = () => {
-    if (!email || isResending || resendCooldown > 0) return;
-    startResending(async () => {
-      const result = await resendVerificationAction(email);
+  const submit = (fullCode: string, targetEmail: string) => {
+    setError('');
+    startVerify(async () => {
+      const result = await verifyEmailAction(targetEmail.trim(), fullCode);
       if (result.ok) {
-        startCooldown();
-        setStatus('pending');
-        setErrorMessage('');
+        setDone(true);
       } else {
-        setErrorMessage(result.error ?? 'Could not resend verification email.');
-        console.error('[verify-email:resend]', result.error);
+        setError(result.error ?? 'That code didn’t work. Try again.');
+        setDigits(['', '', '', '', '', '']);
+        inputsRef.current[0]?.focus();
       }
     });
   };
 
-  const copy = {
-    title:
-      status === 'success' ? 'Email Verified!' : status === 'error' ? 'Verification Failed' : status === 'pending' ? 'Verify Your Email' : 'Email Verification',
-    main:
-      status === 'success'
-        ? 'Welcome to Markt! Your account is now active.'
-        : status === 'error'
-          ? "We couldn't verify your email address."
-          : status === 'pending'
-            ? "We've sent a verification code to your email address"
-            : 'Verifying your email address...',
-    secondary: status === 'pending' ? 'Please check your inbox and use the link or code to verify your account' : null,
-  };
-
-  const iconWrap =
-    status === 'success' ? 'bg-success-soft' : status === 'error' ? 'bg-danger-soft' : status === 'pending' ? 'bg-surface-2' : 'bg-surface-2';
-  const iconColor =
-    status === 'success' ? 'text-success' : status === 'error' ? 'text-danger' : status === 'pending' ? 'text-primary' : 'text-muted';
-  const HeaderIcon = status === 'success' ? CheckCircle2 : status === 'error' ? AlertTriangle : Mail;
-
-  const primaryLabel =
-    status === 'success'
-      ? 'Continue to Login'
-      : status === 'error'
-        ? isResending
-          ? 'Sending...'
-          : 'Resend Verification Email'
-        : status === 'pending'
-          ? isResending
-            ? 'Sending...'
-            : resendCooldown > 0
-              ? `Resend in ${resendCooldown}s`
-              : 'Resend Verification Email'
-          : 'Verifying...';
-
-  const secondaryLabel = status === 'success' ? 'Go to Homepage' : status === 'error' ? 'Back to Registration' : 'Back to Login';
-
-  const handlePrimary = () => {
-    if (status === 'success') router.push('/auth/login');
-    else if (status === 'error') {
-      if (code && email) {
-        setStatus(null);
-        runVerify(email, code);
-      } else {
-        router.push('/auth/login');
-      }
-    } else {
-      resend();
+  // Auto-verify once if the link carried both email and a full code. Deferred
+  // to a timeout so the setState in submit() doesn't run synchronously inside
+  // the effect (which would trigger a cascading render).
+  useEffect(() => {
+    if (autoRan.current) return;
+    autoRan.current = true;
+    if (EMAIL_PATTERN.test(urlEmail.trim()) && urlCode.replace(/\D/g, '').length === 6) {
+      const t = setTimeout(() => submit(urlCode.replace(/\D/g, '').slice(0, 6), urlEmail), 0);
+      return () => clearTimeout(t);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const setDigit = (index: number, value: string) => {
+    const clean = value.replace(/\D/g, '');
+    if (!clean) {
+      setDigits((d) => d.map((x, i) => (i === index ? '' : x)));
+      return;
+    }
+    if (clean.length > 1) {
+      const next = clean.slice(0, 6).split('');
+      const filled = ['', '', '', '', '', ''].map((_, i) => next[i] ?? '');
+      setDigits(filled);
+      inputsRef.current[Math.min(next.length, 6) - 1]?.focus();
+      if (filled.every((x) => x) && emailValid) submit(filled.join(''), email);
+      return;
+    }
+    const nextDigits = digits.map((x, i) => (i === index ? clean : x));
+    setDigits(nextDigits);
+    if (index < 5) inputsRef.current[index + 1]?.focus();
+    if (nextDigits.every((x) => x) && emailValid) submit(nextDigits.join(''), email);
   };
 
-  const handleSecondary = () => {
-    if (status === 'success') router.push('/');
-    else if (status === 'error') router.push('/auth/register');
-    else router.push('/auth/login');
+  const onKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !digits[index] && index > 0) inputsRef.current[index - 1]?.focus();
+  };
+
+  const resend = () => {
+    if (!emailValid || cooldown > 0 || resending) return;
+    setError('');
+    startResend(async () => {
+      const result = await resendVerificationAction(email.trim());
+      if (!result.ok) {
+        setError(result.error ?? 'Could not resend the code.');
+        return;
+      }
+      setCooldown(45);
+      cooldownRef.current = setInterval(() => {
+        setCooldown((s) => {
+          if (s <= 1) {
+            clearInterval(cooldownRef.current);
+            return 0;
+          }
+          return s - 1;
+        });
+      }, 1000);
+    });
   };
 
   return (
-    <div className="relative flex size-full min-h-screen flex-col bg-surface overflow-x-hidden font-sans">
-      <div className="flex h-full grow flex-col">
-        <header className="flex items-center justify-between whitespace-nowrap border-b border-solid border-b-border px-10">
-          <div className="flex items-center gap-6 text-dark">
-            <div className="h-12 lg:h-16 xl:h-20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/markt-text-logo.png" alt="Markt" className="h-full w-auto object-contain drop-shadow-lg" />
+    <div className={styles.screen}>
+      <div className={styles.card}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
+
+        {done ? (
+          <>
+            <div className={cn(styles.iconBadge, styles.iconBadgeSuccess)}>
+              <CheckCircle2 size={26} />
             </div>
-          </div>
-          <Link
-            href="/auth/login"
-            className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 bg-light text-dark text-sm font-bold leading-normal tracking-[0.015em]"
+            <h1 className={styles.heading}>Email verified</h1>
+            <p className={styles.sub}>Welcome to Markt! Your account is now active — sign in to get started.</p>
+            <div className={styles.actions}>
+              <button type="button" className={styles.primaryBtn} onClick={() => router.push('/auth/login')}>
+                Continue to sign in <ArrowRight size={16} className={styles.arrow} />
+              </button>
+            </div>
+          </>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (canSubmit && !verifying) submit(code, email);
+            }}
           >
-            <span className="truncate">Back to Login</span>
-          </Link>
-        </header>
-
-        <div className="px-4 lg:px-40 flex flex-1 justify-center py-5">
-          <div className="flex flex-col w-full max-w-[512px] py-5 flex-1">
-            <div className="w-full" style={{ height: 80 }} />
-
-            <div className="flex w-full grow bg-surface p-4">
-              <div className={`w-full gap-1 overflow-hidden bg-surface aspect-[3/2] rounded-lg flex flex-1 items-center justify-center ${iconWrap}`}>
-                <HeaderIcon size={64} className={iconColor} />
-              </div>
+            <div className={cn(styles.iconBadge, styles.iconBadgePulse)}>
+              <MailCheck size={26} />
             </div>
-
-            <h2 className="text-dark tracking-tight text-[28px] font-bold leading-tight px-4 text-center pb-3 pt-5">{copy.title}</h2>
-            <p className="text-dark text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">{copy.main}</p>
-            {copy.secondary && (
-              <p className="text-dark text-base font-normal leading-normal pb-3 pt-1 px-4 text-center">{copy.secondary}</p>
-            )}
-
-            {status === 'error' && errorMessage && (
-              <div className="mx-4 my-3 p-3 bg-danger-soft border border-danger-border text-danger rounded-lg text-sm text-center">{errorMessage}</div>
-            )}
-
-            {status === 'success' && (
-              <div className="mx-4 my-3 p-3 bg-success-soft border border-success-border text-success rounded-lg text-sm text-center">
-                Your email has been verified successfully! You can now access all features of your Markt account.
-              </div>
-            )}
-
-            {isVerifying && (
-              <div className="text-center py-4">
-                <Loader2 size={24} className="text-primary animate-spin mb-2 mx-auto" />
-                <p className="text-subtle text-sm">Verifying your email address...</p>
-              </div>
-            )}
-
-            <div className="flex px-4 py-3">
-              <button
-                onClick={handlePrimary}
-                disabled={isResending || (status === 'pending' && resendCooldown > 0)}
-                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-primary text-white text-sm font-bold leading-normal tracking-[0.015em] disabled:opacity-50"
-              >
-                {isResending && <Loader2 size={14} className="animate-spin mr-2" />}
-                <span className="truncate">{primaryLabel}</span>
-              </button>
-            </div>
-
-            <div className="flex px-4 py-3">
-              <button
-                onClick={handleSecondary}
-                className="flex min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-10 px-4 flex-1 bg-light text-dark text-sm font-bold leading-normal tracking-[0.015em]"
-              >
-                <span className="truncate">{secondaryLabel}</span>
-              </button>
-            </div>
-
-            <p className="text-subtle text-sm font-normal leading-normal pb-3 pt-1 px-4 text-center">
-              <a href="mailto:support@marktcommerce.com" className="underline hover:text-primary">
-                Need help? Contact Support
-              </a>
+            <h1 className={styles.heading}>Verify your email</h1>
+            <p className={styles.sub}>
+              {emailValid ? (
+                <>Enter the 6-digit code we sent to <strong>{email.trim()}</strong>.</>
+              ) : (
+                <>Enter your email and the 6-digit code we sent you.</>
+              )}
             </p>
-          </div>
-        </div>
+
+            {/* Only ask for the email when the link didn't already carry a valid one. */}
+            {!EMAIL_PATTERN.test(urlEmail.trim()) && (
+              <div className={styles.field}>
+                <label className={styles.label} htmlFor="email">Email</label>
+                <input
+                  id="email"
+                  type="email"
+                  className={styles.input}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  autoFocus
+                />
+              </div>
+            )}
+
+            <div className={styles.codeRow}>
+              {digits.map((digit, i) => (
+                <input
+                  key={i}
+                  ref={(el) => {
+                    inputsRef.current[i] = el;
+                  }}
+                  className={cn(styles.codeBox, digit && styles.codeBoxFilled)}
+                  inputMode="numeric"
+                  maxLength={6}
+                  value={digit}
+                  onChange={(e) => setDigit(i, e.target.value)}
+                  onKeyDown={(e) => onKeyDown(i, e)}
+                  aria-label={`Digit ${i + 1}`}
+                  autoFocus={EMAIL_PATTERN.test(urlEmail.trim()) && i === 0}
+                />
+              ))}
+            </div>
+
+            {error && <div className={styles.error}>{error}</div>}
+
+            <div className={styles.resendRow}>
+              Didn&apos;t get it?{' '}
+              <button type="button" className={styles.resendBtn} onClick={resend} disabled={!emailValid || cooldown > 0 || resending}>
+                {resending ? 'Sending…' : cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+              </button>
+            </div>
+
+            <div className={styles.actions}>
+              <button type="submit" className={styles.primaryBtn} disabled={!canSubmit || verifying}>
+                {verifying ? (
+                  <><Loader2 size={16} className="animate-spin" /> Verifying…</>
+                ) : (
+                  <>Verify email <ArrowRight size={16} className={styles.arrow} /></>
+                )}
+              </button>
+              <Link href="/auth/login" className={styles.ghostBtn}>Back to sign in</Link>
+            </div>
+          </form>
+        )}
+
+        <p className={styles.support}>
+          <a href="mailto:support@marktcommerce.com">Need help? Contact support</a>
+        </p>
       </div>
     </div>
   );

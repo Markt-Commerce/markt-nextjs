@@ -16,10 +16,11 @@ import type { UserProfile } from '@/lib/types/user';
  * real API sent back and re-issues it as our own first-party cookie.
  *
  * Neither of these needs to know the real API's cookie name — they just
- * relay whatever's there. That's intentional: the exact cookie name hasn't
- * been confirmed yet (the real login/register endpoints are 500ing on the
- * test backend as of this writing — see the phase-1 note), and this design
- * doesn't depend on it.
+ * relay whatever's there. That's intentional: the exact cookie name still
+ * hasn't been confirmed, because confirming it needs a *successful* (200)
+ * login and the test backend requires email verification first (login itself
+ * works now — it returns 403 "verify your email" for an unverified account).
+ * This design doesn't depend on the name, so the rest of the app isn't blocked.
  */
 
 /** The raw Cookie header the browser sent us, to forward as-is to the real API. */
@@ -75,13 +76,14 @@ function parseSetCookie(raw: string): { name: string; value: string; maxAge?: nu
 }
 
 /**
- * TEMPORARY: the real backend's /users/login and /users/register are
- * unconditionally 500ing (missing `is_admin` column on its `users` table —
- * a backend migration issue, confirmed and reported, out of this app's
- * control). This mock-session cookie lets the app be clicked through while
- * that's unresolved: `mockLoginAction` (src/app/auth/actions.ts) sets it
- * directly, with no real backend call. Remove this block once real login
- * works — search the codebase for MOCK_SESSION_COOKIE.
+ * DEV CONVENIENCE: real login/register work now (the `is_admin` migration
+ * that used to 500 every attempt has been applied). But a real account can't
+ * sign in until it verifies its email (login returns 403 for unverified
+ * users), so this mock-session cookie stays as a quick "skip sign-in" bypass
+ * to click through the app without a verified account: `mockLoginAction`
+ * (src/app/auth/actions.ts) sets it directly, with no real backend call.
+ * Remove this block once there's a verified test account — search the
+ * codebase for MOCK_SESSION_COOKIE.
  */
 const MOCK_SESSION_COOKIE = 'markt_mock_session';
 type MockRole = 'buyer' | 'seller';
@@ -121,13 +123,12 @@ export const getSession = cache(async (): Promise<UserProfile | null> => {
     return await apiFetch<UserProfile>('/users/profile', { cookie, cache: 'no-store' });
   } catch (err) {
     // Any failure to resolve the session means we have no usable user —
-    // whether that's a 401 (genuinely signed out), a 5xx while the backend
-    // is mid-migration, or the backend being unreachable entirely. Treat all
-    // of them as signed-out rather than letting a raw fetch error crash the
+    // whether that's a 401 (genuinely signed out), a transient 5xx, or the
+    // backend being unreachable entirely. Treat all of them as signed-out
+    // rather than letting a raw fetch error crash the
     // whole /app subtree: requireSession() then routes to /auth/login, where
-    // the mock-login fallback lives while the backend is down. A 401 is
-    // expected and stays quiet; anything else is logged so it's still visible
-    // in the dev console.
+    // the demo-session shortcut also lives. A 401 is expected and stays quiet;
+    // anything else is logged so it's still visible in the dev console.
     if (!(err instanceof ApiError && err.status === 401)) {
       console.error('[session] could not resolve /users/profile:', err);
     }

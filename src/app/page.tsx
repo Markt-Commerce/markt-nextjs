@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Menu, X } from 'lucide-react';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import styles from './page.module.css';
 
@@ -36,13 +37,11 @@ export default function LandingPage() {
           <button
             className={styles.menuButton}
             type="button"
-            aria-label="Open menu"
+            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen((open) => !open)}
           >
-            <span className={menuOpen ? styles.menuOpen : undefined} />
-            <span className={menuOpen ? styles.menuOpen : undefined} />
-            <span className={menuOpen ? styles.menuOpen : undefined} />
+            {menuOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </header>
@@ -105,8 +104,16 @@ export default function LandingPage() {
       </section>
 
       <section className={styles.introSection} id="how-it-works">
-        <p className={styles.eyebrow}>More than a product page</p>
-        <div>
+        <div className={styles.introMedia}>
+          <p className={styles.eyebrow}>More than a product page</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/landing/beautiful-three-welldressed-afro-american-girls-with-colored-shopping-bags-walking-mall.jpg"
+            alt="Friends out shopping together, carrying colorful bags"
+            className={styles.introImage}
+          />
+        </div>
+        <div className={styles.introText}>
           <h2>
             Good finds feel
             <br />

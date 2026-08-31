@@ -2,193 +2,208 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, Eye, EyeOff, ShieldCheck, Users, Star, Loader2 } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Lock, Mail, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/cn';
 import { loginAction, mockLoginAction, type FormState } from '../actions';
+import styles from './login.module.css';
 
 const initialState: FormState = {};
+
+// Warm, on-brand testimonials for the quote panel. Kept in-file (no network)
+// so the panel renders even while the backend login is down.
+const TESTIMONIALS = [
+  {
+    quote: 'I found my favourite ceramics studio three streets away — through a post, not an ad. That’s the whole point of Markt.',
+    name: 'Amara O.',
+    meta: 'Buyer · Lagos',
+    tile: 'var(--tile-butter)',
+  },
+  {
+    quote: 'Sold out my weekend bakes before Saturday even started. My customers actually follow me now.',
+    name: 'Daniel K.',
+    meta: 'Seller · Accra',
+    tile: 'var(--tile-mint)',
+  },
+  {
+    quote: 'It feels less like a shop and more like a neighbourhood. I discover people first, then the things they make.',
+    name: 'Priya R.',
+    meta: 'Buyer · Nairobi',
+    tile: 'var(--tile-sky)',
+  },
+];
+
+function initials(name: string): string {
+  return name
+    .split(' ')
+    .map((p) => p[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
+}
 
 export function LoginForm({ returnUrl }: { returnUrl?: string }) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  const [active, setActive] = useState(0);
+  // Controlled so React's post-action form reset doesn't wipe it — only the
+  // (uncontrolled) password field clears on a failed sign-in attempt.
+  const [email, setEmail] = useState('');
 
   // Server Actions run server-side, so a failure never reaches the browser
-  // console on its own — the full error (status + body) is already logged
-  // server-side by lib/api/client.ts; this mirrors just the message here so
-  // it's visible in the browser devtools console too, not just the form.
+  // console on its own — mirror the message here so it's visible in devtools.
   useEffect(() => {
     if (state.error) console.error('[login]', state.error);
   }, [state.error]);
 
+  // Auto-rotate the testimonials.
+  useEffect(() => {
+    const id = setInterval(() => setActive((i) => (i + 1) % TESTIMONIALS.length), 5500);
+    return () => clearInterval(id);
+  }, []);
+
+  const t = TESTIMONIALS[active];
+
   return (
-    <main className="min-h-screen flex font-sans bg-light">
-      <section className="hidden lg:flex lg:w-3/5 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-dark/80 via-dark/60 to-dark/40 z-10" />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          className="w-full h-full object-cover"
-          src="https://storage.googleapis.com/uxpilot-auth.appspot.com/e5bd52eb93-f7b7d497391e6b30c9df.png"
-          alt="modern university campus with students using laptops and tablets"
-        />
-        <div className="absolute inset-0 z-20 flex flex-col justify-center px-16">
-          <div className="max-w-lg">
-            <div className="mb-8">
-              <h1 className="text-4xl font-bold text-white mb-2">MARKT</h1>
-              <div className="w-12 h-1 bg-primary" />
-            </div>
-            <h2 className="text-3xl font-bold text-white mb-6 leading-tight">Your Campus Marketplace Awaits</h2>
-            <p className="text-lg text-white/90 mb-8 leading-relaxed">
-              Connect with your campus community. Buy, sell, and discover amazing products from fellow students and
-              local businesses.
-            </p>
-            <div className="flex items-center space-x-6">
-              <div className="flex items-center text-white/80">
-                <ShieldCheck size={16} className="text-primary mr-2" />
-                <span className="text-sm">Verified Students</span>
-              </div>
-              <div className="flex items-center text-white/80">
-                <Users size={16} className="text-primary mr-2" />
-                <span className="text-sm">Campus Community</span>
-              </div>
-              <div className="flex items-center text-white/80">
-                <Star size={16} className="text-primary mr-2" />
-                <span className="text-sm">Trusted Platform</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="w-full lg:w-2/5 flex items-center justify-center p-8 bg-surface">
-        <div className="w-full max-w-md">
-          <div className="lg:hidden text-center mb-8">
-            <h1 className="text-3xl font-bold text-dark mb-2">MARKT</h1>
-            <div className="w-12 h-1 bg-primary mx-auto" />
+    <div className={styles.screen}>
+      <div className={styles.card}>
+        {/* ---------- Form ---------- */}
+        <section className={styles.formPane}>
+          <div className={styles.brandRow}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
           </div>
 
-          <div className="text-center lg:text-left mb-8">
-            <h2 className="text-2xl font-bold text-dark mb-2">Welcome Back</h2>
-            <p className="text-muted">Sign in to your account to continue</p>
-          </div>
+          <h1 className={styles.heading}>Welcome back</h1>
+          <p className={styles.sub}>Sign in to pick up where you left off.</p>
 
-          <form action={formAction} className="space-y-6">
+          <form action={formAction} className={styles.form}>
             <input type="hidden" name="returnUrl" value={returnUrl ?? ''} />
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-dark" htmlFor="email">
-                Email Address
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail size={16} className="text-muted" />
-                </div>
+            <div className={cn(styles.field, styles.reveal, styles.d1)}>
+              <label className={styles.label} htmlFor="email">Email</label>
+              <div className={styles.inputWrap}>
+                <span className={styles.inputIcon}><Mail size={16} /></span>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   required
-                  placeholder="Enter your email"
-                  className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className={styles.input}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-dark" htmlFor="password">
-                Password
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock size={16} className="text-muted" />
-                </div>
+            <div className={cn(styles.field, styles.reveal, styles.d2)}>
+              <label className={styles.label} htmlFor="password">Password</label>
+              <div className={styles.inputWrap}>
+                <span className={styles.inputIcon}><Lock size={16} /></span>
                 <input
                   id="password"
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
                   placeholder="Enter your password"
-                  className="w-full pl-10 pr-12 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                  autoComplete="current-password"
+                  className={styles.input}
                 />
                 <button
                   type="button"
+                  className={styles.eyeBtn}
                   onClick={() => setShowPassword((s) => !s)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? <EyeOff size={16} className="text-muted" /> : <Eye size={16} className="text-muted" />}
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
             </div>
 
-            <div className="flex items-center justify-end">
-              <Link href="/auth/forgot-password" className="text-sm text-primary hover:text-secondary transition-colors">
-                Forgot password?
-              </Link>
+            <div className={cn(styles.forgotRow, styles.reveal, styles.d3)}>
+              <Link href="/auth/forgot-password" className={styles.forgotLink}>Forgot password?</Link>
             </div>
 
-            {state.error && (
-              <div className="bg-danger-soft border border-danger-border text-danger px-4 py-3 rounded-lg text-sm">{state.error}</div>
-            )}
+            {state.error && <div className={styles.error}>{state.error}</div>}
 
-            <button
-              type="submit"
-              disabled={pending}
-              className="w-full flex items-center justify-center bg-primary text-white py-3 px-4 rounded-lg font-medium hover:bg-secondary focus:ring-2 focus:ring-primary focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {pending && <Loader2 size={16} className="animate-spin mr-2" />}
-              {pending ? 'Signing In...' : 'Sign In'}
-            </button>
-
-            <div className="text-center">
-              <p className="text-sm text-muted">
-                Don&apos;t have an account?{' '}
-                <Link href="/auth/register" className="text-primary hover:text-secondary font-medium transition-colors">
-                  Sign up here
-                </Link>
-              </p>
+            <div className={cn(styles.reveal, styles.d4)}>
+              <button type="submit" disabled={pending} className={styles.submitBtn}>
+                {pending ? 'Signing in…' : (<>Sign in <ArrowRight size={17} className={styles.arrow} /></>)}
+              </button>
             </div>
+
+            <p className={styles.signupRow}>
+              Don&apos;t have an account? <Link href="/auth/register">Create one</Link>
+            </p>
           </form>
 
-          <div className="mt-6 rounded-lg border border-warning-border bg-warning-soft p-4 text-sm">
-            <p className="font-medium text-warning">Real login is temporarily broken</p>
-            <p className="mt-1 text-warning">
-              The backend has a known bug (missing database column) that 500s every login/register attempt — not
-              something fixable from this app. Use a mock session to test the rest of the app in the meantime.
+          <div className={styles.mock}>
+            <p className={styles.mockTitle}>Just exploring?</p>
+            <p className={styles.mockText}>
+              Skip sign-in with a demo session to click through Markt. (Real accounts must verify their email first.)
             </p>
-            <form action={mockLoginAction} className="mt-3 flex gap-2">
-              <button
-                type="submit"
-                name="role"
-                value="buyer"
-                className="flex-1 rounded-md border border-warning-border bg-surface py-2 text-xs font-semibold text-warning hover:bg-warning-soft"
-              >
-                Continue as mock buyer
-              </button>
-              <button
-                type="submit"
-                name="role"
-                value="seller"
-                className="flex-1 rounded-md border border-warning-border bg-surface py-2 text-xs font-semibold text-warning hover:bg-warning-soft"
-              >
-                Continue as mock seller
-              </button>
+            <form action={mockLoginAction} className={styles.mockBtns}>
+              <button type="submit" name="role" value="buyer" className={styles.mockBtn}>Preview as buyer</button>
+              <button type="submit" name="role" value="seller" className={styles.mockBtn}>Preview as seller</button>
             </form>
           </div>
 
-          <div className="mt-8 pt-6 border-t border-border">
-            <div className="flex items-center justify-center space-x-6 text-xs text-muted">
-              <div className="flex items-center">
-                <ShieldCheck size={14} className="text-success mr-1" /> SSL Encrypted
-              </div>
-              <div className="flex items-center">
-                <Lock size={14} className="text-success mr-1" /> Secure Login
-              </div>
-              <div className="flex items-center">
-                <Users size={14} className="text-primary mr-1" /> Campus Verified
-              </div>
+          <div className={styles.trust}>
+            <span className={styles.trustItem}><ShieldCheck size={13} /> SSL encrypted</span>
+            <span className={styles.trustItem}><Lock size={13} /> Secure sign-in</span>
+          </div>
+        </section>
+
+        {/* ---------- Quote panel ---------- */}
+        <aside className={styles.quotePane}>
+          <span className={styles.tile + ' ' + styles.tile1} />
+          <span className={styles.tile + ' ' + styles.tile2} />
+          <span className={styles.tile + ' ' + styles.tile3} />
+
+          <div className={styles.paneHeader}>
+            <Sparkles size={16} /> Shopping, the way it connects us
+          </div>
+
+          <div className={styles.quoteBody}>
+            <div className={styles.quoteMark} aria-hidden>&ldquo;</div>
+            {/* key forces the crossfade animation to replay on each rotation */}
+            <p key={active} className={styles.quoteText}>{t.quote}</p>
+            <div key={`a-${active}`} className={styles.author}>
+              <span className={styles.avatar} style={{ background: t.tile }}>{initials(t.name)}</span>
+              <span>
+                <span className={styles.authorName}>{t.name}</span>
+                <span className={styles.authorMeta} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <MapPin size={11} /> {t.meta}
+                </span>
+              </span>
+            </div>
+
+            <div className={styles.dots}>
+              {TESTIMONIALS.map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  className={cn(styles.dot, i === active && styles.dotActive)}
+                  onClick={() => setActive(i)}
+                  aria-label={`Testimonial ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
-        </div>
-      </section>
-    </main>
+
+          <div className={styles.paneStats}>
+            <span className={styles.stat}>
+              <span className={styles.statNum}>12k+</span>
+              <span className={styles.statLabel}>Local sellers</span>
+            </span>
+            <span className={styles.stat}>
+              <span className={styles.statNum}>50k+</span>
+              <span className={styles.statLabel}>Neighbours shopping</span>
+            </span>
+          </div>
+        </aside>
+      </div>
+    </div>
   );
 }

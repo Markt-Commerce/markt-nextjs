@@ -7,6 +7,15 @@ import { relaySetCookies, clearSession, getForwardedCookie, setMockSession } fro
 export interface FormState {
   error?: string;
   success?: boolean;
+  // Set only when the backend rejects the request because the account's email
+  // isn't verified yet — lets the UI offer a "verify your email" link to just
+  // those users, rather than showing it to everyone.
+  needsVerification?: boolean;
+}
+
+/** True when an API error is the backend's "email not verified" rejection. */
+function isUnverifiedEmailError(err: unknown): boolean {
+  return err instanceof ApiError && (err.status === 403 || /verif/i.test(err.message));
 }
 
 function messageFor(err: unknown, fallback: string): string {
@@ -86,10 +95,36 @@ export async function forgotPasswordAction(_prev: FormState, formData: FormData)
   try {
     await apiFetch('/users/password-reset', { method: 'POST', body: { email } });
   } catch (err) {
+    if (isUnverifiedEmailError(err)) {
+      return {
+        error: 'This email isn’t verified yet. Verify it first, then come back to reset your password.',
+        needsVerification: true,
+      };
+    }
     return { error: messageFor(err, 'Something went wrong. Please try again.') };
   }
 
   return { success: true };
+}
+
+/**
+ * Second half of the reset flow: the user pastes the 6-digit code the backend
+ * emailed them (`/users/password-reset`) plus a new password, and we confirm it
+ * via `/users/password-reset/confirm` ({ email, code, new_password }). Split out
+ * from `forgotPasswordAction` so the UI can walk request → confirm as two steps.
+ */
+export async function resetPasswordAction(email: string, code: string, newPassword: string): Promise<{ ok: boolean; error?: string }> {
+  if (!email || !code || !newPassword) return { ok: false, error: 'Code and a new password are required.' };
+  try {
+    await apiFetch('/users/password-reset/confirm', {
+      method: 'POST',
+      body: { email, code, new_password: newPassword },
+    });
+    return { ok: true };
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 400) return { ok: false, error: 'That code is invalid or has expired.' };
+    return { ok: false, error: messageFor(err, 'Could not reset your password. Please try again.') };
+  }
 }
 
 export async function verifyEmailAction(email: string, code: string): Promise<{ ok: boolean; error?: string }> {
@@ -110,7 +145,9 @@ export async function resendVerificationAction(email: string): Promise<{ ok: boo
   }
 }
 
-// TEMPORARY — see the note in lib/api/session.ts. Remove once real login works.
+// DEV CONVENIENCE — see the note in lib/api/session.ts. Real login works now;
+// this stays as a "skip sign-in" bypass until there's an email-verified test
+// account. Remove once that exists (search MOCK_SESSION_COOKIE).
 export async function mockLoginAction(formData: FormData): Promise<void> {
   const role = formData.get('role') === 'seller' ? 'seller' : 'buyer';
   await setMockSession(role);

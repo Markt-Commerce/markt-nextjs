@@ -6,14 +6,27 @@ import { cn } from '@/lib/cn';
 import { getFavoritesServerSnapshot, getFavoritesSnapshot, subscribeFavorites, toggleFavorite } from '@/lib/favorites-storage';
 import styles from './FavoriteButton.module.css';
 
-export function FavoriteButton({ productId, size = 16 }: { productId: string; size?: number }) {
+export function FavoriteButton({
+  productId,
+  size = 16,
+  className,
+}: {
+  productId: string;
+  size?: number;
+  // When a caller passes its own button styling (e.g. the product detail page,
+  // to match the neighbouring share button), it fully replaces the default
+  // card-overlay shape. Active state is then exposed via data-favorited so the
+  // caller's own CSS can style it, avoiding cross-module specificity clashes.
+  className?: string;
+}) {
   const ids = useSyncExternalStore(subscribeFavorites, getFavoritesSnapshot, getFavoritesServerSnapshot);
   const favorited = ids.includes(productId);
 
   return (
     <button
       type="button"
-      className={cn(styles.button, favorited && styles.buttonActive)}
+      className={className ? className : cn(styles.button, favorited && styles.buttonActive)}
+      data-favorited={favorited ? '' : undefined}
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
