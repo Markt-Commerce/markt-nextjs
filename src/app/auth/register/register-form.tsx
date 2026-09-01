@@ -102,7 +102,7 @@ export function RegisterForm() {
     <div className={styles.screen}>
       <div className={styles.card}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/assets/icon.png" alt="Markt" className={styles.logo} />
+        <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
 
         <Progress step={step} />
 

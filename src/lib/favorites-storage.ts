@@ -26,6 +26,11 @@ type Listener = () => void;
 const listeners = new Set<Listener>();
 let snapshot: string[] = readFromStorage();
 
+// A single stable reference for the server/hydration snapshot. Returning a
+// fresh `[]` each call makes useSyncExternalStore think the store changed on
+// every render ("getServerSnapshot should be cached to avoid an infinite loop").
+const EMPTY: string[] = [];
+
 export function subscribeFavorites(listener: Listener): () => void {
   listeners.add(listener);
   return () => listeners.delete(listener);
@@ -36,7 +41,7 @@ export function getFavoritesSnapshot(): string[] {
 }
 
 export function getFavoritesServerSnapshot(): string[] {
-  return [];
+  return EMPTY;
 }
 
 export function toggleFavorite(productId: string): void {

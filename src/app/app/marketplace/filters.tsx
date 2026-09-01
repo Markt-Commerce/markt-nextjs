@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Search } from 'lucide-react';
+import { Search, ChevronDown, Check } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import type { CategoryTreeNode } from '@/lib/types/category';
 import styles from './page.module.css';
@@ -57,13 +57,71 @@ export function SearchSort() {
           onChange={(e) => setSearchInput(e.target.value)}
         />
       </div>
-      <select className={styles.sortSelect} value={sortBy} onChange={(e) => pushParams({ sort: e.target.value })}>
-        {SORT_OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+      <SortDropdown value={sortBy} onChange={(value) => pushParams({ sort: value })} />
+    </div>
+  );
+}
+
+/**
+ * A custom sort dropdown. A native <select> can't have its open option list
+ * styled to match Markt (the browser/OS paints that panel), so this is a
+ * button + popover listbox instead — same behaviour, fully themeable.
+ */
+function SortDropdown({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const current = SORT_OPTIONS.find((opt) => opt.value === value) ?? SORT_OPTIONS[0];
+
+  useEffect(() => {
+    if (!open) return;
+    const onPointerDown = (e: PointerEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className={styles.sortWrap} ref={ref}>
+      <button
+        type="button"
+        className={styles.sortTrigger}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        onClick={() => setOpen((o) => !o)}
+      >
+        <span className={styles.sortValue}>{current.label}</span>
+        <ChevronDown size={15} className={cn(styles.sortChevron, open && styles.sortChevronOpen)} />
+      </button>
+      {open && (
+        <ul className={styles.sortMenu} role="listbox">
+          {SORT_OPTIONS.map((opt) => {
+            const active = opt.value === value;
+            return (
+              <li key={opt.value} role="option" aria-selected={active}>
+                <button
+                  type="button"
+                  className={cn(styles.sortOption, active && styles.sortOptionActive)}
+                  onClick={() => {
+                    onChange(opt.value);
+                    setOpen(false);
+                  }}
+                >
+                  <span>{opt.label}</span>
+                  {active && <Check size={14} />}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }
