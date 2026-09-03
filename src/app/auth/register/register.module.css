@@ -1,23 +1,73 @@
+/* Full-screen split: photo panel on the left, the step wizard on the right. */
 .screen {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   background: var(--bg);
+}
+
+/* Left photo panel with a human quote (mirrors the login treatment). */
+.visualPane {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2.75rem;
+}
+.visualImage {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.04);
+}
+.visualScrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(20, 12, 8, 0.28) 0%, rgba(20, 12, 8, 0.2) 45%, rgba(20, 12, 8, 0.82) 100%);
+}
+.visualQuote {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  margin: 0 0 0.75rem;
+  max-width: 24ch;
+  text-shadow: 0 1px 20px rgba(0, 0, 0, 0.25);
+}
+.visualMeta { font-size: 0.9rem; opacity: 0.9; }
+
+/* Right form side — the wizard content, centred in its half. */
+.formSide {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem 1.25rem;
+  padding: 2.5rem 1.5rem;
+  overflow-y: auto;
 }
-
 .card {
   width: 100%;
-  max-width: 460px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--shadow-md);
-  padding: 2rem 1.75rem;
+  max-width: 440px;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
 }
 
-.logo { height: 4.5rem; width: auto; display: block; margin: 0 auto 1.5rem; }
+.logo { height: 2.9rem; width: auto; display: block; margin: 0 0 1.75rem; }
+
+@media (max-width: 860px) {
+  .screen { grid-template-columns: 1fr; }
+  .visualPane { display: none; }
+  .formSide { padding: 2rem 1.25rem; }
+  .logo { margin-left: auto; margin-right: auto; }
+}
 
 /* --- Progress ---
    Three segments a person can read as "where am I / how much is left",

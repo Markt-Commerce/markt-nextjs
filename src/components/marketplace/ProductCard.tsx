@@ -4,14 +4,24 @@ import { discountPercent, hasDiscount, isOutOfStock, primaryImageUrl, type Produ
 import { FavoriteButton } from './FavoriteButton';
 import styles from './ProductCard.module.css';
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  // Where the card links. Defaults to the in-app product page; the public
+  // marketplace passes "/product" so logged-out visitors can preview items.
+  hrefBase = '/app/marketplace/product',
+}: {
+  product: Product;
+  hrefBase?: string;
+}) {
   const imageUrl = primaryImageUrl(product);
   const seller = product.seller;
   const outOfStock = isOutOfStock(product);
   const discounted = hasDiscount(product);
 
+  const href = `${hrefBase}/${product.id}`;
+
   return (
-    <Link href={`/app/marketplace/product/${product.id}`} className={styles.card}>
+    <Link href={href} className={styles.card}>
       <div className={styles.seller}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={seller?.profile_picture_url || '/Logo.png'} alt="" className={styles.sellerAvatar} />

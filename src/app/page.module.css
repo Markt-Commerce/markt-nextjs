@@ -1,0 +1,184 @@
+/* ============================================================
+   Public marketplace — Markt's landing page (logged-out).
+   Clean, minimal, on-brand: matches marktcommerce.com.
+   ============================================================ */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------- Sticky top bar ---------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(14px);
+}
+.headerInner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.brand { display: inline-flex; align-items: center; }
+.logo { height: 1.8rem; width: auto; }
+
+.headerActions { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.signIn {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-full);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+.signIn:hover { background: var(--surface-hover); }
+.signUp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.signUp:hover { background: var(--brand-hover); transform: translateY(-1px); }
+
+/* ---------- Hero strip ---------- */
+.hero {
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 1.5rem;
+}
+.heroEyebrow {
+  margin: 0 0 0.75rem;
+  color: var(--brand-text);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.heroTitle {
+  margin: 0 0 0.75rem;
+  font-size: clamp(2rem, 5vw, 3.1rem);
+  font-weight: 800;
+  line-height: 1.04;
+  letter-spacing: -0.035em;
+}
+.heroTitle em { color: var(--brand); font-style: normal; }
+.heroSub {
+  max-width: 540px;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+/* ---------- Body ---------- */
+.body {
+  flex: 1;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 4rem;
+}
+
+.toolbar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+
+.resultsBar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: 0.5rem 0 1.25rem;
+}
+.sectionTitle { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; margin: 0; }
+.resultCount { font-size: 0.85rem; color: var(--text-muted); flex-shrink: 0; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 1.1rem;
+}
+
+.emptyState {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+}
+.emptyState a { color: var(--brand-text); font-weight: 600; text-decoration: none; }
+.emptyState a:hover { text-decoration: underline; }
+
+/* ---------- Pagination ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+.pageBtn,
+.pageBtnDisabled {
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.pageBtn { color: var(--text); background: var(--surface); transition: border-color var(--transition-fast), background var(--transition-fast); }
+.pageBtn:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+.pageBtnDisabled { color: var(--text-subtle); background: var(--surface-2); cursor: not-allowed; }
+.pageInfo { font-size: 0.85rem; color: var(--text-muted); }
+
+/* ---------- Footer ---------- */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+}
+.footer p { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+.footerLinks { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+.footerLinks a { color: var(--text-muted); font-size: 0.85rem; text-decoration: none; transition: color var(--transition-fast); }
+.footerLinks a:hover { color: var(--brand); }
+
+@media (max-width: 640px) {
+  .hero { padding-top: 2rem; }
+  .toolbar { justify-content: stretch; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.8rem; }
+}

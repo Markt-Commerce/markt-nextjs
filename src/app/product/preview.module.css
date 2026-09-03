@@ -1,0 +1,188 @@
+/* ============================================================
+   Public product preview (logged-out). Read-only view of an item;
+   buying/chat is gated behind sign-up.
+   ============================================================ */
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* ---------- Top bar (shared look with the public marketplace) ---------- */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  backdrop-filter: blur(14px);
+}
+.headerInner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0.85rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.brand { display: inline-flex; align-items: center; }
+.logo { height: 1.8rem; width: auto; }
+.headerActions { display: flex; align-items: center; gap: 0.6rem; margin-left: auto; }
+.signIn {
+  padding: 0.5rem 0.9rem;
+  border-radius: var(--radius-full);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+.signIn:hover { background: var(--surface-hover); }
+.signUp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.signUp:hover { background: var(--brand-hover); transform: translateY(-1px); }
+
+/* ---------- Body ---------- */
+.page {
+  flex: 1;
+  width: 100%;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 1.5rem 1.5rem 4rem;
+}
+.breadcrumb { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+.breadcrumb a { color: var(--text-muted); text-decoration: none; }
+.breadcrumb a:hover { color: var(--brand); }
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.gallery {
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+}
+.galleryImage { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; }
+
+.sellerCard { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1.1rem; }
+.sellerAvatar { width: 2.1rem; height: 2.1rem; border-radius: var(--radius-full); object-fit: cover; background: var(--surface-sunken); }
+.sellerName { display: flex; align-items: center; gap: 0.3rem; font-weight: 700; font-size: 0.9rem; margin: 0; }
+.verifiedIcon { color: var(--brand); }
+.sellerMeta { font-size: 0.78rem; color: var(--text-muted); margin: 0; }
+
+.productName { font-size: 1.9rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; margin: 0 0 0.6rem; }
+
+.ratingRow { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem; }
+.ratingRow svg { color: var(--warning-text, #d9820a); }
+
+.priceRow { display: flex; align-items: baseline; gap: 0.75rem; margin-bottom: 0.5rem; }
+.price { font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; }
+.comparePrice { color: var(--text-subtle); text-decoration: line-through; font-size: 1rem; }
+.discountTag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--brand-soft-text);
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-soft-border);
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--radius-full);
+}
+
+.stockStatus { font-size: 0.85rem; font-weight: 600; margin: 0 0 1.1rem; }
+.stockAvailable { color: var(--success-text); }
+.stockLow { color: var(--warning-text); }
+.stockOut { color: var(--danger-text); }
+
+.description { color: var(--text-muted); line-height: 1.65; font-size: 0.95rem; margin: 0 0 1.5rem; }
+
+/* ---------- Sign-up gate ---------- */
+.ctaCard {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+  padding: 1.25rem;
+}
+.ctaTitle { font-size: 1rem; font-weight: 700; margin: 0 0 0.3rem; }
+.ctaText { font-size: 0.88rem; color: var(--text-muted); line-height: 1.55; margin: 0 0 1rem; }
+.ctaRow { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.ctaPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--radius-md);
+  background: var(--brand);
+  color: var(--brand-contrast);
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.ctaPrimary:hover { background: var(--brand-hover); transform: translateY(-1px); }
+.ctaGhost {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.7rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.ctaGhost:hover { border-color: var(--border-strong); background: var(--surface-hover); }
+
+/* ---------- Reviews (read-only) + related ---------- */
+.section { margin-top: 3rem; }
+.sectionTitle { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.02em; margin: 0 0 1.25rem; }
+
+.reviewList { display: flex; flex-direction: column; gap: 1rem; }
+.reviewCard { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); padding: 1rem 1.1rem; }
+.reviewHead { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.5rem; }
+.reviewAvatar { width: 1.9rem; height: 1.9rem; border-radius: var(--radius-full); object-fit: cover; background: var(--surface-sunken); }
+.reviewerName { font-weight: 600; font-size: 0.85rem; margin: 0; }
+.reviewStars { display: flex; gap: 1px; color: var(--warning-text, #d9820a); }
+.reviewContent { font-size: 0.9rem; color: var(--text-muted); line-height: 1.55; margin: 0.25rem 0 0; }
+.emptyReviews { color: var(--text-muted); font-size: 0.9rem; padding: 1.5rem 0; }
+
+.relatedGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.1rem;
+}
+
+/* ---------- Footer ---------- */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 1.75rem 1.5rem;
+  max-width: 1080px;
+  width: 100%;
+  margin: 0 auto;
+}
+.footerLinks { display: flex; flex-wrap: wrap; gap: 1.25rem; }
+.footerLinks a { color: var(--text-muted); font-size: 0.85rem; text-decoration: none; transition: color var(--transition-fast); }
+.footerLinks a:hover { color: var(--brand); }
+
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; gap: 1.5rem; }
+}

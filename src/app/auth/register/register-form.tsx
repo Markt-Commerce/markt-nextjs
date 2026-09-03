@@ -100,6 +100,20 @@ export function RegisterForm() {
 
   return (
     <div className={styles.screen}>
+      <aside className={styles.visualPane}>
+        <div
+          className={styles.visualImage}
+          style={{ backgroundImage: "url(/assets/landing/beautiful-three-welldressed-afro-american-girls-with-colored-shopping-bags-walking-mall.jpg)" }}
+          aria-hidden
+        />
+        <div className={styles.visualScrim} aria-hidden />
+        <p className={styles.visualQuote}>
+          &ldquo;It feels less like a shop and more like a neighbourhood. I discover people first, then the things they make.&rdquo;
+        </p>
+        <p className={styles.visualMeta}>Priya R. · Buyer, Nairobi</p>
+      </aside>
+
+      <div className={styles.formSide}>
       <div className={styles.card}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
@@ -146,6 +160,7 @@ export function RegisterForm() {
             Already have an account? <Link href="/auth/login">Sign in</Link>
           </p>
         )}
+      </div>
       </div>
     </div>
   );

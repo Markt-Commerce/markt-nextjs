@@ -2,33 +2,36 @@
 
 import { useActionState, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight, Eye, EyeOff, Lock, Mail, MapPin, ShieldCheck, Sparkles } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Eye, EyeOff, Lock, Mail, MapPin } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { loginAction, mockLoginAction, type FormState } from '../actions';
+import { loginAction, type FormState } from '../actions';
 import styles from './login.module.css';
 
 const initialState: FormState = {};
 
-// Warm, on-brand testimonials for the quote panel. Kept in-file (no network)
-// so the panel renders even while the backend login is down.
+// Real-feeling testimonials for the quote panel, each backed by a lifestyle
+// photo so the panel reads as human rather than a decorative gradient. Kept
+// in-file (no network) so the panel always renders.
 const TESTIMONIALS = [
   {
     quote: 'I found my favourite ceramics studio three streets away — through a post, not an ad. That’s the whole point of Markt.',
     name: 'Amara O.',
     meta: 'Buyer · Lagos',
-    tile: 'var(--tile-butter)',
+    image:
+      '/assets/landing/african-female-happily-shopping-online-using-laptop-smartphone-while-holding-her-credit-card.jpg',
   },
   {
     quote: 'Sold out my weekend bakes before Saturday even started. My customers actually follow me now.',
     name: 'Daniel K.',
     meta: 'Seller · Accra',
-    tile: 'var(--tile-mint)',
+    image: '/assets/landing/person-setting-up-online-store-uploading-products-laptop.jpg',
   },
   {
     quote: 'It feels less like a shop and more like a neighbourhood. I discover people first, then the things they make.',
     name: 'Priya R.',
     meta: 'Buyer · Nairobi',
-    tile: 'var(--tile-sky)',
+    image:
+      '/assets/landing/beautiful-three-welldressed-afro-american-girls-with-colored-shopping-bags-walking-mall.jpg',
   },
 ];
 
@@ -57,10 +60,11 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
 
   // Auto-rotate the testimonials.
   useEffect(() => {
-    const id = setInterval(() => setActive((i) => (i + 1) % TESTIMONIALS.length), 5500);
+    const id = setInterval(() => setActive((i) => (i + 1) % TESTIMONIALS.length), 6000);
     return () => clearInterval(id);
   }, []);
 
+  const go = (dir: number) => setActive((i) => (i + dir + TESTIMONIALS.length) % TESTIMONIALS.length);
   const t = TESTIMONIALS[active];
 
   return (
@@ -68,6 +72,7 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
       <div className={styles.card}>
         {/* ---------- Form ---------- */}
         <section className={styles.formPane}>
+          <div className={styles.formInner}>
           <div className={styles.brandRow}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
@@ -137,70 +142,55 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
               Don&apos;t have an account? <Link href="/auth/register">Create one</Link>
             </p>
           </form>
-
-          <div className={styles.mock}>
-            <p className={styles.mockTitle}>Just exploring?</p>
-            <p className={styles.mockText}>
-              Skip sign-in with a demo session to click through Markt. (Real accounts must verify their email first.)
-            </p>
-            <form action={mockLoginAction} className={styles.mockBtns}>
-              <button type="submit" name="role" value="buyer" className={styles.mockBtn}>Preview as buyer</button>
-              <button type="submit" name="role" value="seller" className={styles.mockBtn}>Preview as seller</button>
-            </form>
-          </div>
-
-          <div className={styles.trust}>
-            <span className={styles.trustItem}><ShieldCheck size={13} /> SSL encrypted</span>
-            <span className={styles.trustItem}><Lock size={13} /> Secure sign-in</span>
           </div>
         </section>
 
-        {/* ---------- Quote panel ---------- */}
+        {/* ---------- Quote panel: lifestyle photo + rotating human quote ---------- */}
         <aside className={styles.quotePane}>
-          <span className={styles.tile + ' ' + styles.tile1} />
-          <span className={styles.tile + ' ' + styles.tile2} />
-          <span className={styles.tile + ' ' + styles.tile3} />
+          {TESTIMONIALS.map((item, i) => (
+            <div
+              key={i}
+              className={cn(styles.quoteBg, i === active && styles.quoteBgActive)}
+              style={{ backgroundImage: `url(${item.image})` }}
+              aria-hidden
+            />
+          ))}
+          <div className={styles.quoteScrim} aria-hidden />
 
-          <div className={styles.paneHeader}>
-            <Sparkles size={16} /> Shopping, the way it connects us
-          </div>
+          <div className={styles.paneHeader}>Shopping, the way it connects us</div>
 
           <div className={styles.quoteBody}>
-            <div className={styles.quoteMark} aria-hidden>&ldquo;</div>
             {/* key forces the crossfade animation to replay on each rotation */}
-            <p key={active} className={styles.quoteText}>{t.quote}</p>
+            <p key={active} className={styles.quoteText}>&ldquo;{t.quote}&rdquo;</p>
             <div key={`a-${active}`} className={styles.author}>
-              <span className={styles.avatar} style={{ background: t.tile }}>{initials(t.name)}</span>
-              <span>
+              <span className={styles.avatar}>{initials(t.name)}</span>
+              <span className={styles.authorText}>
                 <span className={styles.authorName}>{t.name}</span>
-                <span className={styles.authorMeta} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                  <MapPin size={11} /> {t.meta}
-                </span>
+                <span className={styles.authorMeta}><MapPin size={11} /> {t.meta}</span>
               </span>
             </div>
 
-            <div className={styles.dots}>
-              {TESTIMONIALS.map((_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={cn(styles.dot, i === active && styles.dotActive)}
-                  onClick={() => setActive(i)}
-                  aria-label={`Testimonial ${i + 1}`}
-                />
-              ))}
+            <div className={styles.controls}>
+              <div className={styles.dots}>
+                {TESTIMONIALS.map((_, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    className={cn(styles.dot, i === active && styles.dotActive)}
+                    onClick={() => setActive(i)}
+                    aria-label={`Testimonial ${i + 1}`}
+                  />
+                ))}
+              </div>
+              <div className={styles.arrows}>
+                <button type="button" className={styles.navArrow} onClick={() => go(-1)} aria-label="Previous testimonial">
+                  <ArrowLeft size={16} />
+                </button>
+                <button type="button" className={styles.navArrow} onClick={() => go(1)} aria-label="Next testimonial">
+                  <ArrowRight size={16} />
+                </button>
+              </div>
             </div>
-          </div>
-
-          <div className={styles.paneStats}>
-            <span className={styles.stat}>
-              <span className={styles.statNum}>12k+</span>
-              <span className={styles.statLabel}>Local sellers</span>
-            </span>
-            <span className={styles.stat}>
-              <span className={styles.statNum}>50k+</span>
-              <span className={styles.statLabel}>Neighbours shopping</span>
-            </span>
           </div>
         </aside>
       </div>
