@@ -10,6 +10,6 @@ export async function updatePrivacySettingAction(key: string, value: unknown): P
   } catch {
     return { error: 'Could not save. Try again.' };
   }
-  revalidatePath('/app/settings/privacy');
+  revalidatePath('/app/settings');
   return {};
 }

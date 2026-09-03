@@ -3,7 +3,14 @@
 import { revalidatePath } from 'next/cache';
 import { ApiError } from '@/lib/api/client';
 import { deleteMediaItem, uploadMedia } from '@/lib/api/media';
-import { attachMediaToProduct, detachProductImage } from '@/lib/api/products';
+import {
+  attachMediaToProduct,
+  createProduct,
+  deleteProduct,
+  detachProductImage,
+  updateProduct,
+  type ProductWrite,
+} from '@/lib/api/products';
 import { getForwardedCookie } from '@/lib/api/session';
 
 export interface UploadState {
@@ -54,6 +61,48 @@ export async function detachMediaAction(productId: string, imageId: number): Pro
     await detachProductImage(productId, imageId, await getForwardedCookie());
   } catch (err) {
     return { error: err instanceof ApiError ? `Couldn't detach (${err.status})` : "Couldn't detach that image." };
+  }
+  revalidatePath('/app/media');
+  return {};
+}
+
+export interface SaveProductResult {
+  error?: string;
+  productId?: string;
+}
+
+/** Create a new product, or update an existing one when `id` is given. */
+export async function saveProductAction(
+  input: ProductWrite & { id?: string }
+): Promise<SaveProductResult> {
+  const name = input.name?.trim();
+  if (!name) return { error: 'Product name is required.' };
+  if (!(input.price >= 0)) return { error: 'Enter a valid price.' };
+
+  const body: ProductWrite = {
+    name,
+    price: input.price,
+    stock: input.stock,
+    description: input.description?.trim() || undefined,
+    compare_at_price: input.compare_at_price || undefined,
+    category_ids: input.category_ids?.length ? input.category_ids : undefined,
+  };
+
+  try {
+    const cookie = await getForwardedCookie();
+    const product = input.id ? await updateProduct(input.id, body, cookie) : await createProduct(body, cookie);
+    revalidatePath('/app/media');
+    return { productId: product.id };
+  } catch (err) {
+    return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not save the product.' };
+  }
+}
+
+export async function deleteProductAction(id: string): Promise<{ error?: string }> {
+  try {
+    await deleteProduct(id, await getForwardedCookie());
+  } catch (err) {
+    return { error: err instanceof ApiError ? `Couldn't delete (${err.status})` : "Couldn't delete that product." };
   }
   revalidatePath('/app/media');
   return {};

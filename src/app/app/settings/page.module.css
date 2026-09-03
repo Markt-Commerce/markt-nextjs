@@ -1,5 +1,5 @@
 .page {
-  max-width: 640px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 2rem 1.5rem 4rem;
 }
@@ -172,4 +172,137 @@
 
 @media (prefers-reduced-motion: reduce) {
   .dangerConfirm { animation: none; }
+}
+
+/* ============================================================
+   Tabbed layout (reference-style)
+   ============================================================ */
+.tabBar {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  border-bottom: 1px solid var(--border);
+  margin: 0 0 2rem;
+}
+.tabBar::-webkit-scrollbar { display: none; }
+
+.tab {
+  position: relative;
+  padding: 0.7rem 0.95rem;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.tab:hover { color: var(--text); }
+.tabActive { color: var(--text); border-bottom-color: var(--brand); }
+
+.tabPanel { display: flex; flex-direction: column; animation: tabIn 0.25s ease both; }
+@keyframes tabIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Two-column section: label + description on the left, fields on the right. */
+.sectionRow {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 2.25rem;
+  padding: 1.9rem 0;
+  border-top: 1px solid var(--border);
+}
+.sectionRow:first-child { border-top: 0; padding-top: 0.25rem; }
+
+.sectionHeading { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 0.35rem; }
+.sectionLede { font-size: 0.85rem; color: var(--text-muted); margin: 0; line-height: 1.55; }
+.sectionFields { min-width: 0; }
+
+/* Profile tab bits */
+.avatarRow { display: flex; align-items: center; gap: 1.1rem; }
+.avatarName { font-size: 0.95rem; font-weight: 700; margin: 0; }
+.avatarMeta { font-size: 0.82rem; color: var(--text-muted); margin: 0.15rem 0 0; }
+.verifiedTag, .unverifiedTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  margin-top: 0.5rem;
+}
+.verifiedTag { color: var(--success-text); background: var(--success-soft); border: 1px solid var(--success-border); }
+.unverifiedTag { color: var(--warning-text); background: var(--warning-soft); border: 1px solid var(--warning-border); }
+
+@media (max-width: 720px) {
+  .sectionRow { grid-template-columns: 1fr; gap: 1rem; padding: 1.5rem 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabPanel { animation: none; }
+}
+
+/* ---------- Billings tab ---------- */
+.balanceCard {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 1.1rem 1.35rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+}
+.balanceIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: var(--radius-md);
+  color: var(--brand-contrast);
+  background: var(--brand);
+}
+.balanceLabel { font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.15rem; }
+.balanceValue { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; font-variant-numeric: tabular-nums; }
+
+.billingHistory { border-top: 1px solid var(--border); padding-top: 1.9rem; margin-top: 0.25rem; }
+.billingSubhead { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; margin: 0 0 0.35rem; }
+
+.emptyText { color: var(--text-muted); font-size: 0.9rem; padding: 1.25rem 0; margin: 0; }
+
+.tableWrap { overflow-x: auto; margin-top: 1rem; border: 1px solid var(--border); border-radius: var(--radius-lg); }
+.table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 520px; }
+.table th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.table td { padding: 0.75rem 0.9rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.table tbody tr:last-child td { border-bottom: 0; }
+.table tbody tr:hover { background: var(--surface-hover); }
+.numCol { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.dateCell { color: var(--text-muted); white-space: nowrap; }
+.txnType {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-full);
+  background: var(--brand-soft);
+  color: var(--brand-soft-text);
+  border: 1px solid var(--brand-soft-border);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: capitalize;
 }

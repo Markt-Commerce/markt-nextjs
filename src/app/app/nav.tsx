@@ -57,11 +57,11 @@ const BUYER_LINKS: NavLinkDef[] = [
 // Selling to buy requests and managing product photos are seller-only.
 const SELLER_LINKS: NavLinkDef[] = [
   { href: '/app/offers', icon: Tag, label: 'My Offers' },
-  { href: '/app/media', icon: ImagePlus, label: 'Media Library' },
+  { href: '/app/media', icon: ImagePlus, label: 'My Products' },
 ];
 
 const ACCOUNT_LINKS: NavLinkDef[] = [
-  { href: '/app/profile', icon: UserCircle, label: 'My Profile' },
+  { href: '/app/settings?tab=profile', icon: UserCircle, label: 'My Profile' },
   { href: '/app/community/my-posts', icon: Newspaper, label: 'My Posts' },
   { href: '/app/reviews', icon: Star, label: 'My Reviews' },
   { href: '/app/support', icon: HelpCircle, label: 'Help & Support' },

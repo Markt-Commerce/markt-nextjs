@@ -1,7 +1,11 @@
 'use client';
 
-// The real API has no favorites/wishlist endpoint at all (checked against
-// the full 203-endpoint spec) — this stays purely client-side.
+// NOTE (2026-09-03): a real wishlist endpoint now EXISTS —
+// `POST/GET /socials/saved` and `DELETE /socials/saved/{content_type}/{content_id}`
+// with content_type "product". This localStorage store predates it and is kept
+// for now because it also has to work on the logged-out public marketplace
+// (no session). TODO: back favorites with /socials/saved for signed-in users
+// (and reconcile with the local store) — see the Saved Items page + FavoriteButton.
 const STORAGE_KEY = 'markt_favorites';
 
 function readFromStorage(): string[] {

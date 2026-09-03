@@ -1,29 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useActionState, useState } from 'react';
 import { AlertTriangle, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { deleteAccountAction, type SettingsFormState } from './actions';
 import styles from './page.module.css';
 
+const initialState: SettingsFormState = {};
+
 /**
- * Account deletion. The backend currently exposes no self-serve delete
- * endpoint (there is no DELETE /users/… in the API), so the confirmed action
- * opens a pre-filled deletion request to support rather than faking a delete.
- * Swap `requestDeletion()` for a server action calling the real endpoint the
- * moment one exists.
+ * Account deletion. Wired to the real API: the action runs the server-side
+ * deletion-check, then `DELETE /users/account`, clears the session, and
+ * redirects to the public marketplace.
  */
-export function DangerZone({ username }: { username: string }) {
+export function DangerZone() {
   const [open, setOpen] = useState(false);
   const [confirm, setConfirm] = useState('');
+  const [state, formAction, pending] = useActionState(deleteAccountAction, initialState);
   const canDelete = confirm.trim().toUpperCase() === 'DELETE';
-
-  const requestDeletion = () => {
-    const subject = encodeURIComponent('Account deletion request');
-    const body = encodeURIComponent(
-      `Please permanently delete my Markt account and all associated data.\n\nUsername: ${username}\n`
-    );
-    window.location.href = `mailto:support@marktcommerce.com?subject=${subject}&body=${body}`;
-  };
 
   return (
     <div className={cn(styles.section, styles.dangerSection)}>
@@ -39,10 +33,10 @@ export function DangerZone({ username }: { username: string }) {
           <Trash2 size={15} /> Delete account
         </button>
       ) : (
-        <div className={styles.dangerConfirm}>
+        <form action={formAction} className={styles.dangerConfirm}>
           <p className={styles.dangerNote}>
-            Self-serve deletion isn&apos;t available yet, so confirming will start your request with our support team,
-            who will remove your account. You&apos;ll get a confirmation by email.
+            This permanently deletes your account and all associated data. You&apos;ll be signed out immediately and this
+            can&apos;t be reversed.
           </p>
 
           <label className={styles.field}>
@@ -50,6 +44,7 @@ export function DangerZone({ username }: { username: string }) {
               Type <strong>DELETE</strong> to confirm
             </span>
             <input
+              name="confirm"
               className={styles.input}
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
@@ -57,6 +52,8 @@ export function DangerZone({ username }: { username: string }) {
               autoComplete="off"
             />
           </label>
+
+          {state.error && <p className={styles.errorText}>{state.error}</p>}
 
           <div className={styles.dangerActions}>
             <button
@@ -66,14 +63,15 @@ export function DangerZone({ username }: { username: string }) {
                 setOpen(false);
                 setConfirm('');
               }}
+              disabled={pending}
             >
               Cancel
             </button>
-            <button type="button" className={styles.dangerBtn} disabled={!canDelete} onClick={requestDeletion}>
-              <Trash2 size={15} /> Request deletion
+            <button type="submit" className={styles.dangerBtn} disabled={!canDelete || pending}>
+              <Trash2 size={15} /> {pending ? 'Deleting…' : 'Delete account'}
             </button>
           </div>
-        </div>
+        </form>
       )}
     </div>
   );

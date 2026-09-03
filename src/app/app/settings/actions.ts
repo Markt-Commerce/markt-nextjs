@@ -3,8 +3,15 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { ApiError } from '@/lib/api/client';
-import { createBuyerAccount, createSellerAccount, switchRole, updateAddress } from '@/lib/api/account';
-import { getForwardedCookie } from '@/lib/api/session';
+import {
+  createBuyerAccount,
+  createSellerAccount,
+  deleteAccount,
+  getAccountDeletionPreview,
+  switchRole,
+  updateAddress,
+} from '@/lib/api/account';
+import { clearSession, getForwardedCookie } from '@/lib/api/session';
 
 export interface SettingsFormState {
   error?: string;
@@ -55,6 +62,29 @@ export async function enableBuyerAction(_prev: SettingsFormState, formData: Form
   revalidatePath('/app/settings');
   revalidatePath('/app', 'layout');
   return { success: true };
+}
+
+export async function deleteAccountAction(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {
+  const confirm = String(formData.get('confirm') ?? '').trim().toUpperCase();
+  if (confirm !== 'DELETE') return { error: 'Type DELETE to confirm.' };
+
+  const cookie = await getForwardedCookie();
+  try {
+    // Check first so we can show why deletion is blocked (e.g. open orders)
+    // instead of a bare failure.
+    const preview = await getAccountDeletionPreview(cookie);
+    if (!preview.can_delete) {
+      const reason = preview.blockers?.map((b) => b.message).filter(Boolean).join(' ');
+      return { error: reason || 'Your account can’t be deleted yet. Resolve any open orders or balances first.' };
+    }
+    await deleteAccount(cookie);
+    await clearSession();
+  } catch (err) {
+    return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not delete your account.' };
+  }
+
+  // Account gone and session cleared — send them to the public marketplace.
+  redirect('/');
 }
 
 export async function enableSellerAction(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {

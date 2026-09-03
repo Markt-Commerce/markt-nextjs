@@ -35,7 +35,7 @@ export async function updateProfileAction(_prev: ProfileFormState, formData: For
     return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not save profile.' };
   }
 
-  revalidatePath('/app/profile');
+  revalidatePath('/app/settings');
   revalidatePath('/app', 'layout');
   return { success: true };
 }
@@ -50,7 +50,7 @@ export async function uploadProfilePictureAction(formData: FormData): Promise<{ 
     return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Upload failed.' };
   }
 
-  revalidatePath('/app/profile');
+  revalidatePath('/app/settings');
   revalidatePath('/app', 'layout');
   return {};
 }

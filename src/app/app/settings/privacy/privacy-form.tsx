@@ -40,11 +40,7 @@ export function PrivacyForm({ initial }: { initial: PrivacySettings }) {
   };
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>Privacy
-      </h1>
-      <p className={styles.subtitle}>Control who can see your profile and how people can reach you.</p>
-
+    <>
       <section className={styles.section}>
         <p className={styles.sectionTitle}>Profile visibility</p>
         <p className={styles.sectionDesc}>Who can view your full profile.</p>
@@ -106,7 +102,7 @@ export function PrivacyForm({ initial }: { initial: PrivacySettings }) {
           )}
         </div>
       )}
-    </div>
+    </>
   );
 }
 

@@ -47,6 +47,32 @@ export async function listMyProducts(cookie: string | undefined): Promise<Produc
   return [];
 }
 
+export interface ProductWrite {
+  name: string;
+  price: number;
+  stock?: number;
+  description?: string;
+  compare_at_price?: number;
+  category_ids?: number[];
+  media_ids?: number[];
+  status?: string;
+}
+
+/** Create a new product (seller). */
+export async function createProduct(body: ProductWrite, cookie: string | undefined): Promise<Product> {
+  return apiFetch<Product>('/products/', { method: 'POST', cookie, body });
+}
+
+/** Update a product the seller owns. */
+export async function updateProduct(id: string, body: Partial<ProductWrite>, cookie: string | undefined): Promise<Product> {
+  return apiFetch<Product>(`/products/${encodeURIComponent(id)}`, { method: 'PUT', cookie, body });
+}
+
+/** Delete a product the seller owns. */
+export async function deleteProduct(id: string, cookie: string | undefined): Promise<void> {
+  await apiFetch(`/products/${encodeURIComponent(id)}`, { method: 'DELETE', cookie });
+}
+
 /** Images attached to a product (each links a media_id to the product). */
 export async function listProductImages(productId: string, cookie: string | undefined): Promise<ProductImage[]> {
   return apiFetch<ProductImage[]>(`/media/products/${encodeURIComponent(productId)}/images`, { cookie, cache: 'no-store' });
