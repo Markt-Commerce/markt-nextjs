@@ -19,7 +19,6 @@ import {
   Heart,
   CreditCard,
   ImagePlus,
-  UserCircle,
   Newspaper,
   type LucideIcon,
 } from 'lucide-react';
@@ -61,12 +60,11 @@ const SELLER_LINKS: NavLinkDef[] = [
 ];
 
 const ACCOUNT_LINKS: NavLinkDef[] = [
-  { href: '/app/settings?tab=profile', icon: UserCircle, label: 'My Profile' },
   { href: '/app/community/my-posts', icon: Newspaper, label: 'My Posts' },
   { href: '/app/reviews', icon: Star, label: 'My Reviews' },
+  { href: '/app/settings', icon: Settings, label: 'Settings' },
   { href: '/app/support', icon: HelpCircle, label: 'Help & Support' },
   { href: '/app/contact', icon: Mail, label: 'Contact Us' },
-  { href: '/app/settings', icon: Settings, label: 'Settings' },
 ];
 
 const BUYER_BOTTOM_LINKS: NavLinkDef[] = [

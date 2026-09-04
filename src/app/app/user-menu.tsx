@@ -23,9 +23,6 @@ export function UserMenu({ displayName, role, avatarUrl }: { displayName: string
 
       {open && (
         <div className={styles.dropdown}>
-          <Link href="/app/settings?tab=profile" onClick={() => setOpen(false)}>
-            Profile
-          </Link>
           <Link href="/app/settings" onClick={() => setOpen(false)}>
             Settings
           </Link>
