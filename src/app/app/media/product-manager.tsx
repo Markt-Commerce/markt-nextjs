@@ -17,6 +17,13 @@ export interface CategoryOption {
   name: string;
 }
 
+/** A top-level category (a section) with its selectable descendants under it. */
+export interface CategoryGroup {
+  id: number;
+  name: string;
+  children: CategoryOption[];
+}
+
 interface FormState {
   name: string;
   price: string;
@@ -67,7 +74,7 @@ export function ProductManager({
 }: {
   products: Product[];
   media: Media[];
-  categories: CategoryOption[];
+  categories: CategoryGroup[];
 }) {
   const router = useRouter();
   const [selectedId, setSelectedId] = useState<string | null>(products[0]?.id ?? null);
@@ -222,20 +229,25 @@ function ProductEditor({
   onDeleted,
 }: {
   product: Product | null;
-  categories: CategoryOption[];
+  categories: CategoryGroup[];
   imagesSlot: ReactNode;
   onSaved: (id: string) => void;
   onDeleted: () => void;
 }) {
   const [form, setForm] = useState<FormState>(() => formFrom(product));
-  const [pending, startTransition] = useTransition();
+  // Explicit busy flag — NOT useTransition — so the button resets as soon as the
+  // save returns, rather than staying stuck while a follow-up router.refresh()
+  // re-fetches the page.
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
-  const save = () => {
+  const save = async () => {
+    if (busy) return;
+    setBusy(true);
     setError('');
-    startTransition(async () => {
+    try {
       const result = await saveProductAction({
         id: product?.id,
         name: form.name,
@@ -253,12 +265,15 @@ function ProductEditor({
       }
       toast(product ? 'Product updated.' : 'Product created.', 'success');
       if (result.productId) onSaved(result.productId);
-    });
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const remove = () => {
-    if (!product) return;
-    startTransition(async () => {
+  const remove = async () => {
+    if (!product || busy) return;
+    setBusy(true);
+    try {
       const result = await deleteProductAction(product.id);
       if (result.error) {
         setError(result.error);
@@ -267,7 +282,9 @@ function ProductEditor({
         toast('Product deleted.', 'success');
         onDeleted();
       }
-    });
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -306,9 +323,18 @@ function ProductEditor({
               <span>Product category</span>
               <select className={styles.input} value={form.categoryId} onChange={(e) => set('categoryId', e.target.value)}>
                 <option value="">{product ? 'Keep current' : 'Choose a category'}</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
+                {categories.map((group) =>
+                  group.children.length > 0 ? (
+                    <optgroup key={group.id} label={group.name}>
+                      <option value={group.id}>All {group.name}</option>
+                      {group.children.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </optgroup>
+                  ) : (
+                    <option key={group.id} value={group.id}>{group.name}</option>
+                  )
+                )}
               </select>
             </label>
           </Panel>
@@ -380,12 +406,12 @@ function ProductEditor({
 
       <div className={styles.actionBar}>
         {product && (
-          <button type="button" className={styles.dangerGhost} onClick={remove} disabled={pending}>
+          <button type="button" className={styles.dangerGhost} onClick={remove} disabled={busy}>
             <Trash2 size={15} /> Delete product
           </button>
         )}
-        <button type="button" className={styles.primaryBtn} onClick={save} disabled={pending}>
-          <Save size={15} /> {pending ? 'Saving…' : product ? 'Save changes' : 'Add product'}
+        <button type="button" className={styles.primaryBtn} onClick={save} disabled={busy}>
+          <Save size={15} /> {busy ? 'Saving…' : product ? 'Save changes' : 'Add product'}
         </button>
       </div>
     </>

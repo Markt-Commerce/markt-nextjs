@@ -17,6 +17,7 @@ export interface Media {
   original_filename?: string;
   file_size?: number;
   processing_status?: string;
+  user_id?: string;
 }
 
 export interface MediaList {

@@ -59,14 +59,23 @@ export interface ProductWrite {
   status?: string;
 }
 
+// Guard writes with a timeout so a stalled backend surfaces an error instead
+// of leaving the UI spinning indefinitely.
+const WRITE_TIMEOUT_MS = 20000;
+
 /** Create a new product (seller). */
 export async function createProduct(body: ProductWrite, cookie: string | undefined): Promise<Product> {
-  return apiFetch<Product>('/products/', { method: 'POST', cookie, body });
+  return apiFetch<Product>('/products/', { method: 'POST', cookie, body, signal: AbortSignal.timeout(WRITE_TIMEOUT_MS) });
 }
 
 /** Update a product the seller owns. */
 export async function updateProduct(id: string, body: Partial<ProductWrite>, cookie: string | undefined): Promise<Product> {
-  return apiFetch<Product>(`/products/${encodeURIComponent(id)}`, { method: 'PUT', cookie, body });
+  return apiFetch<Product>(`/products/${encodeURIComponent(id)}`, {
+    method: 'PUT',
+    cookie,
+    body,
+    signal: AbortSignal.timeout(WRITE_TIMEOUT_MS),
+  });
 }
 
 /** Delete a product the seller owns. */

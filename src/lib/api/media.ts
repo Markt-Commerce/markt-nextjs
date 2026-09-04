@@ -2,8 +2,15 @@ import 'server-only';
 import { apiFetch, apiFetchMultipart } from './client';
 import type { Media, MediaList, MediaStats, MediaUploadResponse } from '@/lib/types/media';
 
-export async function listMedia(cookie: string | undefined): Promise<MediaList> {
-  return apiFetch<MediaList>('/media/?per_page=50', { cookie, cache: 'no-store' });
+/**
+ * List media. `GET /media/` is NOT scoped to the caller by default (it can
+ * return every user's uploads), so we always pass the owner's `user_id` to
+ * scope it, and callers should still filter defensively by `user_id`.
+ */
+export async function listMedia(cookie: string | undefined, userId?: string): Promise<MediaList> {
+  const params = new URLSearchParams({ per_page: '50' });
+  if (userId) params.set('user_id', userId);
+  return apiFetch<MediaList>(`/media/?${params.toString()}`, { cookie, cache: 'no-store' });
 }
 
 export async function getMediaStats(cookie: string | undefined): Promise<MediaStats> {
