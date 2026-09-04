@@ -39,6 +39,16 @@ export function notificationActionUrl(notification: Notification): string | null
       return `/app/requests/${id}`;
     case 'offer':
       return `/app/offers/${id}`;
+    // Social: a like/comment/reaction references the post, so open it directly.
+    case 'post':
+    case 'social_post':
+    case 'like':
+    case 'comment':
+    case 'reaction':
+      return `/app/community/post/${id}`;
+    case 'follow':
+    case 'user':
+      return '/app/community/social-feed';
     default:
       return null;
   }
