@@ -44,7 +44,7 @@ export default async function OrdersPage() {
                 <span className={styles.orderDate}>
                   {new Date(order.created_at).toLocaleDateString()} · {orderTotalItems(order)} item{orderTotalItems(order) === 1 ? '' : 's'}
                 </span>
-                <span className={styles.total}>${orderTotal(order).toFixed(2)}</span>
+                <span className={styles.total}>₦{orderTotal(order).toFixed(2)}</span>
               </div>
             </Link>
           ))}

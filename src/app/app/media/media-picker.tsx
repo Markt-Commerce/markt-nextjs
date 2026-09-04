@@ -1,10 +1,13 @@
 'use client';
 
-import { useRef, useState, useTransition } from 'react';
+import { useRef, useTransition } from 'react';
 import { UploadCloud, X } from 'lucide-react';
 import type { Media } from '@/lib/types/media';
+import { toast } from '@/components/ui/toast';
 import { uploadMediaAction } from './actions';
 import styles from './page.module.css';
+
+const MAX_MEDIA_MB = 50;
 
 /**
  * Reusable image picker — the media library surfaced as a component. Lists the
@@ -26,18 +29,21 @@ export function MediaPicker({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, startUpload] = useTransition();
-  const [error, setError] = useState('');
   const images = media.filter((m) => (m.media_type ?? 'image') === 'image');
 
   const upload = (file?: File) => {
     if (!file) return;
+    if (file.size > MAX_MEDIA_MB * 1024 * 1024) {
+      toast(`Image too large — please use one under ${MAX_MEDIA_MB} MB.`, 'error');
+      return;
+    }
     const fd = new FormData();
     fd.append('file', file);
     fd.append('alt_text', file.name.replace(/\.[^/.]+$/, ''));
-    setError('');
     startUpload(async () => {
       const r = await uploadMediaAction(fd);
-      if (r.error) setError(r.error);
+      if (r.error) toast(r.error, 'error');
+      else toast('Image uploaded.', 'success');
     });
   };
 
@@ -64,7 +70,6 @@ export function MediaPicker({
             e.target.value = '';
           }}
         />
-        {error && <p className={styles.errorMessage}>{error}</p>}
 
         <div className={styles.pickerGrid}>
           {images.map((m) => {

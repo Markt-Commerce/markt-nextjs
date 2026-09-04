@@ -40,7 +40,7 @@ export default function FavoritesPage() {
               />
               <div className={styles.body}>
                 <p className={styles.name}>{product.name}</p>
-                <p className={styles.price}>${product.price.toFixed(2)}</p>
+                <p className={styles.price}>₦{product.price.toFixed(2)}</p>
               </div>
             </Link>
           ))}

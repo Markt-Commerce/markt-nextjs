@@ -60,12 +60,12 @@ export function CheckoutForm({ cart, subtotal, discount }: { cart: Cart; subtota
               <span>
                 {item.product.name} × {item.quantity}
               </span>
-              <span>${(item.product_price * item.quantity).toFixed(2)}</span>
+              <span>₦{(item.product_price * item.quantity).toFixed(2)}</span>
             </div>
           ))}
           <div className={styles.summaryItem}>
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>₦{subtotal.toFixed(2)}</span>
           </div>
           {discount > 0 && (
             <div className={styles.summaryItem}>
@@ -76,7 +76,7 @@ export function CheckoutForm({ cart, subtotal, discount }: { cart: Cart; subtota
           <div className={styles.tearLine} />
           <div className={styles.summaryTotal}>
             <span>Total</span>
-            <span>${(subtotal - discount).toFixed(2)}</span>
+            <span>₦{(subtotal - discount).toFixed(2)}</span>
           </div>
 
           {state.error && <p className={styles.errorText}>{state.error}</p>}

@@ -83,6 +83,7 @@ export async function saveProductAction(
     name,
     price: input.price,
     stock: input.stock,
+    sku: input.sku?.trim() || undefined,
     description: input.description?.trim() || undefined,
     compare_at_price: input.compare_at_price || undefined,
     category_ids: input.category_ids?.length ? input.category_ids : undefined,

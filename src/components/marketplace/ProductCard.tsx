@@ -59,8 +59,8 @@ export function ProductCard({
         )}
 
         <div className={styles.priceRow}>
-          <span className={styles.price}>${product.price.toFixed(2)}</span>
-          {discounted && <span className={styles.comparePrice}>${product.compare_at_price!.toFixed(2)}</span>}
+          <span className={styles.price}>₦{product.price.toFixed(2)}</span>
+          {discounted && <span className={styles.comparePrice}>₦{product.compare_at_price!.toFixed(2)}</span>}
         </div>
       </div>
     </Link>

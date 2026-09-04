@@ -88,7 +88,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
 
       {myOffer && !isOwner && (
         <div className={styles.myOfferNote}>
-          You offered {myOffer.price ? `$${myOffer.price.toFixed(2)}` : ''} —{' '}
+          You offered {myOffer.price ? `₦${myOffer.price.toFixed(2)}` : ''} —{' '}
           <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[myOffer.status]])}>{myOffer.status.toLowerCase()}</span>
         </div>
       )}
@@ -117,7 +117,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                         <BadgeCheck size={13} style={{ marginLeft: 4, color: 'var(--info)' }} />
                       )}
                     </p>
-                    <span className={styles.offerPrice}>${offer.price.toFixed(2)}</span>
+                    <span className={styles.offerPrice}>₦{offer.price.toFixed(2)}</span>
                   </div>
                   {offer.message && <p className={styles.offerMessage}>{offer.message}</p>}
                   <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[offer.status]])}>{offer.status.toLowerCase()}</span>

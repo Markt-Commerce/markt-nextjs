@@ -117,7 +117,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <div className={styles.itemBody}>
                 <p className={styles.itemName}>{product?.name ?? item.product_id}</p>
                 <p className={styles.itemMeta}>
-                  Qty {item.quantity} · <span className={styles.itemPrice}>${(item.price * item.quantity).toFixed(2)}</span>
+                  Qty {item.quantity} · <span className={styles.itemPrice}>₦{(item.price * item.quantity).toFixed(2)}</span>
                 </p>
               </div>
             </div>
@@ -156,12 +156,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <p className={styles.sectionTitle}>Summary</p>
         <div className={styles.totalsRow}>
           <span>Subtotal</span>
-          <span>${order.subtotal.toFixed(2)}</span>
+          <span>₦{order.subtotal.toFixed(2)}</span>
         </div>
         {!!order.shipping_fee && (
           <div className={styles.totalsRow}>
             <span>Shipping</span>
-            <span>${order.shipping_fee.toFixed(2)}</span>
+            <span>₦{order.shipping_fee.toFixed(2)}</span>
           </div>
         )}
         {!!order.discount && (
@@ -173,7 +173,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <div className={styles.tearLine} />
         <div className={styles.totalsGrand}>
           <span>Total</span>
-          <span>${order.total.toFixed(2)}</span>
+          <span>₦{order.total.toFixed(2)}</span>
         </div>
       </div>
 

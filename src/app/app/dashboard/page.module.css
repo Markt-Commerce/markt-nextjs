@@ -180,3 +180,61 @@
   letter-spacing: -0.03em;
   margin: 0;
 }
+
+/* --- Figures sit up top, above the quick-action tiles --- */
+.statsSection { margin-bottom: 2.5rem; }
+
+/* --- Get your shop ready: what's left leads, what's done sits alongside --- */
+.readyHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+.readyHead .sectionTitle { margin: 0; }
+
+.readyCount {
+  flex-shrink: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--brand-soft-text);
+  background: var(--brand-soft);
+  border: 1px solid var(--brand-soft-border);
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+}
+
+.readyGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 240px;
+  gap: 1.25rem;
+  align-items: start;
+  margin-bottom: 2.5rem;
+}
+.readyGrid .startCards { margin-bottom: 0; }
+
+.readyDone {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  padding: 1.15rem;
+}
+.readyDoneTitle {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  margin: 0 0 0.8rem;
+}
+.doneList { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+.doneItem { display: flex; align-items: center; gap: 0.45rem; font-size: 0.82rem; color: var(--text-muted); }
+.doneCheck { color: var(--success-text); flex-shrink: 0; }
+
+.readyAllDone { font-size: 0.88rem; color: var(--text-muted); margin: 0; padding: 0.5rem 0; }
+
+@media (max-width: 820px) {
+  .readyGrid { grid-template-columns: 1fr; }
+}

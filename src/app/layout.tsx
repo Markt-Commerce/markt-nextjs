@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { Toaster } from "@/components/ui/toast";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-storage";
 
 const inter = Inter({
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         suppressHydrationWarning
       >
         <Providers>{children}</Providers>
+        <Toaster />
       </body>
     </html>
   );

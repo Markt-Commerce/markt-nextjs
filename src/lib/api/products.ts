@@ -51,6 +51,7 @@ export interface ProductWrite {
   name: string;
   price: number;
   stock?: number;
+  sku?: string;
   description?: string;
   compare_at_price?: number;
   category_ids?: number[];

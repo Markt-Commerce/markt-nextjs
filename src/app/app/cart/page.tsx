@@ -55,7 +55,7 @@ export default async function CartPage() {
 
           <div className={styles.summaryRow}>
             <span>Subtotal</span>
-            <span>${subtotal.toFixed(2)}</span>
+            <span>₦{subtotal.toFixed(2)}</span>
           </div>
           {discount > 0 && (
             <div className={styles.summaryRow}>
@@ -66,7 +66,7 @@ export default async function CartPage() {
           <div className={styles.tearLine} />
           <div className={styles.summaryTotal}>
             <span>Total</span>
-            <span>${(subtotal - discount).toFixed(2)}</span>
+            <span>₦{(subtotal - discount).toFixed(2)}</span>
           </div>
 
           <Link href="/app/checkout" className={styles.checkoutBtn} style={{ marginTop: '1rem' }}>
