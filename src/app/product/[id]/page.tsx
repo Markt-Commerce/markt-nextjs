@@ -32,7 +32,6 @@ function ProductChrome({ children }: { children: React.ReactNode }) {
       <footer className={styles.footer}>
         <div className={styles.footerLinks}>
           <Link href="/">Marketplace</Link>
-          <Link href="/welcome">About Markt</Link>
           <Link href="/legal/terms">Terms</Link>
           <Link href="/legal/privacy">Privacy</Link>
         </div>

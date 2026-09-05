@@ -17,10 +17,24 @@ export interface PaymentInitializeResponse {
   [key: string]: unknown;
 }
 
-export async function initializePayment(orderId: string, cookie: string | undefined): Promise<PaymentInitializeResponse> {
+export async function initializePayment(
+  orderId: string,
+  cookie: string | undefined,
+  callbackUrl?: string
+): Promise<PaymentInitializeResponse> {
   return apiFetch<PaymentInitializeResponse>('/payments/initialize', {
     method: 'POST',
     cookie,
-    body: { order_id: orderId },
+    // `callback_url` tells Paystack where to send the buyer back after paying.
+    // Also mirrored into `metadata` since some Paystack setups read it there.
+    body: {
+      order_id: orderId,
+      ...(callbackUrl ? { callback_url: callbackUrl, metadata: { callback_url: callbackUrl } } : {}),
+    },
   });
+}
+
+/** Verify a payment's status with Paystack (used on return from checkout). */
+export async function verifyPayment(paymentId: string, cookie: string | undefined): Promise<{ status?: string; [k: string]: unknown }> {
+  return apiFetch(`/payments/${encodeURIComponent(paymentId)}/verify`, { cookie, cache: 'no-store' });
 }

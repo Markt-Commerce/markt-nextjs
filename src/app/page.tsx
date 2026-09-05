@@ -154,7 +154,6 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       <footer className={styles.footer}>
         <p>Shopping, the way it connects us.</p>
         <div className={styles.footerLinks}>
-          <Link href="/welcome">About Markt</Link>
           <Link href="/legal/terms">Terms</Link>
           <Link href="/legal/privacy">Privacy</Link>
           <Link href="/auth/register">Start selling</Link>

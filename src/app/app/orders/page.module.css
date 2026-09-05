@@ -67,3 +67,33 @@
 
 .emptyState a { color: var(--brand-text); font-weight: 700; text-decoration: none; }
 .emptyState a:hover { text-decoration: underline; }
+
+/* Subtitle under the page title */
+.subtitle { color: var(--text-muted); font-size: 0.9rem; margin: 0.25rem 0 1.5rem; }
+
+/* Seller "orders to fulfil" rows */
+.fulfilCard {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+.fulfilCard:hover { border-color: var(--border-strong); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
+.fulfilThumb {
+  width: 3rem;
+  height: 3rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--surface-sunken);
+}
+.fulfilBody { flex: 1; min-width: 0; }
+.fulfilName { font-weight: 700; font-size: 0.92rem; margin: 0 0 0.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fulfilMeta { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+.fulfilRight { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; flex-shrink: 0; }

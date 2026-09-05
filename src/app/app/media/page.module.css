@@ -667,3 +667,119 @@
   .editorLayout { grid-template-columns: 1fr; }
   .row2 { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   Inventory view (stat cards + product table + editor modal)
+   ============================================================ */
+.statRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+.statIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  color: var(--brand);
+  background: var(--brand-soft);
+}
+.statValue { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.statLabel { font-size: 0.78rem; color: var(--text-muted); margin: 0.1rem 0 0; }
+
+.invEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 3rem 1.5rem;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-xl);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.tableWrap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  overflow-x: auto;
+}
+.invTable { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 560px; }
+.invTable th {
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.invRow { cursor: pointer; transition: background var(--transition-fast); }
+.invRow:hover { background: var(--surface-hover); }
+.invTable td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.invTable tbody tr:last-child td { border-bottom: 0; }
+.numCol { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.actionCol { width: 3rem; text-align: right; }
+
+.invProduct { display: flex; align-items: center; gap: 0.7rem; min-width: 0; }
+.invThumb {
+  width: 2.4rem;
+  height: 2.4rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--surface-sunken);
+}
+.invName { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.stockBadge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.74rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.stkOk { color: var(--success-text); background: var(--success-soft); border: 1px solid var(--success-border); }
+.stkLow { color: var(--warning-text); background: var(--warning-soft); border: 1px solid var(--warning-border); }
+.stkOut { color: var(--danger-text); background: var(--danger-soft); border: 1px solid var(--danger-border); }
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+.editBtn:hover { color: var(--brand); border-color: var(--brand); }
+
+/* Wider editor modal (reuses .modal base from the media picker) */
+.editorModal { max-width: 920px; width: 100%; }
+.editorModalBody { }
+.editorModalBody .editorLayout { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+
+@media (max-width: 720px) {
+  .statRow { grid-template-columns: 1fr 1fr; }
+}

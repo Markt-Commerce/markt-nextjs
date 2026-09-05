@@ -2,6 +2,7 @@
 
 import { redirect } from 'next/navigation';
 import { apiFetch, apiFetchRaw, ApiError } from '@/lib/api/client';
+import { switchRole } from '@/lib/api/account';
 import { relaySetCookies, clearSession, getForwardedCookie, setMockSession } from '@/lib/api/session';
 
 export interface FormState {
@@ -30,6 +31,8 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
   const returnUrl = String(formData.get('returnUrl') ?? '') || '/app/dashboard';
+  // Which context the person chose to sign into (one account holds both roles).
+  const chosenRole = formData.get('role') === 'seller' ? 'seller' : 'buyer';
 
   if (!email || !password) return { error: 'Email and password are required.' };
 
@@ -42,6 +45,34 @@ export async function loginAction(_prev: FormState, formData: FormData): Promise
   }
 
   await relaySetCookies(res);
+
+  // The login response is the User — use it to honor the buyer/seller switcher.
+  const user = (await res.json().catch(() => null)) as
+    | { is_buyer?: boolean; is_seller?: boolean; current_role?: string }
+    | null;
+
+  if (user && (user.is_buyer !== undefined || user.is_seller !== undefined)) {
+    const hasChosen = chosenRole === 'seller' ? !!user.is_seller : !!user.is_buyer;
+    if (!hasChosen) {
+      // They picked a role this account doesn't have — sign back out and point
+      // them at the role they actually do have.
+      const actual = user.is_seller ? 'seller' : 'buyer';
+      await clearSession();
+      return {
+        error: `This email is registered as a ${actual} account. Sign in as ${actual}, or add a ${chosenRole} profile in Settings.`,
+      };
+    }
+    // Put them in the right context if they're not already there.
+    if (user.current_role && user.current_role !== chosenRole) {
+      const sessionCookie = res.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
+      try {
+        await switchRole(sessionCookie || undefined);
+      } catch {
+        // Non-fatal — they're signed in; the role just won't have flipped.
+      }
+    }
+  }
+
   redirect(returnUrl);
 }
 

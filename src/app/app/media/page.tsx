@@ -1,6 +1,7 @@
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { listMedia } from '@/lib/api/media';
 import { listMyProducts } from '@/lib/api/products';
+import { listSellerOrders } from '@/lib/api/orders';
 import { listCategoryTree } from '@/lib/api/categories';
 import { safeFetch } from '@/lib/api/safe';
 import type { CategoryTreeNode } from '@/lib/types/category';
@@ -26,18 +27,33 @@ function groupCategories(tree: CategoryTreeNode[]): CategoryGroup[] {
   }));
 }
 
-export default async function ProductManagerPage() {
+export default async function InventoryPage() {
   const user = await requireSession();
   const cookie = await getForwardedCookie();
-  const [mediaList, products, tree] = await Promise.all([
+  const [mediaList, products, tree, sellerItems] = await Promise.all([
     safeFetch(() => listMedia(cookie, user.id), EMPTY_LIST),
     safeFetch(() => listMyProducts(cookie), []),
     safeFetch(() => listCategoryTree(), []),
+    safeFetch(() => listSellerOrders(cookie), []),
   ]);
 
   // Defensive: only ever show the signed-in user's own uploads, even if the
   // backend ignores the user_id filter (the /media/ list isn't reliably scoped).
   const ownMedia = mediaList.media.filter((m) => !m.user_id || m.user_id === user.id);
 
-  return <ProductManager products={products} media={ownMedia} categories={groupCategories(tree)} />;
+  // Units ordered per product, so the inventory can show demand vs stock left.
+  const orderedByProduct: Record<string, number> = {};
+  for (const item of sellerItems) {
+    const pid = item.product?.id;
+    if (pid) orderedByProduct[pid] = (orderedByProduct[pid] ?? 0) + (item.quantity ?? 0);
+  }
+
+  return (
+    <ProductManager
+      products={products}
+      media={ownMedia}
+      categories={groupCategories(tree)}
+      orderedByProduct={orderedByProduct}
+    />
+  );
 }

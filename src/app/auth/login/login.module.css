@@ -50,6 +50,32 @@
 }
 .sub { font-size: 0.9rem; color: var(--text-muted); margin: 0 0 1.75rem; }
 
+/* Buyer / seller context switcher */
+.roleToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.3rem;
+  padding: 0.3rem;
+  border-radius: var(--radius-full);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+.rolePill {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+.rolePill:hover { color: var(--text); }
+.rolePillActive { background: var(--surface); color: var(--brand-text); box-shadow: var(--shadow-sm); }
+
 .form { display: flex; flex-direction: column; }
 
 /* Staggered entrance for each field/row. */

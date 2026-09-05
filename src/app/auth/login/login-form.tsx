@@ -47,6 +47,7 @@ function initials(name: string): string {
 export function LoginForm({ returnUrl }: { returnUrl?: string }) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
+  const [role, setRole] = useState<'buyer' | 'seller'>('buyer');
   const [active, setActive] = useState(0);
   // Controlled so React's post-action form reset doesn't wipe it — only the
   // (uncontrolled) password field clears on a failed sign-in attempt.
@@ -81,8 +82,30 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
           <h1 className={styles.heading}>Welcome back</h1>
           <p className={styles.sub}>Sign in to pick up where you left off.</p>
 
+          <div className={styles.roleToggle} role="tablist" aria-label="Sign in as">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={role === 'buyer'}
+              className={cn(styles.rolePill, role === 'buyer' && styles.rolePillActive)}
+              onClick={() => setRole('buyer')}
+            >
+              I&apos;m buying
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={role === 'seller'}
+              className={cn(styles.rolePill, role === 'seller' && styles.rolePillActive)}
+              onClick={() => setRole('seller')}
+            >
+              I&apos;m selling
+            </button>
+          </div>
+
           <form action={formAction} className={styles.form}>
             <input type="hidden" name="returnUrl" value={returnUrl ?? ''} />
+            <input type="hidden" name="role" value={role} />
 
             <div className={cn(styles.field, styles.reveal, styles.d1)}>
               <label className={styles.label} htmlFor="email">Email</label>

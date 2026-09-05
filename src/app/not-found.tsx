@@ -1,12 +1,11 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
 import styles from './not-found.module.css';
 
 const LINKS = [
+  { href: '/app/orders', label: 'Your Orders' },
   { href: '/app/marketplace', label: 'Marketplace' },
-  { href: '/app/community', label: 'Community' },
-  { href: '/auth/login', label: 'Sign In' },
-  { href: '/auth/register', label: 'Create Account' },
+  { href: '/app/community/social-feed', label: 'Community' },
+  { href: '/app/dashboard', label: 'Dashboard' },
 ];
 
 export default function NotFound() {
@@ -15,19 +14,22 @@ export default function NotFound() {
       <div className={styles.content}>
         <div className={styles.errorCode}>404</div>
         <h1>Page Not Found</h1>
-        <p>The page you&apos;re looking for doesn&apos;t exist or has been moved.</p>
+        <p>
+          The page you&apos;re looking for doesn&apos;t exist or has moved. If you just made a payment, don&apos;t worry —
+          your order is safe. You can find it under <strong>Your Orders</strong>.
+        </p>
 
         <div className={styles.actions}>
-          <Link href="/">
-            <Button variant="primary" size="lg">Go Home</Button>
+          <Link href="/app/dashboard" className={styles.primaryBtn}>
+            Go to Dashboard
           </Link>
-          <Link href="/app/marketplace">
-            <Button variant="secondary" size="lg">Browse Marketplace</Button>
+          <Link href="/app/orders" className={styles.secondaryBtn}>
+            View Your Orders
           </Link>
         </div>
 
         <div className={styles.helpfulLinks}>
-          <h3>Popular Pages</h3>
+          <h3>Popular pages</h3>
           <div className={styles.linksGrid}>
             {LINKS.map((link) => (
               <Link key={link.href} href={link.href} className={styles.helpfulLink}>
