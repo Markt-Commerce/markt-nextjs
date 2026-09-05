@@ -1,0 +1,240 @@
+====================================================================
+MARKT — USER-CENTRED EVALUATION
+"The app as it is" vs "what someone would actually want to use"
+Date: 2026-09-05
+====================================================================
+
+HOW THIS WAS EVALUATED (read this first)
+--------------------------------------------------------------------
+This is an honest, build-and-flow-grounded review, not a fabricated
+click-by-click QA. A true end-to-end live run isn't reliably possible
+from here because:
+  - the app is gated behind a real backend login that returns 403 until
+    an account's email is verified (no verified test account on hand), and
+  - Paystack payment has no test credentials wired.
+The build and lint are clean (0 errors). Everything below reflects the
+ACTUAL implemented behaviour of the code and the gaps already surfaced
+during the build — where a claim depends on the backend, it says so.
+
+Severity legend:
+  [BLOCKER] a real person likely abandons here
+  [MAJOR]   serious friction / trust problem
+  [MINOR]   noticeable but livable
+  [POLISH]  nice-to-have
+
+--------------------------------------------------------------------
+BOTTOM LINE
+--------------------------------------------------------------------
+Markt looks and feels like a real product. The UI is clean, on-brand,
+consistent, responsive, and the core buyer and seller journeys exist and
+are wired to a live API. As a *demo* or *investor walkthrough*, it's
+strong.
+
+As something a stranger would rely on to actually buy or sell, it is NOT
+there yet — and almost every remaining blocker is on the BACKEND, not the
+UI. The three that matter most: (1) people can't trust a purchase they
+get no email about, (2) the payment return path isn't proven end-to-end,
+(3) status changes don't notify the other party. Fix those and it crosses
+from "nice demo" to "usable".
+
+Readiness by journey (quick scorecard):
+  Discover / browse ........... GOOD
+  Sign up / sign in ........... OK, with a verification-gate friction
+  Buy (cart -> checkout) ...... OK, until payment
+  Pay & confirm ............... RISKY (backend-dependent)
+  Track my order .............. WEAK (no proactive updates)
+  Sell / inventory ............ GOOD
+  Fulfil orders (seller) ...... OK, but no buyer feedback loop
+  Community ................... GOOD
+  Chat / messaging ............ OK
+  Settings / account .......... GOOD
+  Notifications ............... WEAK (in-app only, and under-emitted)
+
+====================================================================
+DETAILED FINDINGS BY JOURNEY
+====================================================================
+
+1) DISCOVER / BROWSE  — GOOD
+   Expect: land somewhere, browse products without signing up, see a
+           product's detail, understand price and seller.
+   Has:    Root is a public marketplace; product cards open a public
+           preview; search, category + sub-category filters; prices in
+           naira with separators. Buying prompts sign-in. This is exactly
+           the "browse before commit" pattern people expect.
+   Gaps:   - [MINOR] Category filter is exact-match: a product only shows
+             under its own sub-category chip, not its parent. A shopper who
+             clicks the parent may think the shelf is empty.
+           - [MINOR] Search quality is entirely backend-driven; relevance
+             is unverified.
+           - [POLISH] No sort/relevance cues, no "recently viewed", thin
+             empty states.
+
+2) SIGN UP / SIGN IN  — OK, with real friction
+   Expect: create an account, get in quickly.
+   Has:    Full-screen split auth, buyer/seller switcher, a 3-step
+           register with live username check, verify-email flow with code
+           entry, password reset with code.
+   Gaps:   - [MAJOR] Email-verification gate: a new account cannot sign in
+             until the email is verified (backend returns 403). If the
+             verification email is slow or unbranded (it's not wired to the
+             app's own email system), this is where new users bounce. This
+             is the single biggest onboarding risk and it's backend-owned.
+           - [MINOR] The buyer/seller switcher errors helpfully if you pick
+             a role you don't have — good — but there's no one-click "add
+             the other role" from that error yet.
+
+3) BUY: CART -> CHECKOUT  — OK
+   Expect: add to cart, adjust quantity, enter/confirm address, pay.
+   Has:    Cart with quantity stepper and live subtotals; checkout collects
+           recipient name (required), phone, and a full address; "use saved
+           address" prefills and is now editable; order summary; errors
+           surface as toasts.
+   Gaps:   - [MINOR] If your saved address is incomplete, you must complete
+             it at checkout (now possible since fields are editable) — fine,
+             but there's no nudge in Settings to keep the saved address whole.
+           - [POLISH] No shipping-cost preview before the summary; the
+             10% coupon discount is a flat client-side assumption.
+
+4) PAY & CONFIRM  — RISKY (backend-dependent)  [BLOCKER-class if unfixed]
+   Expect: pay, come back to a clear "order confirmed", get a receipt.
+   Has:    Paystack initialize -> redirect; a callback_url is set back to
+           the order-confirmation page; that page reads ?paid=1 and shows
+           "confirmed" or "confirming…" without re-prompting payment.
+   Gaps:   - [BLOCKER] Unproven end-to-end. The observed 404 after paying
+             came from the backend's Paystack callback redirecting off-app.
+             The app now passes a callback_url, but the documented
+             /payments/initialize body doesn't officially accept one, so the
+             backend may ignore it. Until a real payment round-trips to the
+             confirmation page, this is a trust-breaker.
+           - [MAJOR] No emailed receipt (see Notifications).
+
+5) TRACK MY ORDER  — WEAK
+   Expect: know where my order is WITHOUT going to look; get told when it
+           ships.
+   Has:    A clean 4-stop journey (Placed/Preparing/Shipped/Delivered),
+           items, address, activity, totals. The journey now derives from
+           item progress so it advances correctly even when the order-level
+           status lags.
+   Gaps:   - [MAJOR] Zero proactive updates. When a seller ships, the buyer
+             is NOT notified — no email, no push, and (today) no in-app
+             notification is even created. A buyer has to keep re-opening
+             the order to learn anything. Backend must emit notifications on
+             status change.
+           - [MINOR] "Delivered" relies on the seller manually marking it;
+             the API has a whole rider/POD delivery domain that isn't built
+             into the app, so there's no independent delivery confirmation.
+
+6) SELL / INVENTORY  — GOOD
+   Expect: add products, see stock and demand, edit fast.
+   Has:    Inventory view with stat cards (products, units in stock, low/out
+           of stock, units ordered), a product table with stock badges, and
+           an Add/Edit-product modal with grouped panels + an image picker.
+   Gaps:   - [MINOR] No bulk actions, no low-stock alerting beyond the badge,
+             no category shown per row (the product payload doesn't expose it).
+           - [POLISH] "Units ordered" is a lifetime count, not a period.
+
+7) FULFIL ORDERS (SELLER)  — OK, but the loop is open
+   Expect: see incoming orders, advance them, and have the buyer kept in
+           the loop.
+   Has:    A seller "Orders to fulfil" list and, on the order detail, a
+           Fulfilment panel that advances each item (prepare -> ship ->
+           deliver) via the real seller endpoint.
+   Gaps:   - [MAJOR] Advancing status doesn't notify the buyer (same
+             backend gap as #5). The seller does the right thing and the
+             buyer never hears about it.
+           - [MINOR] Order-level status can lag item status on the backend;
+             the UI compensates by deriving from items, but the underlying
+             rollup is worth fixing server-side.
+
+8) COMMUNITY  — GOOD
+   Expect: a feed, posts, follow people.
+   Has:    Feed, post detail, comments, follow (now seeded from real state
+           on the post page).
+   Gaps:   - [MINOR] "People to follow" suggestions still show Follow after
+             you follow + refresh (no per-suggestion follow flag to seed
+             from). Likes/comments now deep-link to the post.
+
+9) CHAT / MESSAGING  — OK
+   Has:    Room list, thread view, start-a-chat with a seller.
+   Gaps:   - [MINOR] Polling-based; no typing/read receipts; new-message
+             notifications depend on the same emit gap.
+
+10) SETTINGS / ACCOUNT  — GOOD
+   Has:    One tabbed hub: Profile, Account (buyer/seller roles), Address,
+           Billings (wallet balance + transactions), Notifications
+           preferences, Privacy, and a real Delete-account (with a
+           can-delete check).
+   Gaps:   - [MINOR] Billings is read-only — no top-up/withdraw UI yet
+             (endpoints exist).
+
+11) NOTIFICATIONS  — WEAK (the connective tissue is missing)
+   Expect: get told when things happen — by email at least for money and
+           orders.
+   Has:    A well-designed in-app notifications page (unread/read tabs,
+           search, categories, deep links) and a Notifications preferences
+           tab whose choices are saved.
+   Gaps:   - [BLOCKER-class] No email delivery at all (in-app + push only),
+             and — more fundamentally — many events don't even CREATE an
+             in-app notification (order shipped, new order for seller, etc.).
+             A spec for the backend is written (docs/backend/
+             email-notifications-spec.md) but until the backend emits on
+             events and sends email, the app feels silent.
+
+====================================================================
+CROSS-CUTTING ISSUES (mostly backend, all trust-related)
+====================================================================
+  A) [BLOCKER] No transactional email anywhere — no order confirmation,
+     no "shipped", no receipt, no verification that feels first-party.
+     People do not trust money-in-an-app with zero email trail.
+  B) [BLOCKER] Payment round-trip unproven; risk of landing off-app.
+  C) [MAJOR]  Events don't reliably notify the other party (buyer<->seller).
+  D) [MAJOR/SECURITY] GET /media/ is readable with NO authentication and
+     can expose every user's uploaded files. The app scopes what it shows,
+     but the endpoint itself must be gated server-side.
+  E) [MINOR]  Whole domains exist in the API but not the app yet: delivery/
+     rider flow + POD, wallet top-up/withdraw, gamification, seller
+     analytics timeseries. Their absence is why "delivered" and payouts
+     feel manual.
+
+====================================================================
+WHAT'S GENUINELY GOOD (don't lose these)
+====================================================================
+  - Cohesive, warm, on-brand design system; consistent across ~30 screens;
+    light/dark; responsive; naira formatting done centrally.
+  - "Browse before sign-up" public marketplace + gated app is the right
+    consumer-marketplace shape.
+  - Role-awareness is real: buyers and sellers get genuinely different
+    dashboards, orders, and tools from ONE account.
+  - Honest engineering: errors surface (toasts + dev logs), forms don't
+    wipe on error, the architecture (same-origin BFF, session cookie relay,
+    server actions) is sound and production-shaped.
+  - Inventory + fulfilment + a tabbed settings hub make the seller side feel
+    like a real back-office, not a toy.
+
+====================================================================
+TOP PRIORITIES TO CLOSE THE GAP (in order)
+====================================================================
+  1. Make ONE real payment round-trip land on the confirmation page.
+     (Backend: honor callback_url or set the Paystack redirect target.)
+  2. Emit an in-app notification on every state change, and send the
+     matching email — start with order placed / shipped / delivered and
+     payment success. (Backend: the spec is written.)
+  3. Gate GET /media/ behind auth. (Backend, security.)
+  4. Smooth the email-verification onboarding: branded, fast, with a clear
+     resend and a "we sent you a link" state that doesn't dead-end.
+  5. Prove the seller-ships -> buyer-sees-it loop end-to-end.
+  6. Category filter: let a parent category include its sub-categories, or
+     always show sub-chips so nothing looks empty.
+  7. Wallet top-up/withdraw UI (endpoints already exist).
+  8. Add a period to seller metrics and a low-stock alert.
+  9. Empty/loading states pass across the app.
+ 10. A genuine mobile click-through (layouts are responsive but unverified
+     on a real device).
+
+--------------------------------------------------------------------
+ONE-LINE VERDICT
+--------------------------------------------------------------------
+A well-built, good-looking marketplace whose remaining "would I actually
+use this?" gaps are almost entirely backend trust plumbing — email,
+payment proof, and notifications — not the interface.
+====================================================================
