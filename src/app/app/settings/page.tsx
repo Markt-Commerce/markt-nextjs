@@ -11,6 +11,7 @@ import { SettingsTabs, type SettingsTab } from './settings-tabs';
 import { AvatarUploader } from '../profile/avatar-uploader';
 import { ProfileForm } from '../profile/profile-form';
 import { PrivacyForm, type PrivacySettings } from './privacy/privacy-form';
+import { NotificationPreferences, DEFAULT_NOTIF_PREFS, type NotificationPrefs } from './notification-preferences';
 import styles from './page.module.css';
 
 const PRIVACY_DEFAULTS: PrivacySettings = {
@@ -45,7 +46,15 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const { tab } = await searchParams;
   const user = await requireSession();
   const cookie = await getForwardedCookie();
-  const storedPrivacy = await safeFetch(() => getUserSettings(cookie), {});
+  const storedSettings = await safeFetch(() => getUserSettings(cookie), {});
+  const storedPrivacy = storedSettings;
+
+  const storedNotif = (storedSettings.notification_preferences ?? {}) as Partial<NotificationPrefs>;
+  const notifPrefs: NotificationPrefs = {
+    channels: { ...DEFAULT_NOTIF_PREFS.channels, ...(storedNotif.channels ?? {}) },
+    categories: { ...DEFAULT_NOTIF_PREFS.categories, ...(storedNotif.categories ?? {}) },
+    digest: storedNotif.digest ?? DEFAULT_NOTIF_PREFS.digest,
+  };
 
   const tabs: SettingsTab[] = [
     {
@@ -97,6 +106,15 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       id: 'billings',
       label: 'Billings',
       content: <BillingsPanel cookie={cookie} />,
+    },
+    {
+      id: 'notifications',
+      label: 'Notifications',
+      content: (
+        <Section title="Notifications" desc="Choose how and when Markt reaches you.">
+          <NotificationPreferences initial={notifPrefs} />
+        </Section>
+      ),
     },
     {
       id: 'privacy',

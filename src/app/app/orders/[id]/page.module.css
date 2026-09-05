@@ -154,3 +154,35 @@
 .dangerBtn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .noteText { font-size: 0.78rem; color: var(--text-subtle); }
+
+/* Seller fulfilment panel */
+.fulfilLede { font-size: 0.82rem; color: var(--text-muted); margin: 0 0 1rem; }
+.fulfilRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+}
+.fulfilRow:first-of-type { border-top: 0; }
+.fulfilInfo { min-width: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.fulfilName { font-size: 0.9rem; font-weight: 600; margin: 0; }
+.fulfilBtn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--brand);
+  color: var(--brand-contrast);
+  border: 0;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-md);
+  font-size: 0.83rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.fulfilBtn:hover:not(:disabled) { background: var(--brand-hover); transform: translateY(-1px); }
+.fulfilBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.fulfilDone { flex-shrink: 0; font-size: 0.82rem; font-weight: 600; color: var(--success-text); }

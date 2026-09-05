@@ -11,6 +11,7 @@ import {
   switchRole,
   updateAddress,
 } from '@/lib/api/account';
+import { updateUserSettings } from '@/lib/api/settings';
 import { clearSession, getForwardedCookie } from '@/lib/api/session';
 
 export interface SettingsFormState {
@@ -62,6 +63,22 @@ export async function enableBuyerAction(_prev: SettingsFormState, formData: Form
   revalidatePath('/app/settings');
   revalidatePath('/app', 'layout');
   return { success: true };
+}
+
+/**
+ * Save notification preferences into the freeform /users/settings blob under
+ * `notification_preferences`. Works today; when the backend adds the dedicated
+ * email pipeline (see docs/backend/email-notifications-spec.md) it can read the
+ * same shape.
+ */
+export async function saveNotificationPrefsAction(prefs: Record<string, unknown>): Promise<{ error?: string }> {
+  try {
+    await updateUserSettings({ notification_preferences: prefs }, await getForwardedCookie());
+  } catch {
+    return { error: 'Could not save. Try again.' };
+  }
+  revalidatePath('/app/settings');
+  return {};
 }
 
 export async function deleteAccountAction(_prev: SettingsFormState, formData: FormData): Promise<SettingsFormState> {

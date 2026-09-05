@@ -2,12 +2,22 @@ import Link from 'next/link';
 import { formatNaira } from '@/lib/format';
 import { Check, Truck, XCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
-import { getForwardedCookie } from '@/lib/api/session';
-import { getOrder, trackOrder } from '@/lib/api/orders';
+import { getForwardedCookie, requireSession } from '@/lib/api/session';
+import { getOrder, listSellerOrders, trackOrder } from '@/lib/api/orders';
 import { getProduct } from '@/lib/api/products';
 import { primaryImageUrl } from '@/lib/types/product';
 import { CancelButton } from './cancel-button';
+import { FulfilButton } from './fulfil-button';
 import styles from './page.module.css';
+
+// What a seller can advance an item to next (delivery is confirmed here too,
+// since not every shop uses the rider flow).
+const NEXT_STEP: Record<string, { status: string; label: string }> = {
+  pending: { status: 'processing', label: 'Start preparing' },
+  processing: { status: 'shipped', label: 'Mark as shipped' },
+  ready_for_delivery: { status: 'shipped', label: 'Mark as shipped' },
+  shipped: { status: 'delivered', label: 'Mark as delivered' },
+};
 
 const STATUS_CLASS: Record<string, string> = {
   pending_payment: 'statusPending',
@@ -42,7 +52,9 @@ function str(record: Record<string, unknown> | undefined, key: string): string |
 
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const user = await requireSession();
   const cookie = await getForwardedCookie();
+  const isSeller = user.current_role === 'seller';
 
   let order;
   try {
@@ -54,6 +66,12 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       </div>
     );
   }
+
+  // Seller fulfilment: the order's items don't carry ids, but the seller's own
+  // order lines do — match them to this order so the seller can advance status.
+  const sellerItems = isSeller
+    ? (await listSellerOrders(cookie).catch(() => [])).filter((it) => it.order_id === id)
+    : [];
 
   const tracking = await trackOrder(id, cookie).catch(() => null);
   const products = await Promise.all(order.items.map((item) => getProduct(item.product_id, cookie).catch(() => null)));
@@ -126,6 +144,36 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         })}
       </div>
 
+      {isSeller && sellerItems.length > 0 && (
+        <div className={styles.section}>
+          <p className={styles.sectionTitle}>Fulfilment</p>
+          <p className={styles.fulfilLede}>Advance each item as you prepare it and hand it off.</p>
+          {sellerItems.map((it) => {
+            const status = it.status ?? 'pending';
+            const next = NEXT_STEP[status];
+            return (
+              <div key={it.id} className={styles.fulfilRow}>
+                <div className={styles.fulfilInfo}>
+                  <p className={styles.fulfilName}>
+                    {it.product?.name ?? 'Item'} · Qty {it.quantity}
+                  </p>
+                  <span className={cn(styles.statusBadge, styles[STATUS_CLASS[status] ?? 'statusPending'])}>
+                    {status.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                {next ? (
+                  <FulfilButton itemId={it.id} orderId={id} nextStatus={next.status} label={next.label} />
+                ) : (
+                  <span className={styles.fulfilDone}>
+                    {status === 'delivered' ? 'Delivered' : status === 'cancelled' ? 'Cancelled' : 'Done'}
+                  </span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {address && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Shipping address</p>
@@ -178,7 +226,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      {CANCELLABLE.has(order.status) && <CancelButton orderId={order.id} />}
+      {!isSeller && CANCELLABLE.has(order.status) && <CancelButton orderId={order.id} />}
     </div>
   );
 }

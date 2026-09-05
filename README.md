@@ -72,9 +72,9 @@ Open [http://localhost:3000](http://localhost:3000).
 | Dashboard | `/app/dashboard` | Role-aware — sellers lead with their figures + onboarding. |
 | Marketplace | `/app/marketplace` | Server-fetched grid, URL-driven filters, category + **sub-category** chips. |
 | Inventory | `/app/media` | Sellers' **Inventory** — stock on hand, units ordered, low/out-of-stock; **Add/Edit product in a modal** with an image picker (the reusable media library). |
-| Orders | `/app/orders` | **Role-aware:** buyers see "My Orders"; sellers see "Orders to fulfil" (`GET /orders/seller`). |
+| Orders | `/app/orders` | **Role-aware:** buyers see "My Orders"; sellers see "Orders to fulfil" (`GET /orders/seller`) and can **advance item status** (prepare → ship → deliver) on the order detail. |
 | Cart / Checkout | `/app/cart`, `/app/checkout` | Checkout collects recipient name + full address (offers your saved address), then Paystack. |
-| Settings | `/app/settings` | Tabbed hub: Profile, Account, Address, **Billings** (wallet), Privacy, Danger zone. |
+| Settings | `/app/settings` | Tabbed hub: Profile, Account, Address, **Billings** (wallet), **Notifications**, Privacy, Danger zone. |
 | Community | `/app/community/*` | Social feed, posts, comments, follow. |
 | Payments | Paystack | `initializePayment` passes a `callback_url` back to the order-confirmation page. |
 
