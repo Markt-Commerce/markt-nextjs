@@ -102,6 +102,26 @@ the unit users toggle (not raw types — too granular). Proposed mapping:
 | reviews     | product_review, review_upvote                                            | ❌ |
 | marketing   | promotional                                                              | ❌ |
 
+## 3.1 Trigger points — events that MUST create a notification
+
+Email/push can only fan out from a notification that actually exists. Several
+transitions today change state **without creating a notification**, so the other
+party never hears about it. At minimum, create a notification (→ then email/push
+per prefs) on:
+
+- **Order status / fulfilment changes** — when a seller advances an item
+  (`PATCH /orders/seller/items/{id}`) or the order rolls up: notify the **buyer**
+  ("Your order is being prepared / has shipped / was delivered"). This is the gap
+  we're hitting now: advancing an item updates the item, but no buyer notification
+  is emitted.
+- **New order placed** — notify the **seller** ("New order to prepare").
+- **Payment success/failure**, **payout**, **refund/return decision**.
+- **New offer on a request**, **offer accepted/rejected**.
+- **New chat message**, and social events (like/comment/follow) per prefs.
+
+Each notification should carry `reference_type` + `reference_id` (e.g.
+`order` + order id) so the app deep-links correctly.
+
 ## 4. Digest vs immediate
 
 Best practice for 2026 is to **batch low-priority events** so a burst doesn't send 20

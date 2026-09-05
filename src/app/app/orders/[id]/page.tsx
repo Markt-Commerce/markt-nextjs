@@ -45,6 +45,22 @@ function journeyIndex(status: string): number {
   return 0;
 }
 
+// The order-level status can lag behind its items (a seller advances items, not
+// the order). So the displayed status is derived from the items' progress —
+// an order is only as far along as its least-advanced item.
+const STATUS_RANK: Record<string, number> = {
+  pending_payment: 0,
+  pending: 1,
+  processing: 2,
+  ready_for_delivery: 2,
+  shipped: 3,
+  delivered: 4,
+};
+const RANK_STATUS = ['pending', 'pending', 'processing', 'shipped', 'delivered'];
+function rankOf(status?: string): number {
+  return status && status in STATUS_RANK ? STATUS_RANK[status] : 1;
+}
+
 function str(record: Record<string, unknown> | undefined, key: string): string | undefined {
   const value = record?.[key];
   return typeof value === 'string' ? value : undefined;
@@ -77,8 +93,34 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const products = await Promise.all(order.items.map((item) => getProduct(item.product_id, cookie).catch(() => null)));
 
   const address = order.shipping_address;
+
+  // Derive the shown status from item progress (the seller's fresh items when we
+  // have them, otherwise the order's own items), so the journey/badge advance as
+  // soon as items do — the order-level status can lag behind.
+  const itemStatuses = (isSeller && sellerItems.length
+    ? sellerItems.map((i) => i.status)
+    : order.items.map((i) => i.status)
+  ).filter(Boolean) as string[];
   const stopped = STOPPED.has(order.status);
-  const currentStep = journeyIndex(order.status);
+  const effectiveStatus =
+    stopped || itemStatuses.length === 0
+      ? order.status
+      : RANK_STATUS[Math.max(rankOf(order.status), Math.min(...itemStatuses.map(rankOf)))];
+  const currentStep = journeyIndex(effectiveStatus);
+
+  // Build address lines, dropping any that are empty (e.g. a missing street),
+  // so we never render a blank line.
+  const addrLines = address
+    ? [
+        str(address, 'recipient_name'),
+        [str(address, 'house_number'), str(address, 'street')].filter(Boolean).join(' '),
+        [[str(address, 'city'), str(address, 'state')].filter(Boolean).join(', '), str(address, 'postal_code')]
+          .filter(Boolean)
+          .join(' '),
+        str(address, 'country'),
+        str(address, 'phone_number'),
+      ].filter((l): l is string => !!l && l.trim().length > 0)
+    : [];
 
   return (
     <div className={styles.page}>
@@ -91,7 +133,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           <h1 className={styles.title}>Order #{order.order_number}</h1>
           <p className={styles.subtitle}>Placed {new Date(order.created_at).toLocaleDateString()}</p>
         </div>
-        <span className={cn(styles.statusBadge, styles[STATUS_CLASS[order.status]])}>{order.status.replace('_', ' ')}</span>
+        <span className={cn(styles.statusBadge, styles[STATUS_CLASS[effectiveStatus] ?? 'statusPending'])}>{effectiveStatus.replace(/_/g, ' ')}</span>
       </div>
 
       {stopped ? (
@@ -174,15 +216,16 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {address && (
+      {addrLines.length > 0 && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>Shipping address</p>
           <p className={styles.addressText}>
-            {str(address, 'house_number')} {str(address, 'street')}
-            <br />
-            {str(address, 'city')}, {str(address, 'state')} {str(address, 'postal_code')}
-            <br />
-            {str(address, 'country')}
+            {addrLines.map((line, i) => (
+              <span key={i}>
+                {line}
+                {i < addrLines.length - 1 && <br />}
+              </span>
+            ))}
           </p>
         </div>
       )}

@@ -110,12 +110,9 @@ export function CheckoutForm({
             )}
 
             <ContactFields prefix="shipping" values={ship} onChange={(k, v) => setShip((s) => ({ ...s, [k]: v }))} />
-            <AddressGrid
-              prefix="shipping"
-              values={ship}
-              onChange={(k, v) => setShip((s) => ({ ...s, [k]: v }))}
-              readOnly={useSaved && !!saved}
-            />
+            {/* Always editable — "use saved" just prefills, so an incomplete saved
+                address (e.g. missing street) can still be completed here. */}
+            <AddressGrid prefix="shipping" values={ship} onChange={(k, v) => setShip((s) => ({ ...s, [k]: v }))} />
           </div>
 
           <div className={styles.section}>
