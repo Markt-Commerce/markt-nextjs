@@ -57,10 +57,30 @@
   overflow: hidden;
 }
 
-.qtyBtn { border: 0; background: var(--surface-2); width: 1.9rem; height: 1.9rem; cursor: pointer; color: var(--text); }
+.qtyBtn {
+  border: 0;
+  background: var(--surface-2);
+  width: 1.9rem;
+  height: 1.9rem;
+  cursor: pointer;
+  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
 .qtyBtn:hover:not(:disabled) { background: var(--surface-hover); }
 .qtyBtn:disabled { opacity: 0.4; cursor: not-allowed; }
-.qtyValue { width: 2rem; text-align: center; font-weight: 700; font-size: 0.85rem; }
+.qtyValue {
+  min-width: 2rem;
+  height: 1.9rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
 
 .itemSubtotal { font-weight: 800; color: var(--text); }
 

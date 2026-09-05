@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
+import { formatNaira } from '@/lib/format';
 import { ImagePlus, Tag, X } from 'lucide-react';
 import { createPostAction } from './actions';
 import styles from './social-feed/page.module.css';
@@ -68,7 +69,7 @@ export function Composer({ products }: { products: TaggableProduct[] }) {
           <img src={tagged.image || '/Logo.png'} alt="" className={styles.taggedThumb} />
           <div className={styles.taggedInfo}>
             <span className={styles.taggedName}>{tagged.name}</span>
-            <span className={styles.taggedPrice}>₦{tagged.price.toFixed(2)}</span>
+            <span className={styles.taggedPrice}>{formatNaira(tagged.price)}</span>
           </div>
           <button type="button" className={styles.taggedRemove} onClick={() => setTagged(null)} aria-label="Remove tagged product">
             <X size={14} />
@@ -91,7 +92,7 @@ export function Composer({ products }: { products: TaggableProduct[] }) {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={p.image || '/Logo.png'} alt="" className={styles.pickerThumb} />
               <span className={styles.pickerName}>{p.name}</span>
-              <span className={styles.pickerPrice}>₦{p.price.toFixed(2)}</span>
+              <span className={styles.pickerPrice}>{formatNaira(p.price)}</span>
             </button>
           ))}
         </div>

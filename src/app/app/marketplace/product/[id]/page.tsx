@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { BadgeCheck, Star } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { apiFetch } from '@/lib/api/client';
@@ -78,10 +79,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           </div>
 
           <div className={styles.priceRow}>
-            <span className={styles.price}>₦{product.price.toFixed(2)}</span>
+            <span className={styles.price}>{formatNaira(product.price)}</span>
             {hasDiscount(product) && (
               <>
-                <span className={styles.comparePrice}>₦{product.compare_at_price!.toFixed(2)}</span>
+                <span className={styles.comparePrice}>{formatNaira(product.compare_at_price!)}</span>
                 <span className={styles.discountTag}>Save {discountPercent(product)}%</span>
               </>
             )}

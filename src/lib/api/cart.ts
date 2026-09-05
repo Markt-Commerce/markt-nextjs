@@ -23,6 +23,8 @@ export async function applyCoupon(code: string, cookie: string | undefined): Pro
 }
 
 export interface CheckoutAddress {
+  recipient_name: string;
+  phone_number?: string;
   street: string;
   house_number: string;
   city: string;

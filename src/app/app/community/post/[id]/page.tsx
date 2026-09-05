@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { MessageCircle } from 'lucide-react';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { getPost, getPostComments } from '@/lib/api/social';
+import { getPublicProfile } from '@/lib/api/account';
 import { safeFetch } from '@/lib/api/safe';
 import { postThumbnail } from '@/lib/types/post';
 import { imageOrFallback } from '@/lib/img';
@@ -35,6 +36,10 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
   const taggedProductId = post.products?.[0]?.product_id;
   const isOwnPost = post.user_id === user.id;
 
+  // Seed the follow button with the real state so it doesn't reset to "Follow"
+  // after a refresh once you've already followed the author.
+  const authorProfile = isOwnPost ? null : await safeFetch(() => getPublicProfile(post.user_id, cookie), null);
+
   return (
     <div className={styles.page}>
       <nav className={styles.breadcrumb}>
@@ -49,7 +54,7 @@ export default async function PostDetailPage({ params }: { params: Promise<{ id:
             <p className={styles.authorName}>{post.user?.username ?? 'User'}</p>
             <p className={styles.postTime}>{new Date(post.created_at).toLocaleString()}</p>
           </div>
-          {!isOwnPost && <FollowButton userId={post.user_id} />}
+          {!isOwnPost && <FollowButton userId={post.user_id} initialFollowing={authorProfile?.is_followed ?? false} />}
         </div>
 
         {image && (

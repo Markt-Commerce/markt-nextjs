@@ -126,29 +126,73 @@ function SortDropdown({ value, onChange }: { value: string; onChange: (value: st
   );
 }
 
+/** Find the path (ancestors + node) to the category with this id, if present. */
+function findPath(nodes: CategoryTreeNode[], id: string, trail: CategoryTreeNode[] = []): CategoryTreeNode[] | null {
+  for (const node of nodes) {
+    const next = [...trail, node];
+    if (String(node.id) === id) return next;
+    if (node.children?.length) {
+      const found = findPath(node.children, id, next);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 export function CategoryChips({ categories }: { categories: CategoryTreeNode[] }) {
   const searchParams = useSearchParams();
   const pushParams = useParamWriter();
   const selected = searchParams.get('category');
 
+  // The real API filters by category through a different endpoint than
+  // price/search, so choosing one clears those rather than silently ignoring
+  // them. Filtering is by exact category id, so a product in a sub-category
+  // only appears under that sub-category chip — hence the second row.
+  const choose = (id: string | null) => pushParams({ category: id, min: null, max: null });
+
+  const path = selected ? findPath(categories, selected) : null;
+  const activeTop = path?.[0] ?? null;
+  const subcategories = activeTop?.children ?? [];
+
   return (
-    <div className={styles.chipRow}>
-      <button type="button" className={cn(styles.chip, !selected && styles.chipActive)} onClick={() => pushParams({ category: null })}>
-        All
-      </button>
-      {categories.map((node) => (
-        <button
-          key={node.id}
-          type="button"
-          className={cn(styles.chip, selected === String(node.id) && styles.chipActive)}
-          // The real API filters by category through a different endpoint
-          // than price/search, so choosing one clears those rather than
-          // silently ignoring them.
-          onClick={() => pushParams({ category: selected === String(node.id) ? null : String(node.id), min: null, max: null })}
-        >
-          {node.name}
+    <>
+      <div className={styles.chipRow}>
+        <button type="button" className={cn(styles.chip, !selected && styles.chipActive)} onClick={() => choose(null)}>
+          All
         </button>
-      ))}
-    </div>
+        {categories.map((node) => (
+          <button
+            key={node.id}
+            type="button"
+            className={cn(styles.chip, activeTop?.id === node.id && styles.chipActive)}
+            onClick={() => choose(activeTop?.id === node.id && !node.children?.length ? null : String(node.id))}
+          >
+            {node.name}
+          </button>
+        ))}
+      </div>
+
+      {subcategories.length > 0 && (
+        <div className={cn(styles.chipRow, styles.subChipRow)}>
+          <button
+            type="button"
+            className={cn(styles.chip, styles.subChip, selected === String(activeTop!.id) && styles.chipActive)}
+            onClick={() => choose(String(activeTop!.id))}
+          >
+            All {activeTop!.name}
+          </button>
+          {subcategories.map((sub) => (
+            <button
+              key={sub.id}
+              type="button"
+              className={cn(styles.chip, styles.subChip, selected === String(sub.id) && styles.chipActive)}
+              onClick={() => choose(String(sub.id))}
+            >
+              {sub.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </>
   );
 }

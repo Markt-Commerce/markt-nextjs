@@ -1,6 +1,7 @@
 'use client';
 
 import { useTransition } from 'react';
+import { formatNaira } from '@/lib/format';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { primaryImageUrl } from '@/lib/types/product';
 import type { CartItem } from '@/lib/types/cart';
@@ -31,7 +32,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
       <img src={imageUrl} alt={item.product.name} className={styles.itemImage} />
       <div className={styles.itemBody}>
         <p className={styles.itemName}>{item.product.name}</p>
-        <p className={styles.itemUnitPrice}>₦{item.product_price.toFixed(2)} each</p>
+        <p className={styles.itemUnitPrice}>{formatNaira(item.product_price)} each</p>
         {isInvalid && <p className={styles.invalidTag}>Only {item.product.stock} left — update quantity</p>}
         <div className={styles.itemFooter}>
           <div className={styles.qtyControl}>
@@ -48,7 +49,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
               <Plus size={12} />
             </button>
           </div>
-          <span className={styles.itemSubtotal}>₦{(item.product_price * item.quantity).toFixed(2)}</span>
+          <span className={styles.itemSubtotal}>{formatNaira((item.product_price * item.quantity))}</span>
         </div>
         <button type="button" className={styles.removeBtn} onClick={remove} disabled={isPending}>
           <Trash2 size={12} /> Remove

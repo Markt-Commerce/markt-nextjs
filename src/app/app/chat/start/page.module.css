@@ -19,9 +19,12 @@
 .subtitle { color: var(--gray-text); font-size: 0.88rem; margin: 0 0 1.5rem; }
 
 .list { display: flex; flex-direction: column; gap: 0.6rem; }
+.list form { width: 100%; }
 
 .row {
   display: flex;
+  width: 100%;
+  box-sizing: border-box;
   align-items: center;
   gap: 0.85rem;
   background: var(--surface);

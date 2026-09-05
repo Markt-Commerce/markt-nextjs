@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import {
   ArrowUpRight,
   CheckCircle2,
@@ -142,7 +143,7 @@ export default async function DashboardPage() {
           <div className={styles.analyticsGrid}>
             <div className={styles.stat}>
               <p className={styles.statLabel}>Revenue</p>
-              <p className={styles.statValue}>{analytics ? `₦${analytics.revenue_30d.toFixed(2)}` : '—'}</p>
+              <p className={styles.statValue}>{analytics ? formatNaira(analytics.revenue_30d) : '—'}</p>
             </div>
             <div className={styles.stat}>
               <p className={styles.statLabel}>Orders</p>

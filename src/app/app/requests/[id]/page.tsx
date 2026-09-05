@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { BadgeCheck, Eye } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
@@ -75,7 +76,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         <p className={styles.description}>{request.description}</p>
 
         <div className={styles.metaRow}>
-          {!!request.budget && <span className={styles.budgetChip}>Budget ${request.budget.toFixed(2)}</span>}
+          {!!request.budget && <span className={styles.budgetChip}>Budget {formatNaira(request.budget)}</span>}
           <span className={styles.views}>
             <Eye size={13} /> {request.views} views
           </span>
@@ -88,7 +89,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
 
       {myOffer && !isOwner && (
         <div className={styles.myOfferNote}>
-          You offered {myOffer.price ? `₦${myOffer.price.toFixed(2)}` : ''} —{' '}
+          You offered {myOffer.price ? formatNaira(myOffer.price) : ''} —{' '}
           <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[myOffer.status]])}>{myOffer.status.toLowerCase()}</span>
         </div>
       )}
@@ -117,7 +118,7 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                         <BadgeCheck size={13} style={{ marginLeft: 4, color: 'var(--info)' }} />
                       )}
                     </p>
-                    <span className={styles.offerPrice}>₦{offer.price.toFixed(2)}</span>
+                    <span className={styles.offerPrice}>{formatNaira(offer.price)}</span>
                   </div>
                   {offer.message && <p className={styles.offerMessage}>{offer.message}</p>}
                   <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[offer.status]])}>{offer.status.toLowerCase()}</span>

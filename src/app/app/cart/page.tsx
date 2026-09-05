@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { getCart } from '@/lib/api/cart';
 import { safeFetch } from '@/lib/api/safe';
@@ -55,18 +56,18 @@ export default async function CartPage() {
 
           <div className={styles.summaryRow}>
             <span>Subtotal</span>
-            <span>₦{subtotal.toFixed(2)}</span>
+            <span>{formatNaira(subtotal)}</span>
           </div>
           {discount > 0 && (
             <div className={styles.summaryRow}>
               <span>Discount</span>
-              <span>-${discount.toFixed(2)}</span>
+              <span>-{formatNaira(discount)}</span>
             </div>
           )}
           <div className={styles.tearLine} />
           <div className={styles.summaryTotal}>
             <span>Total</span>
-            <span>₦{(subtotal - discount).toFixed(2)}</span>
+            <span>{formatNaira((subtotal - discount))}</span>
           </div>
 
           <Link href="/app/checkout" className={styles.checkoutBtn} style={{ marginTop: '1rem' }}>

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { BadgeCheck, Star } from 'lucide-react';
 import { discountPercent, hasDiscount, isOutOfStock, primaryImageUrl, type Product } from '@/lib/types/product';
 import { FavoriteButton } from './FavoriteButton';
@@ -59,8 +60,8 @@ export function ProductCard({
         )}
 
         <div className={styles.priceRow}>
-          <span className={styles.price}>₦{product.price.toFixed(2)}</span>
-          {discounted && <span className={styles.comparePrice}>₦{product.compare_at_price!.toFixed(2)}</span>}
+          <span className={styles.price}>{formatNaira(product.price)}</span>
+          {discounted && <span className={styles.comparePrice}>{formatNaira(product.compare_at_price!)}</span>}
         </div>
       </div>
     </Link>

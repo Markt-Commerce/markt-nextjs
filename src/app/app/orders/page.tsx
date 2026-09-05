@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie } from '@/lib/api/session';
 import { listOrders } from '@/lib/api/orders';
@@ -44,7 +45,7 @@ export default async function OrdersPage() {
                 <span className={styles.orderDate}>
                   {new Date(order.created_at).toLocaleDateString()} · {orderTotalItems(order)} item{orderTotalItems(order) === 1 ? '' : 's'}
                 </span>
-                <span className={styles.total}>₦{orderTotal(order).toFixed(2)}</span>
+                <span className={styles.total}>{formatNaira(orderTotal(order))}</span>
               </div>
             </Link>
           ))}

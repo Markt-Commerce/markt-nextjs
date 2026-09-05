@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { Check, Truck, XCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie } from '@/lib/api/session';
@@ -117,7 +118,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <div className={styles.itemBody}>
                 <p className={styles.itemName}>{product?.name ?? item.product_id}</p>
                 <p className={styles.itemMeta}>
-                  Qty {item.quantity} · <span className={styles.itemPrice}>₦{(item.price * item.quantity).toFixed(2)}</span>
+                  Qty {item.quantity} · <span className={styles.itemPrice}>{formatNaira((item.price * item.quantity))}</span>
                 </p>
               </div>
             </div>
@@ -156,24 +157,24 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         <p className={styles.sectionTitle}>Summary</p>
         <div className={styles.totalsRow}>
           <span>Subtotal</span>
-          <span>₦{order.subtotal.toFixed(2)}</span>
+          <span>{formatNaira(order.subtotal)}</span>
         </div>
         {!!order.shipping_fee && (
           <div className={styles.totalsRow}>
             <span>Shipping</span>
-            <span>₦{order.shipping_fee.toFixed(2)}</span>
+            <span>{formatNaira(order.shipping_fee)}</span>
           </div>
         )}
         {!!order.discount && (
           <div className={styles.totalsRow}>
             <span>Discount</span>
-            <span>-${order.discount.toFixed(2)}</span>
+            <span>-{formatNaira(order.discount)}</span>
           </div>
         )}
         <div className={styles.tearLine} />
         <div className={styles.totalsGrand}>
           <span>Total</span>
-          <span>₦{order.total.toFixed(2)}</span>
+          <span>{formatNaira(order.total)}</span>
         </div>
       </div>
 

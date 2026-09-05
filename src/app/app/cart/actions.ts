@@ -90,6 +90,8 @@ export interface CheckoutActionState {
 
 function addressFromForm(formData: FormData, prefix: string): CheckoutAddress {
   return {
+    recipient_name: String(formData.get(`${prefix}_recipient_name`) ?? '').trim(),
+    phone_number: String(formData.get(`${prefix}_phone_number`) ?? '').trim() || undefined,
     street: String(formData.get(`${prefix}_street`) ?? ''),
     house_number: String(formData.get(`${prefix}_house_number`) ?? ''),
     city: String(formData.get(`${prefix}_city`) ?? ''),
@@ -105,9 +107,11 @@ export async function checkoutAction(_prev: CheckoutActionState, formData: FormD
   const billing = billingSameAsShipping ? shipping : addressFromForm(formData, 'billing');
   const notes = String(formData.get('notes') ?? '').trim() || undefined;
 
-  const isComplete = (a: CheckoutAddress) => Object.values(a).every((v) => v.trim().length > 0);
+  // Phone is optional; every other field (recipient name + full address) is required.
+  const REQUIRED: (keyof CheckoutAddress)[] = ['recipient_name', 'street', 'house_number', 'city', 'state', 'country', 'postal_code'];
+  const isComplete = (a: CheckoutAddress) => REQUIRED.every((k) => String(a[k] ?? '').trim().length > 0);
   if (!isComplete(shipping) || !isComplete(billing)) {
-    return { error: 'Please fill in the full address.' };
+    return { error: 'Please fill in the recipient name and full address.' };
   }
 
   let orderId: string;

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { Plus, MessageSquare, Eye } from 'lucide-react';
 import { getForwardedCookie } from '@/lib/api/session';
 import { listRequests } from '@/lib/api/requests';
@@ -40,7 +41,7 @@ export function RequestCard({ request }: { request: BuyerRequest }) {
       <p className={styles.cardDesc}>{request.description}</p>
 
       <div className={styles.cardFooter}>
-        {!!request.budget && <span className={styles.budgetChip}>Budget ${request.budget.toFixed(2)}</span>}
+        {!!request.budget && <span className={styles.budgetChip}>Budget {formatNaira(request.budget)}</span>}
         <span className={cn(styles.repliesChip, replies > 0 ? styles.repliesActive : styles.repliesNone)}>
           <MessageSquare size={13} />
           {replies === 0 ? 'No offers yet' : `${replies} offer${replies === 1 ? '' : 's'}`}

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { formatNaira } from '@/lib/format';
 import { redirect } from 'next/navigation';
 import { ArrowUpRight, BadgeCheck, Star } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -120,10 +121,10 @@ export default async function PublicProductPage({ params }: { params: Promise<{ 
             </div>
 
             <div className={styles.priceRow}>
-              <span className={styles.price}>₦{product.price.toFixed(2)}</span>
+              <span className={styles.price}>{formatNaira(product.price)}</span>
               {hasDiscount(product) && (
                 <>
-                  <span className={styles.comparePrice}>₦{product.compare_at_price!.toFixed(2)}</span>
+                  <span className={styles.comparePrice}>{formatNaira(product.compare_at_price!)}</span>
                   <span className={styles.discountTag}>Save {discountPercent(product)}%</span>
                 </>
               )}

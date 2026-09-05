@@ -130,6 +130,10 @@
 
 .chipRow::-webkit-scrollbar { display: none; }
 
+/* Second-level (sub-category) row, sits just under the parent row. */
+.subChipRow { margin-top: -1rem; }
+.subChip { font-size: 0.78rem; padding: 0.3rem 0.7rem; }
+
 .chip {
   border: 1px solid var(--border);
   background: var(--surface);

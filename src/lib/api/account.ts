@@ -40,3 +40,16 @@ export async function getAccountDeletionPreview(cookie: string | undefined): Pro
 export async function deleteAccount(cookie: string | undefined): Promise<void> {
   await apiFetch('/users/account', { method: 'DELETE', cookie });
 }
+
+export interface PublicProfile {
+  id?: string;
+  username?: string;
+  is_followed?: boolean;
+  followers_count?: number;
+  following_count?: number;
+}
+
+/** Public profile of another user — includes whether the viewer follows them. */
+export async function getPublicProfile(userId: string, cookie: string | undefined): Promise<PublicProfile> {
+  return apiFetch<PublicProfile>(`/users/${encodeURIComponent(userId)}/public`, { cookie, cache: 'no-store' });
+}

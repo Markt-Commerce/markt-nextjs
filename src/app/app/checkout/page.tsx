@@ -38,7 +38,7 @@ export default async function CheckoutPage() {
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Checkout</h1>
-      <CheckoutForm cart={cart} subtotal={subtotal} discount={discount} />
+      <CheckoutForm cart={cart} subtotal={subtotal} discount={discount} savedAddress={user.address} defaultName={user.username} />
     </div>
   );
 }

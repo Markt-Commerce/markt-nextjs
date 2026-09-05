@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { formatNaira } from '@/lib/format';
 import Link from 'next/link';
 import { Loader2 } from 'lucide-react';
 import { getFavoriteIds } from '@/lib/favorites-storage';
@@ -40,7 +41,7 @@ export default function FavoritesPage() {
               />
               <div className={styles.body}>
                 <p className={styles.name}>{product.name}</p>
-                <p className={styles.price}>₦{product.price.toFixed(2)}</p>
+                <p className={styles.price}>{formatNaira(product.price)}</p>
               </div>
             </Link>
           ))}
