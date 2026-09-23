@@ -54,3 +54,15 @@ export async function trackOrder(id: string, cookie: string | undefined): Promis
 export async function cancelOrder(id: string, reason: string | undefined, cookie: string | undefined): Promise<void> {
   await apiFetch(`/orders/${encodeURIComponent(id)}/cancel`, { method: 'POST', cookie, body: { reason } });
 }
+
+/**
+ * How many orders currently need this user's attention — buyers see orders
+ * needing action (e.g. payment/confirmation), sellers see orders to fulfil.
+ * Drives the nav badge; never throws (a badge is not worth an error page).
+ */
+export async function getPendingOrderCount(cookie: string | undefined, isSeller: boolean): Promise<number> {
+  const path = isSeller ? '/orders/seller/pending-count' : '/orders/buyer/pending-count';
+  return apiFetch<{ needs_action?: number }>(path, { cookie, cache: 'no-store' })
+    .then((r) => r.needs_action ?? 0)
+    .catch(() => 0);
+}

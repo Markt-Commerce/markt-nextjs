@@ -66,6 +66,29 @@
 
 .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
+.categoryGrid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.categoryChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.categoryChip:hover { border-color: var(--brand); }
+.categoryChip:has(input:checked) {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  font-weight: 600;
+}
+.categoryChip input { accent-color: var(--brand); }
+
 .input {
   border: 1px solid var(--border);
   border-radius: var(--radius-md);

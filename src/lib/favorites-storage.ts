@@ -1,12 +1,21 @@
 'use client';
 
-// NOTE (2026-09-03): a real wishlist endpoint now EXISTS —
-// `POST/GET /socials/saved` and `DELETE /socials/saved/{content_type}/{content_id}`
-// with content_type "product". This localStorage store predates it and is kept
-// for now because it also has to work on the logged-out public marketplace
-// (no session). TODO: back favorites with /socials/saved for signed-in users
-// (and reconcile with the local store) — see the Saved Items page + FavoriteButton.
+// Favorites have two backings:
+//  - LOGGED OUT (public marketplace, no session): localStorage. The `local`
+//    mode below.
+//  - SIGNED IN: the real wishlist endpoint (`GET/POST /socials/saved`,
+//    `DELETE /socials/saved/product/{id}`). The app layout seeds this store
+//    from the backend via `initRemoteFavorites()` and registers save/unsave
+//    handlers via `setRemoteHandlers()`, so a signed-in user's saves persist
+//    server-side and follow them across devices. This module stays free of any
+//    server import — the handlers are injected by <FavoritesInit>.
 const STORAGE_KEY = 'markt_favorites';
+
+// 'local' = persist to localStorage (logged out). 'remote' = persist to the
+// backend through the injected handlers (signed in).
+let mode: 'local' | 'remote' = 'local';
+let remoteSave: (productId: string) => void = () => {};
+let remoteUnsave: (productId: string) => void = () => {};
 
 function readFromStorage(): string[] {
   if (typeof window === 'undefined') return [];
@@ -48,14 +57,35 @@ export function getFavoritesServerSnapshot(): string[] {
   return EMPTY;
 }
 
+/** Wire up backend-backed favorites for a signed-in user, seeding from the server. */
+export function setRemoteHandlers(save: (id: string) => void, unsave: (id: string) => void): void {
+  remoteSave = save;
+  remoteUnsave = unsave;
+}
+
+/** Switch to remote (backend) mode and seed the store with the user's saved ids. */
+export function initRemoteFavorites(ids: string[]): void {
+  mode = 'remote';
+  snapshot = ids;
+  listeners.forEach((l) => l());
+}
+
 export function toggleFavorite(productId: string): void {
-  const ids = readFromStorage();
-  const next = ids.includes(productId) ? ids.filter((id) => id !== productId) : [...ids, productId];
-  try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-  } catch {
-    // Ignore — private browsing / storage disabled.
-  }
+  const wasSaved = snapshot.includes(productId);
+  const next = wasSaved ? snapshot.filter((id) => id !== productId) : [...snapshot, productId];
   snapshot = next;
+
+  if (mode === 'remote') {
+    // Optimistic: flip immediately, persist to the backend in the background.
+    if (wasSaved) remoteUnsave(productId);
+    else remoteSave(productId);
+  } else {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Ignore — private browsing / storage disabled.
+    }
+  }
+
   listeners.forEach((l) => l());
 }

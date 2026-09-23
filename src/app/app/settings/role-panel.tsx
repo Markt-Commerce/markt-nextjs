@@ -7,7 +7,12 @@ import styles from './page.module.css';
 
 const initialState: SettingsFormState = {};
 
-export function RolePanel({ user }: { user: UserProfile }) {
+interface CategoryOption {
+  id: number;
+  name: string;
+}
+
+export function RolePanel({ user, sellerCategories = [] }: { user: UserProfile; sellerCategories?: CategoryOption[] }) {
   const hasBoth = user.is_buyer && user.is_seller;
   const otherRole = user.current_role === 'buyer' ? 'seller' : 'buyer';
 
@@ -27,7 +32,7 @@ export function RolePanel({ user }: { user: UserProfile }) {
       </div>
 
       {!user.is_buyer && <EnableBuyerForm />}
-      {!user.is_seller && <EnableSellerForm />}
+      {!user.is_seller && <EnableSellerForm categories={sellerCategories} />}
     </>
   );
 }
@@ -53,7 +58,7 @@ function EnableBuyerForm() {
   );
 }
 
-function EnableSellerForm() {
+function EnableSellerForm({ categories }: { categories: CategoryOption[] }) {
   const [state, formAction, pending] = useActionState(enableSellerAction, initialState);
 
   return (
@@ -69,6 +74,19 @@ function EnableSellerForm() {
         <label htmlFor="description">Shop description</label>
         <input id="description" name="description" className={styles.input} placeholder="What you sell" required />
       </div>
+      {categories.length > 0 && (
+        <div className={styles.field}>
+          <label>What do you sell? Pick at least one</label>
+          <div className={styles.categoryGrid}>
+            {categories.map((cat) => (
+              <label key={cat.id} className={styles.categoryChip}>
+                <input type="checkbox" name="category_ids" value={cat.id} />
+                <span>{cat.name}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
       {state.error && <p className={styles.errorText}>{state.error}</p>}
       {state.success && <p className={styles.successText}>Seller account enabled</p>}
       <button type="submit" className={styles.outlineBtn} disabled={pending}>

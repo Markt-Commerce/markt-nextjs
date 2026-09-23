@@ -26,11 +26,13 @@ import { cn } from '@/lib/cn';
 import { getSidebarServerSnapshot, getSidebarSnapshot, subscribeSidebar } from '@/lib/sidebar-storage';
 import styles from './layout.module.css';
 
+type BadgeKey = 'cart' | 'messages' | 'orders';
+
 interface NavLinkDef {
   href: string;
   icon: LucideIcon;
   label: string;
-  badgeKey?: 'cart' | 'messages';
+  badgeKey?: BadgeKey;
 }
 
 // Shared by both roles.
@@ -42,7 +44,7 @@ const COMMON_LINKS: NavLinkDef[] = [
   { href: '/app/marketplace', icon: Store, label: 'Marketplace' },
   { href: '/app/community/social-feed', icon: Users, label: 'Community' },
   { href: '/app/chat', icon: MessageCircle, label: 'Messages', badgeKey: 'messages' },
-  { href: '/app/orders', icon: Receipt, label: 'Orders' },
+  { href: '/app/orders', icon: Receipt, label: 'Orders', badgeKey: 'orders' },
   { href: '/app/payments', icon: CreditCard, label: 'Payment History' },
   { href: '/app/requests', icon: Clipboard, label: 'Requests' },
 ];
@@ -72,7 +74,7 @@ const BUYER_BOTTOM_LINKS: NavLinkDef[] = [
   { href: '/app/marketplace', icon: Store, label: 'Market' },
   { href: '/app/cart', icon: ShoppingCart, label: 'Cart', badgeKey: 'cart' },
   { href: '/app/chat', icon: MessageCircle, label: 'Chat', badgeKey: 'messages' },
-  { href: '/app/orders', icon: Receipt, label: 'Orders' },
+  { href: '/app/orders', icon: Receipt, label: 'Orders', badgeKey: 'orders' },
 ];
 
 const SELLER_BOTTOM_LINKS: NavLinkDef[] = [
@@ -80,12 +82,13 @@ const SELLER_BOTTOM_LINKS: NavLinkDef[] = [
   { href: '/app/marketplace', icon: Store, label: 'Market' },
   { href: '/app/offers', icon: Tag, label: 'Offers' },
   { href: '/app/chat', icon: MessageCircle, label: 'Chat', badgeKey: 'messages' },
-  { href: '/app/orders', icon: Receipt, label: 'Orders' },
+  { href: '/app/orders', icon: Receipt, label: 'Orders', badgeKey: 'orders' },
 ];
 
 interface NavProps {
   cartCount: number;
   messageCount: number;
+  ordersCount: number;
   isSeller: boolean;
 }
 
@@ -106,14 +109,14 @@ function activeHref(pathname: string, hrefs: string[]): string | null {
   return best;
 }
 
-function badgeValue(def: NavLinkDef, counts: Record<'cart' | 'messages', number>) {
+function badgeValue(def: NavLinkDef, counts: Record<BadgeKey, number>) {
   return def.badgeKey ? counts[def.badgeKey] : 0;
 }
 
-export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
+export function SidebarNav({ cartCount, messageCount, ordersCount, isSeller }: NavProps) {
   const pathname = usePathname();
   const collapsed = useSyncExternalStore(subscribeSidebar, getSidebarSnapshot, getSidebarServerSnapshot);
-  const counts = { cart: cartCount, messages: messageCount };
+  const counts = { cart: cartCount, messages: messageCount, orders: ordersCount };
   const primaryLinks = [...COMMON_LINKS, ...(isSeller ? SELLER_LINKS : BUYER_LINKS)];
   // Resolved across primary AND account links together, so the two groups
   // can't each light up an entry for the same page.
@@ -156,9 +159,9 @@ export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
   );
 }
 
-export function BottomNav({ cartCount, messageCount, isSeller }: NavProps) {
+export function BottomNav({ cartCount, messageCount, ordersCount, isSeller }: NavProps) {
   const pathname = usePathname();
-  const counts = { cart: cartCount, messages: messageCount };
+  const counts = { cart: cartCount, messages: messageCount, orders: ordersCount };
   const links = isSeller ? SELLER_BOTTOM_LINKS : BUYER_BOTTOM_LINKS;
   const active = activeHref(pathname, links.map((l) => l.href));
 

@@ -109,8 +109,15 @@ export async function enableSellerAction(_prev: SettingsFormState, formData: For
   const description = String(formData.get('description') ?? '').trim();
   if (!shopName || !description) return { error: 'Shop name and description are required.' };
 
+  // The backend requires at least one category for a seller account.
+  const categoryIds = formData
+    .getAll('category_ids')
+    .map((v) => Number(v))
+    .filter((n) => Number.isFinite(n) && n > 0);
+  if (categoryIds.length === 0) return { error: 'Pick at least one category for your shop.' };
+
   try {
-    await createSellerAccount({ shop_name: shopName, description, category_ids: [] }, await getForwardedCookie());
+    await createSellerAccount({ shop_name: shopName, description, category_ids: categoryIds }, await getForwardedCookie());
   } catch (err) {
     return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not enable seller account.' };
   }

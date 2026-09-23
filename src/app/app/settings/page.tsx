@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ShieldCheck, ShieldAlert } from 'lucide-react';
 import { requireSession, getForwardedCookie } from '@/lib/api/session';
 import { getUserSettings } from '@/lib/api/settings';
+import { listCategoryTree } from '@/lib/api/categories';
 import { safeFetch } from '@/lib/api/safe';
 import { AddressForm } from './address-form';
 import { RolePanel } from './role-panel';
@@ -49,6 +50,12 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
   const storedSettings = await safeFetch(() => getUserSettings(cookie), {});
   const storedPrivacy = storedSettings;
 
+  // Only needed when the user hasn't got a seller account yet — the "Enable
+  // seller account" form requires at least one shop category.
+  const sellerCategories = user.is_seller
+    ? []
+    : (await safeFetch(() => listCategoryTree(), [])).map((c) => ({ id: c.id, name: c.name }));
+
   const storedNotif = (storedSettings.notification_preferences ?? {}) as Partial<NotificationPrefs>;
   const notifPrefs: NotificationPrefs = {
     channels: { ...DEFAULT_NOTIF_PREFS.channels, ...(storedNotif.channels ?? {}) },
@@ -89,7 +96,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       label: 'Account',
       content: (
         <Section title="Account type" desc="Markt supports both buying and selling from one account.">
-          <RolePanel user={user} />
+          <RolePanel user={user} sellerCategories={sellerCategories} />
         </Section>
       ),
     },
