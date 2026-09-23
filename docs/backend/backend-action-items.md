@@ -61,6 +61,24 @@ be ignoring it.
 - Provide **test credentials / a sandbox key** so we can prove one full round-trip
   (initialize → pay → return → verified). Right now this can't be tested at all.
 
+**The web side is now hardened and waiting on you.** The confirmation page already:
+finds the payment by `order_id`, calls `GET /payments/{id}/verify` on return, re-reads
+the canonical order/payment status, and renders a real paid / failed / confirming /
+needs-payment state (with auto-refresh while settling). It also sends
+`metadata.platform: "web"` on initialize. So we only need two precise answers to
+close this:
+
+1. **Does `POST /payments/initialize` honor our `callback_url`** (we send it top-level
+   *and* in `metadata.callback_url`)? If **not**, set the Paystack redirect target
+   server-side to `{web_origin}/app/checkout/confirmation/{order_id}?paid=1`, and tell
+   us which query params you append on redirect (we already read `reference` / `trxref`
+   / `paid`).
+2. **Does `GET /payments/{id}/verify` update state synchronously** — i.e. after it
+   returns, will `GET /orders/{id}` and `GET /payments/{id}` already reflect
+   paid/failed — or does it only *queue* reconciliation (so we must keep polling)?
+   If synchronous, our verify-on-return resolves instantly; if not, tell us the
+   expected settle window.
+
 **Definition of done:** one real payment starts in the app and lands back on the
 confirmation page showing verified success.
 

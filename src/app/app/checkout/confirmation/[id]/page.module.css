@@ -18,6 +18,26 @@
   margin: 0 auto 1.25rem;
 }
 
+/* Confirming (payment still settling) — warm, not alarming. */
+.iconWrapPending {
+  background: var(--warning-soft);
+  border-color: var(--warning-border);
+  color: var(--warning-text);
+}
+
+/* Failed / cancelled payment. */
+.iconWrapError {
+  background: var(--danger-soft);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
+.noteError {
+  background: var(--danger-soft);
+  border-color: var(--danger-border);
+  color: var(--danger-text);
+}
+
 .title { font-size: 1.6rem; font-weight: 800; letter-spacing: -0.03em; margin: 0 0 0.5rem; }
 .orderId { color: var(--text-muted); font-size: 0.95rem; margin: 0 0 1.5rem; }
 .orderId strong { color: var(--text); }
