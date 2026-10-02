@@ -66,6 +66,24 @@
 
 .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
+.walletActions { margin-top: 1rem; }
+.walletButtons { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.walletButtons .submitBtn,
+.walletButtons .outlineBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.walletForm {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2, var(--surface));
+  max-width: 420px;
+}
+.walletForm .field:last-of-type { margin-bottom: 0.9rem; }
+
 .categoryGrid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .categoryChip {
   display: inline-flex;

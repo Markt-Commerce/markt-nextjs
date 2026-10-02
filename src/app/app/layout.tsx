@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
 import { Bell } from 'lucide-react';
 import { requireSession, getForwardedCookie } from '@/lib/api/session';
+import { pendingOnboardingStep } from '@/lib/onboarding';
 import { apiFetch } from '@/lib/api/client';
 import { getPendingOrderCount } from '@/lib/api/orders';
 import { listSavedProductIds } from '@/lib/api/saved';
@@ -34,6 +36,9 @@ async function getBadgeCounts(cookie: string | undefined, isSeller: boolean) {
 
 export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await requireSession();
+  // The server drives post-signup completion: an account with a pending role /
+  // profile step is sent to finish onboarding before it can use the app.
+  if (pendingOnboardingStep(user)) redirect('/onboarding');
   const isSeller = user.current_role === 'seller';
   const cookie = await getForwardedCookie();
   const { cart, notifications, messages, orders } = await getBadgeCounts(cookie, isSeller);

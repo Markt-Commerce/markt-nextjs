@@ -1,6 +1,7 @@
 import { Wallet } from 'lucide-react';
-import { getWalletBalance, getWalletTransactions } from '@/lib/api/wallet';
+import { getWalletBalance, getWalletTransactions, listBanks } from '@/lib/api/wallet';
 import { safeFetch } from '@/lib/api/safe';
+import { WalletActions } from './wallet-actions-panel';
 import styles from './page.module.css';
 
 /**
@@ -9,9 +10,10 @@ import styles from './page.module.css';
  * from the live wallet endpoints; falls back to an empty state if unavailable.
  */
 export async function BillingsPanel({ cookie }: { cookie?: string }) {
-  const [balance, txns] = await Promise.all([
+  const [balance, txns, banks] = await Promise.all([
     safeFetch(() => getWalletBalance(cookie), { available_balance: 0, currency: 'NGN' }),
     safeFetch(() => getWalletTransactions(cookie, { perPage: 12 }), { transactions: [], pagination: {} }),
+    listBanks(cookie),
   ]);
 
   const money = (n: number) => `${balance.currency} ${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -31,6 +33,7 @@ export async function BillingsPanel({ cookie }: { cookie?: string }) {
               <p className={styles.balanceValue}>{money(balance.available_balance)}</p>
             </div>
           </div>
+          <WalletActions banks={banks} available={balance.available_balance} />
         </div>
       </section>
 

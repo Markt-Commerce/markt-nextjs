@@ -51,10 +51,14 @@ export default function TermsPage() {
   return (
     <div className={styles.page}>
       <section className={styles.hero} role="banner" aria-label="Terms hero">
-        <img
-          src="https://storage.googleapis.com/uxpilot-auth.appspot.com/8d5e315f02-d96d6a9184fd4982fcb3.png"
-          alt="professional legal documents on desk"
+        {/* Decorative hero backdrop — a background image, not content. */}
+        <div
           className={styles.heroBg}
+          role="presentation"
+          style={{
+            backgroundImage:
+              'url(https://storage.googleapis.com/uxpilot-auth.appspot.com/8d5e315f02-d96d6a9184fd4982fcb3.png)',
+          }}
         />
         <div className={styles.heroOverlay} />
         <div className={styles.heroContent}>

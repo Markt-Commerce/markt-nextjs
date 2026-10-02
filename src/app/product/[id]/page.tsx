@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { formatNaira } from '@/lib/format';
 import { redirect } from 'next/navigation';
@@ -9,6 +10,38 @@ import { safeFetch } from '@/lib/api/safe';
 import { discountPercent, hasDiscount, isOutOfStock, primaryImageUrl } from '@/lib/types/product';
 import { ProductCard } from '@/components/marketplace/ProductCard';
 import styles from '../preview.module.css';
+
+/** Per-product SEO + social-share metadata so shared links render a rich card. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const product = await safeFetch(() => getProduct(id), null);
+  if (!product) return { title: 'Product not found' };
+
+  const image = primaryImageUrl(product);
+  const shopName = product.seller?.shop_name;
+  const description =
+    (product.description?.trim().slice(0, 160) ||
+      `${product.name} — ${formatNaira(product.price)}${shopName ? ` from ${shopName}` : ''} on Markt.`) ?? undefined;
+
+  return {
+    title: product.name,
+    description,
+    alternates: { canonical: `/product/${id}` },
+    openGraph: {
+      type: 'website',
+      title: product.name,
+      description,
+      url: `/product/${id}`,
+      images: image ? [{ url: image, alt: product.name }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: product.name,
+      description,
+      images: image ? [image] : undefined,
+    },
+  };
+}
 
 /** Public header + footer wrapper for the logged-out product preview. */
 function ProductChrome({ children }: { children: React.ReactNode }) {
@@ -90,8 +123,9 @@ export default async function PublicProductPage({ params }: { params: Promise<{ 
 
         <div className={styles.layout}>
           <div className={styles.gallery}>
+            {/* Above-the-fold hero — hint the browser to prioritise it for LCP. */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={imageUrl} alt={product.name} className={styles.galleryImage} />
+            <img src={imageUrl} alt={product.name} className={styles.galleryImage} loading="eager" fetchPriority="high" />
           </div>
 
           <div>

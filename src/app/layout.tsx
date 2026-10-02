@@ -20,13 +20,38 @@ const jakarta = Plus_Jakarta_Sans({
   weight: ["500", "600", "700", "800"],
 });
 
+// Absolute base for OpenGraph/canonical URLs. Set NEXT_PUBLIC_SITE_URL in
+// production; falls back to localhost in dev so relative image/canonical URLs
+// still resolve.
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Markt — Shopping, the way it connects us.",
     template: "%s | Markt",
   },
   description:
     "Markt is a social-first commerce platform connecting local sellers and buyers — discover products through people, not just listings.",
+  applicationName: "Markt",
+  keywords: ["Markt", "marketplace", "local sellers", "social commerce", "shop local", "buy and sell"],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "Markt",
+    title: "Markt — Shopping, the way it connects us.",
+    description:
+      "Discover products through people, not just listings. Follow local sellers, browse freely, and buy with confidence.",
+    url: "/",
+    images: [{ url: "/markt-text-logo.png", alt: "Markt" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Markt — Shopping, the way it connects us.",
+    description:
+      "Discover products through people, not just listings. Follow local sellers, browse freely, and buy with confidence.",
+    images: ["/markt-text-logo.png"],
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

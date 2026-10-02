@@ -42,6 +42,17 @@ export interface SellerProfile {
   policies?: Record<string, unknown>;
 }
 
+// The backend drives post-signup routing through `profile.onboarding.next_step`
+// (the OpenAPI spec leaves the object untyped; these are the documented values
+// from the mobile client). `null`/absent = onboarding complete.
+export type OnboardingStep = 'verify_email' | 'choose_role' | 'buyer_profile' | 'seller_profile' | null;
+
+export interface Onboarding {
+  next_step?: OnboardingStep;
+  email_verified?: boolean;
+  [key: string]: unknown;
+}
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -53,6 +64,7 @@ export interface UserProfile {
   is_buyer: boolean;
   is_seller: boolean;
   email_verified: boolean;
+  onboarding?: Onboarding;
   created_at: string;
   updated_at: string;
   last_login_at?: string;

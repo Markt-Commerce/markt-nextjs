@@ -44,7 +44,7 @@ function initials(name: string): string {
     .toUpperCase();
 }
 
-export function LoginForm({ returnUrl }: { returnUrl?: string }) {
+export function LoginForm({ returnUrl, expired }: { returnUrl?: string; expired?: boolean }) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<'buyer' | 'seller'>('buyer');
@@ -81,6 +81,12 @@ export function LoginForm({ returnUrl }: { returnUrl?: string }) {
 
           <h1 className={styles.heading}>Welcome back</h1>
           <p className={styles.sub}>Sign in to pick up where you left off.</p>
+
+          {expired && !state.error && (
+            <div className={styles.error} role="status">
+              Your session expired. Please sign in again.
+            </div>
+          )}
 
           <div className={styles.roleToggle} role="tablist" aria-label="Sign in as">
             <button
