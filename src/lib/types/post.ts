@@ -27,6 +27,10 @@ export interface Post {
 export interface PostDetail extends Post {
   products?: PostProduct[];
   status?: 'draft' | 'active' | 'archived' | 'deleted';
+  // The backend now tells us the viewer's own relationship to the post, so the
+  // like/save buttons can start in the right state instead of guessing.
+  liked_by_me?: boolean;
+  is_saved?: boolean;
 }
 
 export interface PostComment {
@@ -77,4 +81,11 @@ export interface Story {
 export function postThumbnail(post: Post): string | undefined {
   const media = post.social_media?.[0]?.media;
   return media?.original_url ?? media?.thumbnail_url;
+}
+
+/** All of a post's image URLs, in order — for a multi-image gallery grid. */
+export function postImages(post: Post): string[] {
+  return (post.social_media ?? [])
+    .map((m) => m.media?.original_url ?? m.media?.thumbnail_url)
+    .filter((u): u is string => !!u);
 }

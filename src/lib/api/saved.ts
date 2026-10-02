@@ -43,3 +43,21 @@ export async function saveProduct(productId: string, cookie: string | undefined)
 export async function unsaveProduct(productId: string, cookie: string | undefined): Promise<void> {
   await apiFetch(`/socials/saved/product/${encodeURIComponent(productId)}`, { method: 'DELETE', cookie });
 }
+
+/** The signed-in user's saved posts (bookmarks). */
+export async function listSavedPostIds(cookie: string | undefined): Promise<string[]> {
+  if (!cookie) return [];
+  return apiFetch<SavedItemsList>('/socials/saved?content_type=post&per_page=100', { cookie, cache: 'no-store' })
+    .then((r) => (r.items ?? []).map((i) => i.content_id))
+    .catch(() => []);
+}
+
+/** Bookmark a post. Saving twice is a no-op on the backend. */
+export async function savePost(postId: string, cookie: string | undefined): Promise<void> {
+  await apiFetch('/socials/saved', { method: 'POST', cookie, body: { content_id: postId, content_type: 'post' } });
+}
+
+/** Remove a post bookmark. Idempotent. */
+export async function unsavePost(postId: string, cookie: string | undefined): Promise<void> {
+  await apiFetch(`/socials/saved/post/${encodeURIComponent(postId)}`, { method: 'DELETE', cookie });
+}

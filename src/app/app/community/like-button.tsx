@@ -8,18 +8,18 @@ import { toggleLikeAction } from './actions';
 export function LikeButton({
   postId,
   initialCount,
+  initialLiked = false,
   className,
   activeClassName,
 }: {
   postId: string;
   initialCount: number;
+  initialLiked?: boolean;
   className: string;
   activeClassName: string;
 }) {
-  // The real API doesn't tell us whether the current user already liked a
-  // post (no is_liked field anywhere) — so this starts unliked every time
-  // and just toggles from there, rather than guessing.
-  const [liked, setLiked] = useState(false);
+  // Seeded from the post's `liked_by_me` so the heart starts in the right state.
+  const [liked, setLiked] = useState(initialLiked);
   const [count, setCount] = useState(initialCount);
   const [, startTransition] = useTransition();
 

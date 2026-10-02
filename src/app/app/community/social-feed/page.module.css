@@ -170,30 +170,55 @@
   color: var(--text-subtle);
 }
 
-/* --- Feed tabs --- */
-.tabs {
+/* --- Feed tabs: a sticky, X-style two-tab header --- */
+.feedHeader {
+  position: sticky;
+  top: 0;
+  z-index: 5;
   display: flex;
-  gap: 0.3rem;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+  backdrop-filter: saturate(140%) blur(8px);
   border-bottom: 1px solid var(--border);
-  margin-bottom: 1.25rem;
+  margin: -1.75rem -0.25rem 1.25rem;
+  padding: 0 0.25rem;
 }
 
 .tab,
 .tabActive {
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
+  flex: 1;
+  text-align: center;
+  padding: 0.95rem 0.5rem;
+  font-size: 0.9rem;
   font-weight: 600;
   text-decoration: none;
   color: var(--text-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
+  position: relative;
 }
 
-.tab:hover { color: var(--text); }
+.tab:hover { color: var(--text); background: var(--surface-hover); }
 
 .tabActive {
-  color: var(--brand-text);
-  border-bottom-color: var(--brand);
+  flex: 1;
+  text-align: center;
+  padding: 0.95rem 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+  text-decoration: none;
+  color: var(--text);
+  position: relative;
+}
+
+/* The underline accent, centered under the active tab (X-style pill). */
+.tabActive::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  width: 3.5rem;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--brand);
 }
 
 /* --- Composer --- */
@@ -324,6 +349,10 @@
 
 .pickerName { flex: 1; min-width: 0; font-size: 0.83rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pickerPrice { font-size: 0.78rem; font-weight: 600; color: var(--text-muted); flex-shrink: 0; }
+
+.pickerEmpty { margin: 0; padding: 0.85rem; font-size: 0.82rem; color: var(--text-muted); text-align: center; }
+.pickerEmptyLink { color: var(--brand-text); font-weight: 600; text-decoration: none; }
+.pickerEmptyLink:hover { text-decoration: underline; }
 
 /* Toolbar: tools on the left, post on the right. */
 .composerBar {
@@ -494,3 +523,119 @@
   color: var(--text-muted);
   font-size: 0.9rem;
 }
+
+/* --- Post header extras --- */
+.avatarLink { flex-shrink: 0; line-height: 0; }
+.postHandle { font-size: 0.82rem; color: var(--text-subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.verified { color: var(--brand); flex-shrink: 0; }
+
+/* --- Multi-image media grid (the "what I ordered vs what I got" layout) --- */
+.mediaGrid {
+  margin-top: 0.7rem;
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--border);
+}
+.grid1 { grid-template-columns: 1fr; }
+.grid2 { grid-template-columns: 1fr 1fr; }
+.grid3 { grid-template-columns: 1fr 1fr; }
+.grid3 .mediaCell:first-child { grid-column: 1 / -1; }
+.grid4 { grid-template-columns: 1fr 1fr; }
+
+.mediaCell { position: relative; background: var(--surface-sunken); aspect-ratio: 4 / 3; }
+.grid1 .mediaCell { aspect-ratio: 16 / 10; max-height: 460px; }
+.mediaImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.mediaMore {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+/* --- Tagged product card (mobile parity) --- */
+.productCard {
+  margin-top: 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  padding: 0.6rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+.productCard:hover { border-color: var(--brand); background: var(--surface-hover); }
+.productThumb {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  background: var(--surface-sunken);
+  flex-shrink: 0;
+}
+.productThumbFallback {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.productInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.productName { font-size: 0.88rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.productPrice { font-size: 0.9rem; font-weight: 800; color: var(--brand-text); }
+.productChevron { color: var(--text-subtle); flex-shrink: 0; }
+
+/* --- Action row: like / comment / save / share --- */
+.actionBtnSaved { color: var(--brand); }
+.actionShare { margin-left: auto; }
+
+/* --- Right rail cards --- */
+.sideTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.95rem;
+  font-weight: 800;
+  margin: 0 0 0.6rem;
+}
+
+.sideList { display: flex; flex-direction: column; }
+
+.shopRow {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.55rem 0;
+  text-decoration: none;
+  color: inherit;
+}
+.shopRow + .shopRow,
+.sideList .personRow + .personRow { border-top: 1px solid var(--border); }
+.shopRow:hover .personName { color: var(--brand-text); }
+
+/* --- Footer (X/Reddit-style link row) --- */
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.85rem;
+  padding: 0 0.25rem;
+  font-size: 0.76rem;
+}
+.footer a { color: var(--text-subtle); text-decoration: none; }
+.footer a:hover { color: var(--text-muted); text-decoration: underline; }
+.footerNote { color: var(--text-subtle); width: 100%; margin-top: 0.2rem; }

@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useRef, useState, useTransition } from 'react';
 import { formatNaira } from '@/lib/format';
 import { ImagePlus, Tag, X } from 'lucide-react';
@@ -13,7 +14,7 @@ export interface TaggableProduct {
   image?: string;
 }
 
-export function Composer({ products }: { products: TaggableProduct[] }) {
+export function Composer({ products, isSeller = false }: { products: TaggableProduct[]; isSeller?: boolean }) {
   const formRef = useRef<HTMLFormElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -77,24 +78,34 @@ export function Composer({ products }: { products: TaggableProduct[] }) {
         </div>
       )}
 
-      {pickerOpen && products.length > 0 && (
+      {pickerOpen && (
         <div className={styles.picker}>
-          {products.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              className={styles.pickerItem}
-              onClick={() => {
-                setTagged(p);
-                setPickerOpen(false);
-              }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={p.image || '/Logo.png'} alt="" className={styles.pickerThumb} />
-              <span className={styles.pickerName}>{p.name}</span>
-              <span className={styles.pickerPrice}>{formatNaira(p.price)}</span>
-            </button>
-          ))}
+          {products.length > 0 ? (
+            products.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={styles.pickerItem}
+                onClick={() => {
+                  setTagged(p);
+                  setPickerOpen(false);
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.image || '/Logo.png'} alt="" className={styles.pickerThumb} />
+                <span className={styles.pickerName}>{p.name}</span>
+                <span className={styles.pickerPrice}>{formatNaira(p.price)}</span>
+              </button>
+            ))
+          ) : (
+            <p className={styles.pickerEmpty}>
+              You don’t have any products to tag yet.{' '}
+              <Link href="/app/media" className={styles.pickerEmptyLink}>
+                Add a product
+              </Link>{' '}
+              first.
+            </p>
+          )}
         </div>
       )}
 
@@ -107,7 +118,7 @@ export function Composer({ products }: { products: TaggableProduct[] }) {
           </button>
           <input ref={fileRef} type="file" name="image" accept="image/*" hidden onChange={onPick} />
 
-          {products.length > 0 && (
+          {isSeller && (
             <button
               type="button"
               className={styles.composerAttach}

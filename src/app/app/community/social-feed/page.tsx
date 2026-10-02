@@ -1,15 +1,21 @@
 import Link from 'next/link';
-import { MessageCircle, Radio, UserPlus } from 'lucide-react';
+import { MessageCircle, Store, UserPlus, ChevronRight, BadgeCheck, Tag } from 'lucide-react';
+import { formatNaira } from '@/lib/format';
 import { getForwardedCookie, getSession } from '@/lib/api/session';
 import { getLatestPosts, getFollowingFeed, getStories } from '@/lib/api/social';
-import { listMyProducts } from '@/lib/api/products';
+import { getProduct, listMyProducts } from '@/lib/api/products';
 import { listPeopleToFollow } from '@/lib/api/users';
+import { listTrendingShops } from '@/lib/api/shops';
+import { listSavedPostIds } from '@/lib/api/saved';
 import { safeFetch } from '@/lib/api/safe';
-import { postThumbnail } from '@/lib/types/post';
-import { primaryImageUrl } from '@/lib/types/product';
+import { postImages } from '@/lib/types/post';
+import { primaryImageUrl, type Product } from '@/lib/types/product';
 import { imageOrFallback } from '@/lib/img';
+import { cn } from '@/lib/cn';
 import { Composer, type TaggableProduct } from '../composer';
 import { LikeButton } from '../like-button';
+import { SaveButton } from '../save-button';
+import { ShareButton } from '../share-button';
 import { FollowButton } from '../follow-button';
 import styles from './page.module.css';
 
@@ -23,14 +29,25 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
   const cookie = await getForwardedCookie();
   const user = await getSession();
 
-  const [feed, stories, people, myProducts] = await Promise.all([
+  const [feed, stories, people, trendingShops, savedPostIds, myProducts] = await Promise.all([
     safeFetch(() => (tab === 'following' ? getFollowingFeed(cookie) : getLatestPosts(cookie)), EMPTY_FEED),
     safeFetch(() => getStories(cookie), []),
     safeFetch(() => listPeopleToFollow(cookie), []),
-    // Sellers can tag one of their own products in a post. Buyers get an
-    // empty list, so the "Tag product" button simply doesn't appear.
+    safeFetch(() => listTrendingShops(cookie), []),
+    listSavedPostIds(cookie),
     user?.current_role === 'seller' ? safeFetch(() => listMyProducts(cookie), []) : Promise.resolve([]),
   ]);
+
+  // Resolve tagged products so a product post renders a real card (the feed
+  // payload only carries product_id). Bounded to the handful of tagged posts.
+  const taggedIds = Array.from(new Set(feed.items.flatMap((p) => (p.products ?? []).map((x) => x.product_id))));
+  const taggedProducts = new Map<string, Product>();
+  await Promise.all(
+    taggedIds.map(async (id) => {
+      const product = await safeFetch(() => getProduct(id, cookie), null);
+      if (product) taggedProducts.set(id, product);
+    })
+  );
 
   const taggable: TaggableProduct[] = myProducts.map((p) => ({
     id: p.id,
@@ -39,14 +56,25 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
     image: primaryImageUrl(p),
   }));
 
-  // Don't suggest the current user to themselves; keep the rail short.
-  const suggestions = people.filter((p) => p.id !== user?.id).slice(0, 8);
+  const savedSet = new Set(savedPostIds);
+  const suggestions = people.filter((p) => p.id !== user?.id).slice(0, 5);
+  const shops = trendingShops.filter((s) => s.shop_name).slice(0, 5);
 
   return (
     <div className={styles.page}>
       <div className={styles.feedCol}>
-        <h1 className={styles.title}>Community</h1>
-        <p className={styles.subtitle}>What people around you are finding, making, and selling.</p>
+        {/* Sticky feed header with X-style tabs. */}
+        <div className={styles.feedHeader}>
+          <Link href="/app/community/social-feed" className={tab === 'latest' ? styles.tabActive : styles.tab}>
+            For you
+          </Link>
+          <Link
+            href="/app/community/social-feed?tab=following"
+            className={tab === 'following' ? styles.tabActive : styles.tab}
+          >
+            Following
+          </Link>
+        </div>
 
         {stories.length > 0 && (
           <div className={styles.stories}>
@@ -62,59 +90,101 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
           </div>
         )}
 
-        {/* Feed source tabs. */}
-        <div className={styles.tabs}>
-          <Link href="/app/community/social-feed" className={tab === 'latest' ? styles.tabActive : styles.tab}>
-            Latest
-          </Link>
-          <Link href="/app/community/social-feed?tab=following" className={tab === 'following' ? styles.tabActive : styles.tab}>
-            Following
-          </Link>
-        </div>
-
-        <Composer products={taggable} />
+        <Composer products={taggable} isSeller={user?.current_role === 'seller'} />
 
         <div className={styles.feed}>
           {feed.items.map((post) => {
-          const image = postThumbnail(post);
-          const taggedProductId = post.products?.[0]?.product_id;
-          return (
-            <article key={post.id} className={styles.postCard}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={imageOrFallback(post.user?.profile_picture_url)} alt="" className={styles.avatar} />
+            const images = postImages(post);
+            const taggedId = post.products?.[0]?.product_id;
+            const product = taggedId ? taggedProducts.get(taggedId) : undefined;
+            const isSeller = post.user?.id ? people.find((p) => p.id === post.user?.id)?.is_seller : undefined;
+            const gridClass =
+              images.length === 1 ? styles.grid1 : images.length === 2 ? styles.grid2 : images.length === 3 ? styles.grid3 : styles.grid4;
 
-              <div className={styles.postMain}>
-                <div className={styles.postTopRow}>
-                  <span className={styles.authorName}>{post.user?.username ?? 'User'}</span>
-                  <span className={styles.postDot}>·</span>
-                  <span className={styles.postTime}>{new Date(post.created_at).toLocaleDateString()}</span>
-                </div>
+            return (
+              <article key={post.id} className={styles.postCard}>
+                <Link href={`/app/community/post/${post.id}`} className={styles.avatarLink} aria-label={`${post.user?.username ?? 'User'}'s post`}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageOrFallback(post.user?.profile_picture_url)} alt="" className={styles.avatar} />
+                </Link>
 
-                {post.caption && <p className={styles.caption}>{post.caption}</p>}
-
-                {image && (
-                  <div className={styles.postImageWrap}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={image} alt="" className={styles.postImage} loading="lazy" />
+                <div className={styles.postMain}>
+                  <div className={styles.postTopRow}>
+                    <span className={styles.authorName}>{post.user?.username ?? 'User'}</span>
+                    {isSeller && <BadgeCheck size={14} className={styles.verified} aria-label="Seller" />}
+                    <span className={styles.postHandle}>@{post.user?.username ?? 'user'}</span>
+                    <span className={styles.postDot}>·</span>
+                    <span className={styles.postTime}>{new Date(post.created_at).toLocaleDateString()}</span>
                   </div>
-                )}
 
-                {taggedProductId && (
-                  <Link href={`/app/marketplace/product/${taggedProductId}`} className={styles.productTag}>
-                    View tagged product
-                  </Link>
-                )}
+                  {post.caption && <p className={styles.caption}>{post.caption}</p>}
 
-                <div className={styles.actionsRow}>
-                  <LikeButton postId={post.id} initialCount={post.like_count} className={styles.actionBtn} activeClassName={styles.actionBtnLiked} />
-                  <Link href={`/app/community/post/${post.id}`} className={styles.actionLink}>
-                    <MessageCircle size={16} /> {post.comment_count}
-                  </Link>
+                  {images.length > 0 && (
+                    <div className={cn(styles.mediaGrid, gridClass)}>
+                      {images.slice(0, 4).map((src, i) => (
+                        <div key={i} className={styles.mediaCell}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={src} alt="" className={styles.mediaImg} loading="lazy" />
+                          {i === 3 && images.length > 4 && <span className={styles.mediaMore}>+{images.length - 4}</span>}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {product ? (
+                    <Link href={`/app/marketplace/product/${product.id}`} className={styles.productCard}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={primaryImageUrl(product) ?? '/assets/images/products/sony-headphones.png'}
+                        alt={product.name}
+                        className={styles.productThumb}
+                      />
+                      <div className={styles.productInfo}>
+                        <span className={styles.productName}>{product.name}</span>
+                        <span className={styles.productPrice}>{formatNaira(product.price)}</span>
+                      </div>
+                      <ChevronRight size={16} className={styles.productChevron} />
+                    </Link>
+                  ) : (
+                    // The post tagged a product but we couldn't resolve its full
+                    // details — still surface the tag rather than hiding it.
+                    taggedId && (
+                      <Link href={`/app/marketplace/product/${taggedId}`} className={styles.productCard}>
+                        <span className={styles.productThumbFallback}>
+                          <Tag size={18} />
+                        </span>
+                        <div className={styles.productInfo}>
+                          <span className={styles.productName}>Tagged product</span>
+                          <span className={styles.productPrice}>View in marketplace</span>
+                        </div>
+                        <ChevronRight size={16} className={styles.productChevron} />
+                      </Link>
+                    )
+                  )}
+
+                  <div className={styles.actionsRow}>
+                    <LikeButton
+                      postId={post.id}
+                      initialCount={post.like_count}
+                      initialLiked={post.liked_by_me ?? false}
+                      className={styles.actionBtn}
+                      activeClassName={styles.actionBtnLiked}
+                    />
+                    <Link href={`/app/community/post/${post.id}`} className={styles.actionBtn}>
+                      <MessageCircle size={16} /> {post.comment_count}
+                    </Link>
+                    <SaveButton
+                      postId={post.id}
+                      initialSaved={post.is_saved ?? savedSet.has(post.id)}
+                      className={styles.actionBtn}
+                      activeClassName={styles.actionBtnSaved}
+                    />
+                    <ShareButton postId={post.id} className={cn(styles.actionBtn, styles.actionShare)} />
+                  </div>
                 </div>
-              </div>
-            </article>
-          );
-        })}
+              </article>
+            );
+          })}
 
           {feed.items.length === 0 && (
             <div className={styles.emptyState}>
@@ -126,16 +196,14 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
         </div>
       </div>
 
-      {/* X-style right rail: people to follow, alongside the feed. */}
+      {/* X/Reddit-style right rail. */}
       <aside className={styles.side}>
         {suggestions.length > 0 && (
           <section className={styles.sideCard}>
-            <div className={styles.discoverHead}>
-              <span className={styles.discoverTitle}>
-                <UserPlus size={15} /> People to follow
-              </span>
-            </div>
-            <div className={styles.peopleList}>
+            <h2 className={styles.sideTitle}>
+              <UserPlus size={15} /> Who to follow
+            </h2>
+            <div className={styles.sideList}>
               {suggestions.map((person) => (
                 <div key={person.id} className={styles.personRow}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -151,11 +219,33 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
           </section>
         )}
 
-        <section className={styles.sideCard}>
-          <span className={styles.livePill}>
-            <Radio size={13} /> Live shopping · coming soon
-          </span>
-        </section>
+        {shops.length > 0 && (
+          <section className={styles.sideCard}>
+            <h2 className={styles.sideTitle}>
+              <Store size={15} /> Trending shops
+            </h2>
+            <div className={styles.sideList}>
+              {shops.map((shop) => (
+                <Link key={shop.id ?? shop.shop_name} href="/app/marketplace" className={styles.shopRow}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={imageOrFallback(shop.profile_picture_url)} alt="" className={styles.personAvatar} />
+                  <div className={styles.personMeta}>
+                    <span className={styles.personName}>{shop.shop_name}</span>
+                    {shop.description && <span className={styles.personHandle}>{shop.description}</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <nav className={styles.footer}>
+          <Link href="/app/marketplace">Marketplace</Link>
+          <Link href="/legal/terms">Terms</Link>
+          <Link href="/legal/privacy">Privacy</Link>
+          <Link href="/app/support">Help</Link>
+          <span className={styles.footerNote}>© {new Date().getFullYear()} Markt</span>
+        </nav>
       </aside>
     </div>
   );

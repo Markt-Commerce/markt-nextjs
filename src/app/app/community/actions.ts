@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 import { addComment, createPost, followUser, togglePostLike, unfollowUser } from '@/lib/api/social';
+import { savePost, unsavePost } from '@/lib/api/saved';
 import { uploadMedia } from '@/lib/api/media';
 import { getForwardedCookie } from '@/lib/api/session';
 
@@ -71,6 +72,16 @@ export async function addCommentAction(postId: string, _prev: CommentFormState, 
 
   revalidatePath(`/app/community/post/${postId}`);
   return {};
+}
+
+export async function toggleSavePostAction(postId: string, currentlySaved: boolean): Promise<void> {
+  try {
+    if (currentlySaved) await unsavePost(postId, await getForwardedCookie());
+    else await savePost(postId, await getForwardedCookie());
+  } catch {
+    // Best-effort — the bookmark already reflects the toggle optimistically.
+  }
+  revalidatePath('/app/community/social-feed');
 }
 
 export async function toggleFollowAction(userId: string, currentlyFollowing: boolean): Promise<void> {
