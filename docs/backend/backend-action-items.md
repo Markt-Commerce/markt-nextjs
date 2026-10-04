@@ -1,14 +1,33 @@
 # Markt — Backend Action Items
 
-**For:** Markt backend team · **From:** Markt web app · **Date:** 2026-09-05
+**For:** Markt backend team · **From:** Markt web app · **Date:** 2026-10-03
+(updated — see "Resolved since last review" below)
 **Status:** the web app is built and wired to the live API; the items below are the
 backend-owned fixes and additions that stand between "good demo" and "people can
 actually rely on this."
 
 The login/register **500s are cleared** — auth, products, and socials work. What
 remains is trust plumbing (email, payment proof, notifications), one security hole,
-and a few data-shape fixes. Everything here is grounded in behaviour observed while
-building the app, not guesswork; where something is unverified end-to-end it says so.
+a few data-shape fixes, and one new flow (seller application / store review). Everything
+here is grounded in behaviour observed while building the app, not guesswork; where
+something is unverified end-to-end it says so.
+
+---
+
+## Resolved since last review (2026-09-05 → 2026-10-03)
+
+Confirmed working now — no action needed, listed so the team isn't chasing done work:
+
+- **Post product tagging** — `POST /socials/posts` with `products: [{product_id}]`
+  persists and `GET /socials/posts` returns `products`; the web composer "Tag product"
+  flow works end-to-end.
+- **Viewer relationship flags on posts** — `PostDetail` now returns `liked_by_me` and
+  `is_saved`, so like/bookmark buttons seed in the correct state (was a data-shape gap).
+- **Onboarding object** — `GET /users/profile` returns an `onboarding` object; the web
+  app now routes post-signup on `onboarding.next_step`.
+
+Still open and unchanged: the blockers below (media auth, payment proof, email,
+event notifications) remain the real gate — none are verified resolved.
 
 ---
 
@@ -177,6 +196,43 @@ endpoints but don't emit notifications (see #4) and, for delivery, there's no
 independent "delivered" confirmation feeding back to the order. When these start
 emitting events, the app can surface true delivery confirmation and payout status
 instead of relying on the seller manually marking "delivered."
+
+---
+
+## 9. [MAJOR · NEW] Seller application / store-creation review flow
+
+**What we see / want:** today `POST /users/create-seller` activates a shop **immediately**
+with no documents and no review. The product now needs a buyer→seller upgrade to be an
+**application an admin approves**, not an instant toggle. `SellerProfile.verification_status`
+already has the right enum (`unverified | pending | verified | rejected | suspended`), but
+there is **no endpoint to submit an application with documents**, and nothing moves a shop
+through that review. The web app is building the application form; it needs a real endpoint
+behind it.
+
+**What we need:**
+
+1. **A seller-application endpoint that does NOT auto-activate.** Suggested:
+   `POST /api/v1/users/seller-application` (multipart or JSON + media ids). Body: shop
+   name, description, category_ids, and **required verification documents** — e.g.
+   government ID, proof of address / business registration, and one or more shop/product
+   photos (uploaded via the existing `POST /media/upload`, referenced here by `media_id`).
+   It creates the seller record in **`verification_status: pending`** (or a separate
+   `SellerApplication` row) — the user is **not** a live seller until an admin approves.
+2. **Admin review surface** (admin app): list pending applications with their documents;
+   approve → `verification_status: verified` + `is_seller: true`; reject → `rejected` with
+   a reason the applicant can see.
+3. **Notify the applicant on submit AND on decision** — in-app **and** email (ties into
+   items 3 & 4): "Your store request was submitted / approved / needs changes." The
+   submit notification is the one the web app expects right after the form posts.
+4. **A way to read the current application status** so the UI can show
+   "Pending review" / "Approved" / "Rejected (reason)" — e.g. include it on
+   `GET /users/profile` (the `seller_account.verification_status` already exists; expose a
+   rejection reason alongside it).
+
+**Interim on the web side:** until this exists, the form can only upload documents and call
+`create-seller` (which activates immediately and stashes document references in the
+freeform `policies` blob) — i.e. no real admin gate and no email. That's a stopgap, not
+the intended flow; items 1–3 are what make it real.
 
 ---
 

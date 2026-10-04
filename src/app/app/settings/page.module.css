@@ -66,6 +66,36 @@
 
 .formGrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
+.sellerCta {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2, var(--surface));
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast, 0.15s), background var(--transition-fast, 0.15s);
+}
+.sellerCta:hover { border-color: var(--brand); background: var(--surface-hover); }
+.sellerCtaIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius-md);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  flex-shrink: 0;
+}
+.sellerCtaBody { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.sellerCtaTitle { font-weight: 700; font-size: 0.92rem; }
+.sellerCtaDesc { font-size: 0.82rem; color: var(--text-muted); }
+.sellerCtaArrow { color: var(--text-subtle); flex-shrink: 0; }
+
 .walletActions { margin-top: 1rem; }
 .walletButtons { display: flex; flex-wrap: wrap; gap: 0.6rem; }
 .walletButtons .submitBtn,

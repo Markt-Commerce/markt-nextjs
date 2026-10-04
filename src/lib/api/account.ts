@@ -15,7 +15,7 @@ export async function createBuyerAccount(buyername: string, cookie: string | und
 }
 
 export async function createSellerAccount(
-  body: { shop_name: string; description: string; category_ids: number[] },
+  body: { shop_name: string; description: string; category_ids: number[]; policies?: Record<string, unknown> },
   cookie: string | undefined
 ): Promise<UserProfile> {
   return apiFetch<UserProfile>('/users/create-seller', { method: 'POST', cookie, body });

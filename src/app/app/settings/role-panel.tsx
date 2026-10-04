@@ -1,20 +1,18 @@
 'use client';
 
+import Link from 'next/link';
 import { useActionState } from 'react';
-import { enableBuyerAction, enableSellerAction, switchRoleAction, type SettingsFormState } from './actions';
+import { Store, ArrowRight } from 'lucide-react';
+import { enableBuyerAction, switchRoleAction, type SettingsFormState } from './actions';
 import type { UserProfile } from '@/lib/types/user';
 import styles from './page.module.css';
 
 const initialState: SettingsFormState = {};
 
-interface CategoryOption {
-  id: number;
-  name: string;
-}
-
-export function RolePanel({ user, sellerCategories = [] }: { user: UserProfile; sellerCategories?: CategoryOption[] }) {
+export function RolePanel({ user }: { user: UserProfile }) {
   const hasBoth = user.is_buyer && user.is_seller;
   const otherRole = user.current_role === 'buyer' ? 'seller' : 'buyer';
+  const sellerPending = user.is_seller && user.seller_account?.verification_status !== 'verified';
 
   return (
     <>
@@ -32,7 +30,27 @@ export function RolePanel({ user, sellerCategories = [] }: { user: UserProfile; 
       </div>
 
       {!user.is_buyer && <EnableBuyerForm />}
-      {!user.is_seller && <EnableSellerForm categories={sellerCategories} />}
+
+      {/* Becoming a seller is a reviewed application (documents required), not an
+          instant toggle — route to the dedicated flow. */}
+      {!user.is_seller && (
+        <Link href="/app/become-seller" className={styles.sellerCta}>
+          <span className={styles.sellerCtaIcon}>
+            <Store size={18} />
+          </span>
+          <span className={styles.sellerCtaBody}>
+            <span className={styles.sellerCtaTitle}>Start selling on Markt</span>
+            <span className={styles.sellerCtaDesc}>Apply to open a shop — we verify sellers to keep Markt safe.</span>
+          </span>
+          <ArrowRight size={16} className={styles.sellerCtaArrow} />
+        </Link>
+      )}
+
+      {sellerPending && (
+        <p className={styles.sectionDesc} style={{ marginTop: '1rem' }}>
+          Your seller application is in review. <Link href="/app/become-seller">Check status</Link>.
+        </p>
+      )}
     </>
   );
 }
@@ -58,40 +76,3 @@ function EnableBuyerForm() {
   );
 }
 
-function EnableSellerForm({ categories }: { categories: CategoryOption[] }) {
-  const [state, formAction, pending] = useActionState(enableSellerAction, initialState);
-
-  return (
-    <form action={formAction} style={{ marginTop: '1rem' }}>
-      <p className={styles.sectionDesc} style={{ margin: '0 0 0.6rem' }}>
-        You don&apos;t have a seller account yet — add one to start selling.
-      </p>
-      <div className={styles.field}>
-        <label htmlFor="shop_name">Shop name</label>
-        <input id="shop_name" name="shop_name" className={styles.input} placeholder="Your shop's name" required />
-      </div>
-      <div className={styles.field}>
-        <label htmlFor="description">Shop description</label>
-        <input id="description" name="description" className={styles.input} placeholder="What you sell" required />
-      </div>
-      {categories.length > 0 && (
-        <div className={styles.field}>
-          <label>What do you sell? Pick at least one</label>
-          <div className={styles.categoryGrid}>
-            {categories.map((cat) => (
-              <label key={cat.id} className={styles.categoryChip}>
-                <input type="checkbox" name="category_ids" value={cat.id} />
-                <span>{cat.name}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-      )}
-      {state.error && <p className={styles.errorText}>{state.error}</p>}
-      {state.success && <p className={styles.successText}>Seller account enabled</p>}
-      <button type="submit" className={styles.outlineBtn} disabled={pending}>
-        {pending ? 'Enabling…' : 'Enable seller account'}
-      </button>
-    </form>
-  );
-}

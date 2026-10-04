@@ -41,7 +41,19 @@
 
 .followBtnActive { background: var(--brand); color: var(--brand-contrast); }
 
-.postImage { width: 100%; max-height: 460px; object-fit: cover; display: block; background: var(--surface-sunken); }
+/* Honour the image's own aspect ratio — a 4:5 shows as 4:5, not cropped to a
+   square. `contain` + a tall cap keeps extreme images from dominating while
+   never cropping. */
+.postImage {
+  width: 100%;
+  height: auto;
+  max-height: 80vh;
+  object-fit: contain;
+  display: block;
+  background: var(--surface-sunken);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
 
 .postBody { padding: 0.85rem 1rem; }
 .caption { font-size: 0.9rem; color: var(--text); margin: 0 0 0.6rem; line-height: 1.5; }

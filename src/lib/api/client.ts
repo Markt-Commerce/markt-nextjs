@@ -114,14 +114,12 @@ async function throwForResponse(res: Response, method: string, path: string): Pr
   throw new ApiError(res.status, message, errorBody, fieldErrors);
 }
 
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function doFetch(path: string, options: ApiFetchOptions): Promise<Response> {
   const { cookie, headers, body, method, timeoutMs, signal, ...rest } = options;
 
-  // Respect a caller-supplied signal; otherwise time the request out so a hung
-  // backend eventually fails with a friendly message instead of a forever spinner.
-  const requestSignal = signal ?? AbortSignal.timeout(timeoutMs ?? DEFAULT_TIMEOUT_MS);
-
-  const init: RequestInit = {
+  const baseInit: Omit<RequestInit, 'signal'> = {
     ...rest,
     method,
     headers: {
@@ -130,30 +128,57 @@ async function doFetch(path: string, options: ApiFetchOptions): Promise<Response
       ...headers,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
-    signal: requestSignal,
   };
 
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE_URL}${path}`, init);
-  } catch (err) {
-    // A timed-out request must not be retried — just fail cleanly.
-    if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
-      throw new ApiError(408, 'That took too long. Please check your connection and try again.');
-    }
-    // Bare network failure: retry once with the trailing slash toggled — the
-    // backend 308-redirects between `/path` and `/path/`, which can surface as
-    // a network error server-side. The signal is still live (a network error
-    // isn't an abort), so it keeps the same overall timeout budget.
+  // GETs are idempotent, so a transient failure (a backend 5xx or network blip)
+  // is safe to retry — this is what stops a momentary hiccup from surfacing as
+  // an empty page. Writes get the one-shot trailing-slash retry below but are
+  // never retried on a 5xx. A caller passing its own signal owns the request's
+  // lifetime, so it opts out of the extra retries.
+  const isGet = !method || method.toUpperCase() === 'GET';
+  const maxRetries = isGet && !signal ? 2 : 0;
+
+  let retries = 0;
+  let useToggledSlash = false;
+
+  for (;;) {
+    const attemptSignal = signal ?? AbortSignal.timeout(timeoutMs ?? DEFAULT_TIMEOUT_MS);
+    const url = `${API_BASE_URL}${useToggledSlash ? toggleTrailingSlash(path) : path}`;
+
+    let res: Response;
     try {
-      res = await fetch(`${API_BASE_URL}${toggleTrailingSlash(path)}`, init);
-    } catch {
+      res = await fetch(url, { ...baseInit, signal: attemptSignal });
+    } catch (err) {
+      // A timed-out request is not retried — just fail cleanly.
+      if (err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')) {
+        throw new ApiError(408, 'That took too long. Please check your connection and try again.');
+      }
+      // Bare network failure. First, one slash-toggle retry (any method) — the
+      // backend 308-redirects between `/path` and `/path/`, which can surface as
+      // a network error server-side. After that, GETs get a couple of backed-off
+      // retries; writes give up.
+      if (!useToggledSlash) {
+        useToggledSlash = true;
+        continue;
+      }
+      if (retries < maxRetries) {
+        retries += 1;
+        await delay(200 * retries);
+        continue;
+      }
       throw new ApiError(0, 'Could not reach Markt right now. Please try again in a moment.');
     }
-  }
 
-  if (!res.ok) await throwForResponse(res, method ?? 'GET', path);
-  return res;
+    // Retry idempotent GETs on a transient server error.
+    if (!res.ok && isGet && res.status >= 500 && retries < maxRetries) {
+      retries += 1;
+      await delay(200 * retries);
+      continue;
+    }
+
+    if (!res.ok) await throwForResponse(res, method ?? 'GET', path);
+    return res;
+  }
 }
 
 /**
