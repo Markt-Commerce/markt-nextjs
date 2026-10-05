@@ -12,6 +12,7 @@ import { postImages } from '@/lib/types/post';
 import { primaryImageUrl, type Product } from '@/lib/types/product';
 import { imageOrFallback } from '@/lib/img';
 import { cn } from '@/lib/cn';
+import { PostMenu } from '@/components/moderation/PostMenu';
 import { Composer, type TaggableProduct } from '../composer';
 import { LikeButton } from '../like-button';
 import { SaveButton } from '../save-button';
@@ -115,6 +116,7 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
                     <span className={styles.postHandle}>@{post.user?.username ?? 'user'}</span>
                     <span className={styles.postDot}>·</span>
                     <span className={styles.postTime}>{new Date(post.created_at).toLocaleDateString()}</span>
+                    <PostMenu postId={post.id} authorId={post.user?.id} authorName={post.user?.username} />
                   </div>
 
                   {post.caption && <p className={styles.caption}>{post.caption}</p>}

@@ -6,6 +6,7 @@ import { useSyncExternalStore } from 'react';
 import {
   Home,
   Store,
+  MapPin,
   Users,
   MessageCircle,
   Receipt,
@@ -43,6 +44,7 @@ interface NavLinkDef {
 const COMMON_LINKS: NavLinkDef[] = [
   { href: '/app/dashboard', icon: Home, label: 'Dashboard' },
   { href: '/app/marketplace', icon: Store, label: 'Marketplace' },
+  { href: '/app/markets', icon: MapPin, label: 'Markets' },
   { href: '/app/community/social-feed', icon: Users, label: 'Community' },
   { href: '/app/chat', icon: MessageCircle, label: 'Messages', badgeKey: 'messages' },
   { href: '/app/orders', icon: Receipt, label: 'Orders', badgeKey: 'orders' },

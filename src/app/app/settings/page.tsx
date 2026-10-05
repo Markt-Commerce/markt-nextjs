@@ -4,6 +4,7 @@ import { requireSession, getForwardedCookie } from '@/lib/api/session';
 import { getUserSettings } from '@/lib/api/settings';
 import { safeFetch } from '@/lib/api/safe';
 import { AddressForm } from './address-form';
+import { BlockedAccounts } from './blocked-accounts';
 import { RolePanel } from './role-panel';
 import { DangerZone } from './danger-zone';
 import { BillingsPanel } from './billings-panel';
@@ -122,6 +123,15 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       content: (
         <Section title="Privacy" desc="Control who can see your profile and how people can reach you.">
           <PrivacyForm initial={{ ...PRIVACY_DEFAULTS, ...storedPrivacy }} />
+        </Section>
+      ),
+    },
+    {
+      id: 'blocked',
+      label: 'Blocked',
+      content: (
+        <Section title="Blocked accounts" desc="People you’ve blocked. They can’t message you or see your activity.">
+          <BlockedAccounts cookie={cookie} />
         </Section>
       ),
     },
