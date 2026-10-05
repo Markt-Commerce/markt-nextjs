@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { MessageCircle, Store, UserPlus, ChevronRight, BadgeCheck, Tag } from 'lucide-react';
+import { MessageCircle, Store, UserPlus, ChevronRight, BadgeCheck, Tag, Users } from 'lucide-react';
 import { formatNaira } from '@/lib/format';
 import { getForwardedCookie, getSession } from '@/lib/api/session';
 import { getLatestPosts, getFollowingFeed, getStories } from '@/lib/api/social';
@@ -238,6 +238,21 @@ export default async function SocialFeedPage({ searchParams }: { searchParams: P
             </div>
           </section>
         )}
+
+        <section className={styles.sideCard}>
+          <h2 className={styles.sideTitle}>
+            <Users size={15} /> Communities
+          </h2>
+          <p style={{ fontSize: '0.82rem', color: 'var(--text-muted)', margin: '0 0 0.6rem', lineHeight: 1.45 }}>
+            Niches for the things you buy, sell, and love.
+          </p>
+          <Link
+            href="/app/community/niches"
+            style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--brand-text)', textDecoration: 'none' }}
+          >
+            Discover communities →
+          </Link>
+        </section>
 
         <nav className={styles.footer}>
           <Link href="/app/marketplace">Marketplace</Link>

@@ -47,6 +47,27 @@
 
 .actions { display: flex; align-items: center; gap: 1rem; }
 
+/* Current tier, surfaced in the header → links to the Rewards screen. */
+.tierPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem 0.25rem 0.3rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  background: var(--surface-2, var(--surface));
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color var(--transition-fast, 0.15s), background var(--transition-fast, 0.15s);
+}
+.tierPill:hover { border-color: var(--brand); background: var(--surface-hover); }
+.tierPillName { font-size: 0.8rem; font-weight: 700; text-transform: capitalize; }
+
+/* Keep the header uncluttered on phones — show just the tier icon. */
+@media (max-width: 640px) {
+  .tierPillName { display: none; }
+}
+
 .iconButton {
   border: 0;
   background: none;

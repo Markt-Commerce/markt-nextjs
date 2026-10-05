@@ -1,0 +1,123 @@
+/* ---- TierBadge ---- */
+.tierBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.tierChip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+.tierChipSm { width: 1.6rem; height: 1.6rem; }
+.tierChipMd { width: 2.1rem; height: 2.1rem; }
+.tierChipLg { width: 3rem; height: 3rem; }
+/* Earned tiers carry the brand; newcomer stays neutral (earned-the-brand-yet rule). */
+.tierEarned { background: var(--brand-soft); color: var(--brand-text, var(--brand)); }
+.tierNeutral { background: var(--surface-sunken); color: var(--text-muted); }
+.tierName { font-weight: 700; font-size: 0.85rem; }
+.tierStars { display: inline-flex; gap: 1px; color: var(--brand); }
+
+/* ---- TierProgressBar ---- */
+.progressWrap { margin-top: 0.4rem; }
+.progressTrack {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--brand), var(--brand-hover, var(--brand)));
+  transition: width 0.6s ease;
+}
+.progressHint { font-size: 0.78rem; color: var(--text-muted); margin: 0.4rem 0 0; }
+
+/* ---- StreakCard ---- */
+.streakCard {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  padding: 1rem 1.1rem;
+}
+.streakIcon { flex-shrink: 0; display: inline-flex; }
+.streakAlive { color: var(--warning-text, var(--warning)); }
+.streakLapsed { color: var(--text-muted); }
+.streakAlive.breathing { animation: breathe 1.8s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+.streakBody { display: flex; flex-direction: column; gap: 0.1rem; min-width: 0; }
+.streakDays { font-weight: 800; font-size: 1.05rem; }
+.streakSub { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ---- BadgeCard / BadgeGrid ---- */
+.badgeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 0.75rem;
+}
+.badgeCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  text-align: center;
+  padding: 0.85rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  text-decoration: none;
+  color: inherit;
+  overflow: hidden;
+}
+.badgeLocked { opacity: 0.55; }
+.badgeArt {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  object-fit: cover;
+  background: var(--surface-sunken);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.badgeArtEarned { color: var(--brand); background: var(--brand-soft); }
+.badgeArtLocked { color: var(--text-subtle); }
+.badgeName { font-size: 0.74rem; font-weight: 600; line-height: 1.2; }
+.badgeProgressTrack {
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-sunken);
+  overflow: hidden;
+}
+.badgeProgressFill { height: 100%; background: var(--brand); border-radius: 999px; }
+/* Locked shimmer sweep (stops once earned / under reduced motion). */
+.badgeShimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.12) 50%, transparent 65%);
+  background-size: 220% 100%;
+  animation: badgeSweep 2.8s linear infinite;
+  pointer-events: none;
+}
+@keyframes badgeSweep {
+  from { background-position: 200% 0; }
+  to { background-position: -120% 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .streakAlive.breathing { animation: none; }
+  .badgeShimmer::after { animation: none; }
+  .progressFill { transition: none; }
+}

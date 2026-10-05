@@ -20,6 +20,7 @@ import {
   CreditCard,
   ImagePlus,
   Newspaper,
+  Trophy,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
@@ -63,6 +64,7 @@ const SELLER_LINKS: NavLinkDef[] = [
 
 const ACCOUNT_LINKS: NavLinkDef[] = [
   { href: '/app/community/my-posts', icon: Newspaper, label: 'My Posts' },
+  { href: '/app/gamification', icon: Trophy, label: 'Rewards' },
   { href: '/app/reviews', icon: Star, label: 'My Reviews' },
   { href: '/app/settings', icon: Settings, label: 'Settings' },
   { href: '/app/support', icon: HelpCircle, label: 'Help & Support' },

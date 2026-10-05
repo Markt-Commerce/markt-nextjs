@@ -7,7 +7,11 @@ import { pendingOnboardingStep } from '@/lib/onboarding';
 import { apiFetch } from '@/lib/api/client';
 import { getPendingOrderCount } from '@/lib/api/orders';
 import { listSavedProductIds } from '@/lib/api/saved';
+import { getGamificationMe } from '@/lib/api/gamification';
+import { safeFetch } from '@/lib/api/safe';
 import { FavoritesInit } from './favorites-init';
+import { GamificationCelebrations } from './gamification-celebrations';
+import { TierBadge } from '@/components/gamification/TierBadge';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { HeaderSearch } from './header-search';
 import { UserMenu } from './user-menu';
@@ -42,7 +46,10 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const isSeller = user.current_role === 'seller';
   const cookie = await getForwardedCookie();
   const { cart, notifications, messages, orders } = await getBadgeCounts(cookie, isSeller);
-  const savedIds = await listSavedProductIds(cookie);
+  const [savedIds, gam] = await Promise.all([
+    listSavedProductIds(cookie),
+    safeFetch(() => getGamificationMe(cookie), null),
+  ]);
 
   return (
     <div className={styles.shell}>
@@ -56,6 +63,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           <HeaderSearch />
 
           <div className={styles.actions}>
+            {gam?.tier && (
+              <Link href="/app/gamification" className={styles.tierPill} title={`${gam.tier.name} tier · ${gam.lifetime_points.toLocaleString('en-NG')} points`}>
+                <TierBadge tier={gam.tier.key} size="sm" />
+                <span className={styles.tierPillName}>{gam.tier.name}</span>
+              </Link>
+            )}
+
             <ThemeToggle className={styles.iconButton} />
 
             <Link href="/app/notifications" className={styles.iconButton} aria-label="Notifications">
@@ -69,6 +83,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       <FavoritesInit ids={savedIds} />
+      <GamificationCelebrations />
 
       <div className={styles.body}>
         <SidebarShell role={user.current_role}>
