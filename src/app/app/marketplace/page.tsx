@@ -45,29 +45,30 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
   const user = await getSession();
   const showAreaTile = !hasSavedAddress(user?.address);
 
-  const [tree, results] = await Promise.all([
+  const productsPromise = categoryId
+    ? listCategoryProducts(categoryId, { search: sp.q, sort: sortBy, page, perPage: PER_PAGE }, cookie).then((r) => ({
+        items: r.products,
+        pagination: r.pagination,
+      }))
+    : listProducts(
+        {
+          search: sp.q,
+          sortBy,
+          minPrice: sp.min ? Number(sp.min) : undefined,
+          maxPrice: sp.max ? Number(sp.max) : undefined,
+          page,
+          perPage: PER_PAGE,
+        },
+        cookie
+      );
+
+  // Tell a load failure apart from a genuinely empty result, so a transient
+  // backend hiccup reads as "couldn't load — refresh", not "nothing here".
+  const [tree, outcome] = await Promise.all([
     safeFetch(() => listCategoryTree(), []),
-    safeFetch(
-      () =>
-        categoryId
-          ? listCategoryProducts(categoryId, { search: sp.q, sort: sortBy, page, perPage: PER_PAGE }, cookie).then((r) => ({
-              items: r.products,
-              pagination: r.pagination,
-            }))
-          : listProducts(
-              {
-                search: sp.q,
-                sortBy,
-                minPrice: sp.min ? Number(sp.min) : undefined,
-                maxPrice: sp.max ? Number(sp.max) : undefined,
-                page,
-                perPage: PER_PAGE,
-              },
-              cookie
-            ),
-      EMPTY_RESULTS
-    ),
+    productsPromise.then((results) => ({ results, failed: false })).catch(() => ({ results: EMPTY_RESULTS, failed: true })),
   ]);
+  const { results, failed: productsFailed } = outcome;
 
   const buildHref = (targetPage: number) => {
     const params = new URLSearchParams();
@@ -144,7 +145,12 @@ export default async function MarketplacePage({ searchParams }: { searchParams: 
         )}
       </div>
 
-      {results.items.length === 0 ? (
+      {productsFailed ? (
+        <div className={styles.emptyState}>
+          We couldn&apos;t load products just now — this is usually a brief hiccup.{' '}
+          <Link href={buildHref(page)}>Refresh</Link> to try again.
+        </div>
+      ) : results.items.length === 0 ? (
         <div className={styles.emptyState}>
           Nothing here yet. Try a different search — or{' '}
           <Link href="/app/requests/create">ask sellers directly</Link>.

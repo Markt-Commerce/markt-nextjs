@@ -8,6 +8,7 @@ import { getProduct, getProductReviews, getRecommendedProducts } from '@/lib/api
 import { safeFetch } from '@/lib/api/safe';
 import { discountPercent, hasDiscount, isOutOfStock, primaryImageUrl } from '@/lib/types/product';
 import { ProductCard } from '@/components/marketplace/ProductCard';
+import { ReportButton } from '@/components/moderation/ReportButton';
 import { PurchaseActions } from './purchase-actions';
 import { ReviewForm } from './review-form';
 import styles from './page.module.css';
@@ -93,6 +94,10 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
           {product.description && <p className={styles.description}>{product.description}</p>}
 
           <PurchaseActions productId={product.id} productName={product.name} stock={product.stock} isBuyer={isBuyer} />
+
+          <div style={{ marginTop: '0.75rem' }}>
+            <ReportButton contentId={product.id} contentType="product" label="this product" />
+          </div>
         </div>
       </div>
 

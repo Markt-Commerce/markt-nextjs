@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import { ArrowLeft, Users } from 'lucide-react';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
-import { getNiche, getNichePosts } from '@/lib/api/niches';
+import { getNiche, getNichePosts, canPostInNiche } from '@/lib/api/niches';
 import { safeFetch } from '@/lib/api/safe';
 import { imageOrFallback } from '@/lib/img';
 import { postImages } from '@/lib/types/post';
 import { JoinButton } from '../join-button';
+import { NicheComposer } from '../niche-composer';
 import styles from '../niches.module.css';
 
 export default async function NicheDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -29,6 +30,9 @@ export default async function NicheDetailPage({ params }: { params: Promise<{ id
     items: [],
     pagination: { page: 1, per_page: 20, total_items: 0, total_pages: 0 },
   });
+
+  // Only members who the backend says can post see the composer.
+  const canPost = niche.is_member ? (await safeFetch(() => canPostInNiche(id, cookie), { can_post: false })).can_post : false;
 
   return (
     <div className={styles.page}>
@@ -58,6 +62,8 @@ export default async function NicheDetailPage({ params }: { params: Promise<{ id
           <JoinButton nicheId={niche.id} initialMember={niche.is_member} />
         </div>
       </div>
+
+      {canPost && <NicheComposer nicheId={id} />}
 
       <h2 className={styles.sectionTitle}>Posts</h2>
       {posts.items.length === 0 ? (

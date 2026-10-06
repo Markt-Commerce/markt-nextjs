@@ -34,3 +34,29 @@ export async function joinNiche(id: string, cookie: string | undefined): Promise
 export async function leaveNiche(id: string, cookie: string | undefined): Promise<void> {
   await apiFetch(`/socials/niches/${encodeURIComponent(id)}/leave`, { method: 'POST', cookie });
 }
+
+export async function createNiche(
+  body: {
+    name: string;
+    description: string;
+    visibility?: 'public' | 'private' | 'restricted';
+    allow_buyer_posts?: boolean;
+    allow_seller_posts?: boolean;
+    require_approval?: boolean;
+  },
+  cookie: string | undefined
+): Promise<Niche> {
+  return apiFetch<Niche>('/socials/niches', { method: 'POST', cookie, body });
+}
+
+export async function createNichePost(
+  nicheId: string,
+  body: { caption?: string; media_ids?: number[] },
+  cookie: string | undefined
+): Promise<void> {
+  await apiFetch(`/socials/niches/${encodeURIComponent(nicheId)}/posts`, {
+    method: 'POST',
+    cookie,
+    body: { status: 'active', ...body },
+  });
+}

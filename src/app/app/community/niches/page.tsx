@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowLeft, Users } from 'lucide-react';
+import { ArrowLeft, Users, Plus } from 'lucide-react';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { listNiches, listMyNiches } from '@/lib/api/niches';
 import { safeFetch } from '@/lib/api/safe';
@@ -55,8 +55,15 @@ export default async function NichesPage() {
       <Link href="/app/community/social-feed" className={styles.breadcrumb}>
         <ArrowLeft size={15} /> Community
       </Link>
-      <h1 className={styles.title}>Communities</h1>
-      <p className={styles.sub}>Find your people — niches for the things you buy, sell, and love.</p>
+      <div className={styles.titleRow}>
+        <div>
+          <h1 className={styles.title}>Communities</h1>
+          <p className={styles.sub}>Find your people — niches for the things you buy, sell, and love.</p>
+        </div>
+        <Link href="/app/community/niches/new" className={styles.createBtn}>
+          <Plus size={15} /> Create
+        </Link>
+      </div>
 
       {myNiches.length > 0 && (
         <section>

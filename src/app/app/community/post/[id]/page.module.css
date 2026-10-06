@@ -72,6 +72,69 @@
 }
 
 .actionBtnLiked { color: var(--brand); }
+.actionBtnSaved { color: var(--brand); }
+.actionShare { margin-left: auto; }
+
+/* Multi-image grid (parity with the feed card). */
+.mediaGrid {
+  margin: 0 0 0.7rem;
+  display: grid;
+  gap: 3px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--border);
+}
+.grid1 { grid-template-columns: 1fr; }
+.grid2 { grid-template-columns: 1fr 1fr; }
+.grid3 { grid-template-columns: 1fr 1fr; }
+.grid3 .mediaCell:first-child { grid-column: 1 / -1; }
+.grid4 { grid-template-columns: 1fr 1fr; }
+.mediaCell { position: relative; background: var(--surface-sunken); aspect-ratio: 4 / 3; }
+.mediaImg { width: 100%; height: 100%; object-fit: cover; display: block; }
+.grid1 .mediaCell { aspect-ratio: auto; }
+.grid1 .mediaImg { height: auto; max-height: 70vh; object-fit: contain; }
+.mediaMore {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+/* Tagged product card (parity with the feed card). */
+.productCard {
+  margin: 0 0 0.7rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-2);
+  padding: 0.6rem;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color var(--transition-fast, 0.15s), background var(--transition-fast, 0.15s);
+}
+.productCard:hover { border-color: var(--brand); background: var(--surface-hover); }
+.productThumb,
+.productThumbFallback {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.productThumb { background: var(--surface-sunken); }
+.productThumbFallback { background: var(--brand-soft); color: var(--brand-text, var(--brand)); display: flex; align-items: center; justify-content: center; }
+.productInfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.15rem; }
+.productName { font-size: 0.88rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.productPrice { font-size: 0.9rem; font-weight: 800; color: var(--brand-text); }
+.productChevron { color: var(--text-subtle); flex-shrink: 0; }
 
 .sectionTitle { font-size: 0.95rem; font-weight: 700; margin: 0 0 1rem; }
 

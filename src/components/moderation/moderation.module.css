@@ -114,3 +114,18 @@
 }
 .submitBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 .error { color: var(--danger-text); font-size: 0.8rem; margin: 0 0 0.75rem; }
+
+/* Plain "Report" text button. */
+.reportLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  border: 0;
+  background: none;
+  color: var(--text-subtle);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.3rem 0;
+}
+.reportLink:hover { color: var(--danger-text); }
