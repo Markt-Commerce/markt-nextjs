@@ -4,7 +4,19 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { ApiError } from '@/lib/api/client';
 import { createBuyerAccount, createSellerAccount } from '@/lib/api/account';
-import { disableBusiness, getMyBusiness, removeListing, saveBusinessProfile, saveListing } from '@/lib/api/business';
+import {
+  disableBusiness,
+  getMyBusiness,
+  removeBusinessImage,
+  removeListing,
+  requestBusinessVerification,
+  saveBusinessProfile,
+  saveListing,
+  startSubscriptionCheckout,
+  uploadBusinessImage,
+  type BusinessImageKind,
+} from '@/lib/api/business';
+import { uploadMedia } from '@/lib/api/media';
 import { createProduct } from '@/lib/api/products';
 import { createRequest } from '@/lib/api/requests';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
@@ -254,9 +266,25 @@ export async function createProcurementAction(_prev: BusinessFormState, formData
   if (description.length < 10) return { error: 'Add a description of at least 10 characters.' };
   if (quantity === 'invalid' || budget === 'invalid') return { error: 'Quantity and budget must be numbers of zero or more.' };
 
+  const photos = formData.getAll('photos').filter((f): f is File => f instanceof File && f.size > 0);
+  if (photos.length > MAX_REQUEST_PHOTOS) return { error: `Attach up to ${MAX_REQUEST_PHOTOS} photos.` };
+
   const cookie = await getForwardedCookie();
   const mine = await getMyBusiness(cookie).catch(() => null);
   if (!mine?.is_business) return { error: 'Set up your business profile before posting procurement requests.' };
+
+  // Reference photos go through the normal media upload first; the request
+  // then links them by id (the backend checks each one is yours).
+  const mediaIds: number[] = [];
+  for (const photo of photos) {
+    try {
+      const media = new FormData();
+      media.append('file', photo);
+      mediaIds.push((await uploadMedia(media, cookie)).id);
+    } catch {
+      return { error: `Could not upload "${photo.name}". Try a different photo.` };
+    }
+  }
 
   let created: { id: string };
   try {
@@ -270,6 +298,7 @@ export async function createProcurementAction(_prev: BusinessFormState, formData
         specifications: specifications(formData),
         delivery_location: optional(formData, 'delivery_location'),
         required_delivery_date: neededBy || null,
+        ...(mediaIds.length ? { media_ids: mediaIds } : {}),
       },
       cookie
     );
@@ -279,4 +308,63 @@ export async function createProcurementAction(_prev: BusinessFormState, formData
 
   revalidatePath('/app/business/procurement');
   redirect(`/app/requests/${created.id}`);
+}
+
+const MAX_REQUEST_PHOTOS = 5;
+
+// --- Logo and cover ----------------------------------------------------------
+
+export async function uploadBusinessImageAction(kind: BusinessImageKind, _prev: BusinessFormState, formData: FormData): Promise<BusinessFormState> {
+  const file = formData.get('file');
+  if (!(file instanceof File) || file.size === 0) return { error: 'Choose an image first.' };
+  if (!file.type.startsWith('image/')) return { error: 'That file is not an image.' };
+
+  const upload = new FormData();
+  upload.append('file', file);
+  try {
+    await uploadBusinessImage(kind, upload, await getForwardedCookie());
+  } catch (err) {
+    return { error: errorMessage(err, 'Could not upload the image.') };
+  }
+  revalidatePath('/app/business', 'layout');
+  return { success: true };
+}
+
+export async function removeBusinessImageAction(kind: BusinessImageKind): Promise<void> {
+  try {
+    await removeBusinessImage(kind, await getForwardedCookie());
+  } catch {
+    // The image just stays; the card still shows it.
+  }
+  revalidatePath('/app/business', 'layout');
+}
+
+// --- Verification -----------------------------------------------------------
+
+export async function requestVerificationAction(_prev: BusinessFormState): Promise<BusinessFormState> {
+  try {
+    await requestBusinessVerification(await getForwardedCookie());
+  } catch (err) {
+    return { error: errorMessage(err, 'Could not send the request.') };
+  }
+  revalidatePath('/app/business', 'layout');
+  return { success: true };
+}
+
+// --- Subscription checkout --------------------------------------------------
+
+/**
+ * Start paying for a plan. A paid plan sends the browser to Paystack, which
+ * comes back to /app/business/subscription via the backend's callback; a free
+ * plan is active straight away.
+ */
+export async function startCheckoutAction(planId: number): Promise<void> {
+  let url: string | null;
+  try {
+    url = (await startSubscriptionCheckout(planId, await getForwardedCookie())).authorization_url;
+  } catch {
+    redirect('/app/business/subscription?payment=error');
+  }
+  revalidatePath('/app/business', 'layout');
+  redirect(url ?? '/app/business/subscription?payment=success');
 }

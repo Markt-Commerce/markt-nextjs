@@ -31,7 +31,7 @@ export async function getRequest(id: string, cookie: string | undefined): Promis
 }
 
 export async function createRequest(
-  body: { title: string; description: string; budget?: number; expires_at?: string } & ProcurementFields,
+  body: { title: string; description: string; budget?: number; expires_at?: string; media_ids?: number[] } & ProcurementFields,
   cookie: string | undefined
 ): Promise<BuyerRequest> {
   return apiFetch<BuyerRequest>('/requests/', { method: 'POST', cookie, body });

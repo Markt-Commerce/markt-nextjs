@@ -32,6 +32,8 @@ export interface BuyerOrder {
   subtotal: number;
   customer_note?: string;
   created_at: string;
+  /** Placed by a Markt Business account (stamped when ordered). */
+  is_business?: boolean;
 }
 
 export interface Order extends BuyerOrder {

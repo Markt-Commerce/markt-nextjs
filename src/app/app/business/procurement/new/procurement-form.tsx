@@ -50,6 +50,11 @@ export function ProcurementForm({ units, defaultLocation }: { units: BusinessOpt
           </div>
         </div>
         <SpecificationRows initial={null} />
+        <div className={styles.field}>
+          <label htmlFor="photos">Reference photos (optional)</label>
+          <input id="photos" name="photos" type="file" accept="image/*" multiple className={styles.input} />
+          <p className={styles.hint}>Up to 5 — a sample, a label, the part you mean.</p>
+        </div>
       </fieldset>
 
       <fieldset className={`${styles.fieldset} ${styles.card}`}>

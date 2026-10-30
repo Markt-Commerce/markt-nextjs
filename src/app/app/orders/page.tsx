@@ -37,7 +37,10 @@ export default async function OrdersPage() {
           {orders.map((order) => (
             <Link key={order.id} href={`/app/orders/${order.id}`} className={styles.card}>
               <div className={styles.cardHead}>
-                <span className={styles.orderNumber}>#{order.order_number}</span>
+                <span className={styles.orderNumber}>
+                  #{order.order_number}
+                  {order.is_business && <span className={styles.businessChip}>Business</span>}
+                </span>
                 <span className={cn(styles.statusBadge, styles[STATUS_CLASS[order.status]])}>{order.status.replace('_', ' ')}</span>
               </div>
               <div className={styles.cardFooter}>

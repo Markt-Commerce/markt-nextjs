@@ -67,3 +67,18 @@
 
 .emptyState a { color: var(--brand-text); font-weight: 700; text-decoration: none; }
 .emptyState a:hover { text-decoration: underline; }
+
+/* Markt Business order (placed by a business account). */
+.businessChip {
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--brand-soft);
+  color: var(--brand-soft-text);
+  border: 1px solid var(--brand-soft-border);
+  font-size: 0.65rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  vertical-align: 2px;
+}

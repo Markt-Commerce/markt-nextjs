@@ -60,7 +60,8 @@ export default async function BusinessDashboardPage() {
     sells && config.features.procurement_enabled
       ? safeFetch(() => listRequests({ isBusiness: true, status: 'OPEN', perPage: 6 }, cookie), null)
       : null,
-    safeFetch(() => listOrders(cookie), []),
+    // Business orders only: everyday shopping stays on the consumer dashboard.
+    safeFetch(() => listOrders(cookie, { isBusiness: true }), []),
   ]);
 
   const myProcurement = (myRequests?.items ?? []).filter((r) => r.is_business);
@@ -154,7 +155,7 @@ export default async function BusinessDashboardPage() {
           </Link>
         )}
         <Link href="/app/orders" className={styles.stat}>
-          <p className={styles.statLabel}>Active orders</p>
+          <p className={styles.statLabel}>Active business orders</p>
           <p className={styles.statValue}>{activeOrders.length}</p>
         </Link>
       </section>
@@ -276,14 +277,14 @@ export default async function BusinessDashboardPage() {
 
         <section>
           <div className={styles.sectionHead}>
-            <h2 className={styles.sectionTitle}>Recent orders</h2>
+            <h2 className={styles.sectionTitle}>Recent business orders</h2>
             <Link href="/app/orders" className={styles.link}>
               All orders
             </Link>
           </div>
           {orders.length === 0 ? (
             <div className={styles.empty}>
-              <p>Orders you place on Markt appear here.</p>
+              <p>Orders you place as a business appear here.</p>
             </div>
           ) : (
             <div className={styles.list}>

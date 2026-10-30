@@ -7,6 +7,8 @@ import { safeFetch } from '@/lib/api/safe';
 import { disableBusinessAction } from '../actions';
 import { BusinessProfileForm } from '../profile-form';
 import { VerificationBadge } from '../verification-badge';
+import { BusinessImagesCard } from './images-card';
+import { VerificationRequestButton } from './verification-request';
 import styles from '../business.module.css';
 
 export default async function BusinessProfilePage() {
@@ -16,6 +18,9 @@ export default async function BusinessProfilePage() {
   if (!mine?.profile || !mine.business_tag) redirect('/app/business/onboarding');
 
   const subscriptionsOn = config.features.subscriptions_enabled;
+  const canRequestVerification =
+    config.features.verification_enabled &&
+    (mine.profile.verification_status === 'UNVERIFIED' || mine.profile.verification_status === 'REJECTED');
   const subscription = subscriptionsOn ? await safeFetch(() => getMySubscription(cookie), null) : null;
 
   return (
@@ -34,19 +39,20 @@ export default async function BusinessProfilePage() {
         <BusinessProfileForm config={config} profile={mine.profile} isBuyer={user.is_buyer} isSeller={user.is_seller} />
 
         <aside className={styles.form}>
+          <BusinessImagesCard logoUrl={mine.profile.logo_url} coverUrl={mine.profile.cover_image_url} />
+
           <div className={styles.card}>
             <p className={styles.cardTitle}>Verification</p>
             <div style={{ margin: '0.4rem 0 0.6rem' }}>
               <VerificationBadge status={mine.profile.verification_status} />
             </div>
-            <p className={styles.cardText}>
-              Verification is a review by the Markt team and is separate from registration.{' '}
-              {mine.profile.verification_status !== 'VERIFIED' && (
-                <a href="mailto:support@marktcommerce.com?subject=Markt%20Business%3A%20Verification" className={styles.link}>
-                  Ask about verification
-                </a>
-              )}
+            <p className={styles.cardText} style={{ marginBottom: canRequestVerification ? '0.75rem' : 0 }}>
+              Verification is a review by the Markt team and is separate from registration.
+              {mine.profile.verification_status === 'PENDING' && ' Your request is with the team.'}
+              {mine.profile.verification_status === 'REJECTED' && ' Your last request wasn’t approved — update your details and ask again.'}
             </p>
+            {/* Only while the backend has the review queue open. */}
+            {canRequestVerification && <VerificationRequestButton />}
           </div>
 
           <div className={styles.card}>
