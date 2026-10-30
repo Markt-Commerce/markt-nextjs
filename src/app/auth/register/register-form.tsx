@@ -29,7 +29,8 @@ type Setter = <K extends keyof FormData>(key: K, value: FormData[K]) => void;
 
 const STEP_NAMES: Record<Exclude<Step, 'done'>, string> = { 1: 'Account', 2: 'Secure it', 3: 'Verify' };
 
-export function RegisterForm() {
+/** `returnUrl` is already validated by the page (see lib/return-url). */
+export function RegisterForm({ returnUrl = '/app/dashboard' }: { returnUrl?: string }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<FormData>({
@@ -153,7 +154,7 @@ export function RegisterForm() {
           <StepVerify email={form.email.trim()} onVerified={() => setStep('done')} />
         )}
 
-        {step === 'done' && <StepDone onContinue={() => router.push('/app/dashboard')} />}
+        {step === 'done' && <StepDone onContinue={() => router.push(returnUrl)} />}
 
         {step !== 'done' && (
           <p className={styles.footer}>

@@ -57,6 +57,8 @@ export interface Product {
   variants?: ProductVariant[];
   seller?: SellerSimple;
   seller_id: number;
+  /** The seller's user account — what chat rooms and business profiles key on. */
+  seller_user?: { id: string; username: string; profile_picture?: string } | null;
   average_rating: number;
   review_count: number;
   view_count: number;
