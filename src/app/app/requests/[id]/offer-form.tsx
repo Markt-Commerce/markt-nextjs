@@ -6,7 +6,8 @@ import styles from './page.module.css';
 
 const initialState: OfferFormState = {};
 
-export function OfferForm({ requestId }: { requestId: string }) {
+/** `quantityUnit` set means a procurement request: ask how much they can supply. */
+export function OfferForm({ requestId, quantityUnit }: { requestId: string; quantityUnit?: string }) {
   const boundAction = createOfferAction.bind(null, requestId);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
 
@@ -15,8 +16,14 @@ export function OfferForm({ requestId }: { requestId: string }) {
       <p className={styles.sectionTitle}>Make an Offer</p>
       <div className={styles.field}>
         <label htmlFor="price">Your price</label>
-        <input id="price" name="price" type="number" min={0} step="0.01" className={styles.input} placeholder="$" required />
+        <input id="price" name="price" type="number" min={0} step="0.01" className={styles.input} placeholder={quantityUnit !== undefined ? '₦' : '$'} required />
       </div>
+      {quantityUnit !== undefined && (
+        <div className={styles.field}>
+          <label htmlFor="proposed_quantity">How much can you supply?{quantityUnit ? ` (${quantityUnit})` : ''}</label>
+          <input id="proposed_quantity" name="proposed_quantity" type="number" min={0} step="any" className={styles.input} />
+        </div>
+      )}
       <div className={styles.field}>
         <label htmlFor="message">Message</label>
         <textarea id="message" name="message" className={styles.textarea} placeholder="Tell the buyer what you have…" required />

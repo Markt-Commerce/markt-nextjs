@@ -29,7 +29,8 @@ type Setter = <K extends keyof FormData>(key: K, value: FormData[K]) => void;
 
 const STEP_NAMES: Record<Exclude<Step, 'done'>, string> = { 1: 'Account', 2: 'Secure it', 3: 'Verify' };
 
-export function RegisterForm() {
+/** `returnUrl` is already validated by the page (see lib/return-url). */
+export function RegisterForm({ returnUrl = '/app/dashboard' }: { returnUrl?: string }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>(1);
   const [form, setForm] = useState<FormData>({
@@ -100,6 +101,20 @@ export function RegisterForm() {
 
   return (
     <div className={styles.screen}>
+      <aside className={styles.visualPane}>
+        <div
+          className={styles.visualImage}
+          style={{ backgroundImage: "url(/assets/landing/beautiful-three-welldressed-afro-american-girls-with-colored-shopping-bags-walking-mall.jpg)" }}
+          aria-hidden
+        />
+        <div className={styles.visualScrim} aria-hidden />
+        <p className={styles.visualQuote}>
+          &ldquo;It feels less like a shop and more like a neighbourhood. I discover people first, then the things they make.&rdquo;
+        </p>
+        <p className={styles.visualMeta}>Priya R. · Buyer, Nairobi</p>
+      </aside>
+
+      <div className={styles.formSide}>
       <div className={styles.card}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
@@ -139,13 +154,14 @@ export function RegisterForm() {
           <StepVerify email={form.email.trim()} onVerified={() => setStep('done')} />
         )}
 
-        {step === 'done' && <StepDone onContinue={() => router.push('/app/dashboard')} />}
+        {step === 'done' && <StepDone onContinue={() => router.push(returnUrl)} />}
 
         {step !== 'done' && (
           <p className={styles.footer}>
             Already have an account? <Link href="/auth/login">Sign in</Link>
           </p>
         )}
+      </div>
       </div>
     </div>
   );

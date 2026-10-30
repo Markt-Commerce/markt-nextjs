@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { THEME_INIT_SCRIPT } from "@/lib/theme-storage";
@@ -8,6 +8,15 @@ const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
+});
+
+// Display face for headings — matches marktcommerce.com's type system
+// (Plus Jakarta Sans for display, Inter for body).
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -24,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     // suppressHydrationWarning: the theme script below sets data-theme on
     // <html> before React hydrates, so the server and client markup for
     // this element intentionally differ.
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${jakarta.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
       </head>

@@ -1,166 +1,163 @@
-'use client';
-
-import { useState } from 'react';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { ArrowUpRight } from 'lucide-react';
+import { getSession } from '@/lib/api/session';
+import { listProducts } from '@/lib/api/products';
+import { listCategoryTree, listCategoryProducts } from '@/lib/api/categories';
+import { safeFetch } from '@/lib/api/safe';
+import type { ProductSearchResult } from '@/lib/types/product';
+import { ProductCard } from '@/components/marketplace/ProductCard';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { SearchSort, CategoryChips } from './app/marketplace/filters';
 import styles from './page.module.css';
 
-const STEPS = [
-  { number: '01', title: 'Find your people', copy: 'Follow curators, sellers, and communities that make you want to look twice.' },
-  { number: '02', title: 'See the story', copy: 'Ask questions, watch live, and get the context that makes a find feel personal.' },
-  { number: '03', title: 'Make it yours', copy: 'Buy with confidence and keep discovering what is next.' },
-];
+const PER_PAGE = 12;
+const EMPTY_RESULTS: ProductSearchResult = {
+  items: [],
+  pagination: { page: 1, per_page: PER_PAGE, total_items: 0, total_pages: 0 },
+};
 
-export default function LandingPage() {
-  const [menuOpen, setMenuOpen] = useState(false);
+interface HomeSearchParams {
+  q?: string;
+  category?: string;
+  sort?: string;
+  min?: string;
+  max?: string;
+  page?: string;
+}
+
+/**
+ * The public marketplace — this is Markt's landing page. Anyone can browse the
+ * product grid, search, and filter without an account. Opening a product, or
+ * any buy/cart/chat action, routes through sign-in first (see ProductCard's
+ * `requireAuth`). Signed-in visitors are sent straight to the full app.
+ */
+export default async function HomePage({ searchParams }: { searchParams: Promise<HomeSearchParams> }) {
+  const user = await getSession();
+  if (user) redirect('/app/marketplace');
+
+  const sp = await searchParams;
+  const page = Number(sp.page) || 1;
+  const categoryId = sp.category ? Number(sp.category) : undefined;
+  const sortBy = (sp.sort as 'newest' | 'popular' | 'price_asc' | 'price_desc' | undefined) ?? 'newest';
+
+  const [tree, results] = await Promise.all([
+    safeFetch(() => listCategoryTree(), []),
+    safeFetch(
+      () =>
+        categoryId
+          ? listCategoryProducts(categoryId, { search: sp.q, sort: sortBy, page, perPage: PER_PAGE }).then((r) => ({
+              items: r.products,
+              pagination: r.pagination,
+            }))
+          : listProducts({
+              search: sp.q,
+              sortBy,
+              minPrice: sp.min ? Number(sp.min) : undefined,
+              maxPrice: sp.max ? Number(sp.max) : undefined,
+              page,
+              perPage: PER_PAGE,
+            }),
+      EMPTY_RESULTS
+    ),
+  ]);
+
+  const buildHref = (targetPage: number) => {
+    const params = new URLSearchParams();
+    if (sp.q) params.set('q', sp.q);
+    if (sp.category) params.set('category', sp.category);
+    if (sp.sort) params.set('sort', sp.sort);
+    params.set('page', String(targetPage));
+    return `/?${params.toString()}`;
+  };
 
   return (
-    <main className={styles.landingShell}>
-      <div className={styles.structureGrid} aria-hidden="true" />
-
-      <header className={styles.siteHeader} aria-label="Primary navigation">
-        <Link href="/" className={styles.brand} aria-label="Markt home">
-          <span className={styles.brandMark}>M</span>
-          <span className={styles.brandName}>Markt</span>
-        </Link>
-        <nav className={styles.desktopNav} aria-label="Main menu">
-          <a href="#story">Our story</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#featured">Featured finds</a>
-        </nav>
-        <div className={styles.headerActions}>
-          <ThemeToggle className={styles.themeButton} size={16} />
-          <Link href={'/app/marketplace'} className={styles.appButton}>
-            Explore Markt <span aria-hidden="true">↗</span>
+    <main className={styles.shell}>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <Link href="/" className={styles.brand} aria-label="Markt home">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/markt-text-logo.png" alt="Markt" className={styles.logo} />
           </Link>
-          <button
-            className={styles.menuButton}
-            type="button"
-            aria-label={menuOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
-          >
-            {menuOpen ? <X size={18} /> : <Menu size={18} />}
-          </button>
+          <div className={styles.headerActions}>
+            <ThemeToggle className={styles.iconButton} size={16} />
+            <Link href="/auth/login" className={styles.signIn}>Sign in</Link>
+            <Link href="/auth/register" className={styles.signUp}>
+              Create account <ArrowUpRight size={15} />
+            </Link>
+          </div>
         </div>
       </header>
 
-      {menuOpen && (
-        <div className={styles.mobileNavOpen}>
-          <a href="#story" onClick={() => setMenuOpen(false)}>Our story</a>
-          <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a>
-          <a href="#featured" onClick={() => setMenuOpen(false)}>Featured finds</a>
-          <Link href={'/app/marketplace'} onClick={() => setMenuOpen(false)}>
-            Explore the marketplace <span>↗</span>
-          </Link>
-        </div>
-      )}
-
-      <section className={styles.hero} id="story">
-        <p className={styles.eyebrow}>A marketplace with a pulse</p>
-        <h1>
-          Shopping, the way it
-          <br />
-          <em>connects us.</em>
+      <section className={styles.hero}>
+        <p className={styles.heroEyebrow}>Shopping, the way it connects us</p>
+        <h1 className={styles.heroTitle}>
+          Discover from <em>local sellers</em> near you
         </h1>
-        <p className={styles.heroCopy}>
-          Discover products through people, not just sterile listings. Find your next favorite thing
-          through the stories, taste, and energy of a real community.
+        <p className={styles.heroSub}>
+          Browse freely, no sign-up required. Create an account when you&apos;re ready to buy, chat with a seller, or save a find.
         </p>
-        <div className={styles.heroActions}>
-          <Link href={'/app/marketplace'} className={styles.exploreButton}>
-            Explore the marketplace <span>↗</span>
-          </Link>
-          <Link href={'/auth/register'} className={styles.sellerLink}>
-            I want to sell <span>↗</span>
-          </Link>
-        </div>
       </section>
 
-      <section className={styles.productRail} id="featured" aria-label="Featured products">
-        <article className={styles.productCard}>
-          <img src="/assets/landing/fashion-shoes.jpg" alt="Fashion shoes" />
-          <span className={styles.cardLabel}>Move with intention</span>
-        </article>
-        <article className={styles.productCard}>
-          <img
-            src="/assets/landing/graphic-tshirt-trendy-design-mockup-presented-wooden-hanger.jpg"
-            alt="Graphic T-shirt on a hanger"
-          />
-          <span className={styles.cardLabel}>The good kind of rare</span>
-        </article>
-        <article className={styles.productCard}>
-          <img src="/assets/landing/handbag.jpg" alt="Pink handbag" />
-          <span className={styles.cardLabel}>Carry something good</span>
-        </article>
-        <article className={styles.productCard}>
-          <img
-            src="/assets/landing/closeup-shot-modern-cool-black-digital-watch-with-brown-leather-strap.jpg"
-            alt="Black watch with a leather strap"
-          />
-          <span className={styles.cardLabel}>Details matter</span>
-        </article>
-      </section>
-
-      <section className={styles.introSection} id="how-it-works">
-        <div className={styles.introMedia}>
-          <p className={styles.eyebrow}>More than a product page</p>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/assets/landing/beautiful-three-welldressed-afro-american-girls-with-colored-shopping-bags-walking-mall.jpg"
-            alt="Friends out shopping together, carrying colorful bags"
-            className={styles.introImage}
-          />
+      <div className={styles.body}>
+        <div className={styles.toolbar}>
+          <SearchSort />
         </div>
-        <div className={styles.introText}>
-          <h2>
-            Good finds feel
-            <br />
-            <em>better together.</em>
+
+        <CategoryChips categories={tree} />
+
+        <div className={styles.resultsBar}>
+          <h2 className={styles.sectionTitle}>
+            {sp.q ? `Results for “${sp.q}”` : categoryId ? 'In this category' : 'Fresh finds'}
           </h2>
-          <p>
-            Markt brings the human part of shopping forward. Follow people with great taste, ask the
-            question you actually want answered, and discover pieces with a story behind them.
-          </p>
-          <Link href={'/app/marketplace'} className={styles.textLink}>
-            Explore the marketplace <span>↗</span>
-          </Link>
+          {results.pagination.total_items > 0 && (
+            <span className={styles.resultCount}>
+              {results.pagination.total_items} item{results.pagination.total_items === 1 ? '' : 's'}
+            </span>
+          )}
         </div>
-      </section>
 
-      <section className={styles.stepsSection} aria-label="How Markt works">
-        {STEPS.map((step) => (
-          <div className={styles.step} key={step.number}>
-            <span className={styles.stepNumber}>{step.number}</span>
-            <h3>{step.title}</h3>
-            <p>{step.copy}</p>
+        {results.items.length === 0 ? (
+          <div className={styles.emptyState}>
+            Nothing here yet. Try a different search, or{' '}
+            <Link href="/auth/register">create an account</Link> to ask sellers directly.
           </div>
-        ))}
-      </section>
+        ) : (
+          <>
+            <div className={styles.grid}>
+              {results.items.map((product) => (
+                <ProductCard key={product.id} product={product} hrefBase="/product" />
+              ))}
+            </div>
 
-      <section className={styles.closingCta}>
-        <p className={styles.eyebrow}>Your next find is out there</p>
-        <h2>
-          Come for the product.
-          <br />
-          <em>Stay for the people.</em>
-        </h2>
-        <Link href={'/auth/register'} className={styles.darkButton}>
-          Start exploring <span>↗</span>
-        </Link>
-      </section>
+            {results.pagination.total_pages > 1 && (
+              <div className={styles.pagination}>
+                {page > 1 ? (
+                  <Link href={buildHref(page - 1)} className={styles.pageBtn}>Previous</Link>
+                ) : (
+                  <span className={styles.pageBtnDisabled}>Previous</span>
+                )}
+                <span className={styles.pageInfo}>
+                  Page {results.pagination.page} of {results.pagination.total_pages}
+                </span>
+                {page < results.pagination.total_pages ? (
+                  <Link href={buildHref(page + 1)} className={styles.pageBtn}>Next</Link>
+                ) : (
+                  <span className={styles.pageBtnDisabled}>Next</span>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
 
-      <footer className={styles.siteFooter}>
-        <Link href="/" className={styles.brand}>
-          <span className={styles.brandMark}>M</span>
-          <span className={styles.brandName}>Markt</span>
-        </Link>
+      <footer className={styles.footer}>
         <p>Shopping, the way it connects us.</p>
         <div className={styles.footerLinks}>
-          <Link href="/app/support/faq">Support</Link>
+          <Link href="/welcome">About Markt</Link>
           <Link href="/legal/terms">Terms</Link>
           <Link href="/legal/privacy">Privacy</Link>
+          <Link href="/auth/register">Start selling</Link>
         </div>
       </footer>
     </main>

@@ -47,6 +47,13 @@ export async function listMyProducts(cookie: string | undefined): Promise<Produc
   return [];
 }
 
+export async function createProduct(
+  body: { name: string; description?: string; price: number; stock?: number; status?: 'active' | 'draft' },
+  cookie: string | undefined
+): Promise<Product> {
+  return apiFetch<Product>('/products/', { method: 'POST', cookie, body });
+}
+
 /** Images attached to a product (each links a media_id to the product). */
 export async function listProductImages(productId: string, cookie: string | undefined): Promise<ProductImage[]> {
   return apiFetch<ProductImage[]>(`/media/products/${encodeURIComponent(productId)}/images`, { cookie, cache: 'no-store' });

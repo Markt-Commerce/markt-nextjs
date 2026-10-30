@@ -3,47 +3,44 @@
    and a warm branded quote panel (right). Distinct from the
    register flow's centered card, but built on the same tokens.
    ============================================================ */
+/* Full-screen split: form fills the left, photo panel fills the right. */
 .screen {
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem;
-  background:
-    radial-gradient(70% 60% at 100% 0%, var(--brand-soft) 0%, transparent 55%),
-    radial-gradient(60% 60% at 0% 100%, var(--tile-butter) 0%, transparent 45%),
-    var(--bg);
+  background: var(--bg);
 }
 
 .card {
   width: 100%;
-  max-width: 1000px;
+  min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-3xl);
-  box-shadow: var(--shadow-lg);
   overflow: hidden;
-  animation: cardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(18px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-/* ---------- Left: the form ---------- */
+/* ---------- Left: the form (content constrained + centred in its half) ---------- */
 .formPane {
-  padding: 2.5rem 2.5rem 2rem;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
   justify-content: center;
   min-width: 0;
 }
 
+.formInner {
+  width: 100%;
+  max-width: 380px;
+  animation: cardIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .brandRow { display: flex; align-items: center; margin-bottom: 2rem; }
-.logo { height: 2.1rem; width: auto; }
+.logo { height: 2.9rem; width: auto; }
 
 .heading {
   font-size: 1.7rem;
@@ -175,93 +172,65 @@
 .signupRow a { color: var(--brand-text); font-weight: 700; text-decoration: none; }
 .signupRow a:hover { text-decoration: underline; }
 
-/* Trust badges below the form. */
-.trust {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-  padding-top: 1.25rem;
-  border-top: 1px solid var(--border);
-  font-size: 0.72rem;
-  color: var(--text-subtle);
-}
-.trustItem { display: inline-flex; align-items: center; gap: 0.3rem; }
-
-/* Demo-session shortcut — a neutral dev convenience for clicking through the
-   app without a verified account (search MOCK_SESSION_COOKIE to remove). */
-.mock {
-  margin-top: 1.5rem;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: var(--radius-md);
-  padding: 0.85rem;
-  font-size: 0.78rem;
-}
-.mockTitle { font-weight: 700; color: var(--text); margin: 0 0 0.2rem; }
-.mockText { color: var(--text-muted); margin: 0 0 0.6rem; line-height: 1.45; }
-.mockBtns { display: flex; gap: 0.5rem; }
-.mockBtn {
-  flex: 1;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  border-radius: var(--radius-sm);
-  padding: 0.45rem;
-  font-size: 0.72rem;
-  font-weight: 600;
-  color: var(--text);
-  cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
-}
-.mockBtn:hover { background: var(--surface-hover); border-color: var(--border-strong); transform: translateY(-1px); }
-
-/* ---------- Right: branded quote panel ---------- */
+/* ---------- Right: lifestyle photo panel with a rotating human quote ---------- */
 .quotePane {
   position: relative;
-  padding: 2.75rem 2.5rem;
-  color: var(--brand-contrast);
-  background:
-    radial-gradient(120% 120% at 100% 0%, var(--brand-hover) 0%, var(--brand) 55%, #A8331B 100%);
+  padding: 2.5rem;
+  color: #fff;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
   isolation: isolate;
+  min-height: 540px;
 }
 
-/* Floating decorative tiles that drift slowly behind the quote. */
-.tile {
+/* Stacked background photos; only the active one is visible (crossfade). */
+.quoteBg {
   position: absolute;
-  border-radius: var(--radius-xl);
-  opacity: 0.16;
+  inset: 0;
+  z-index: -2;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transform: scale(1.06);
+  transition: opacity 0.9s ease, transform 6s ease;
+}
+.quoteBgActive { opacity: 1; transform: scale(1); }
+
+/* Legibility scrim over the photo. */
+.quoteScrim {
+  position: absolute;
+  inset: 0;
   z-index: -1;
-}
-.tile1 { width: 120px; height: 120px; top: -30px; right: -20px; background: var(--tile-butter); animation: drift 9s ease-in-out infinite; }
-.tile2 { width: 90px; height: 90px; bottom: 40px; right: 30px; background: var(--tile-mint); animation: drift 11s ease-in-out infinite reverse; }
-.tile3 { width: 70px; height: 70px; bottom: -20px; left: -15px; background: var(--tile-sky); animation: drift 13s ease-in-out infinite; }
-@keyframes drift {
-  0%, 100% { transform: translate(0, 0) rotate(0deg); }
-  50% { transform: translate(-14px, 16px) rotate(8deg); }
+  background: linear-gradient(180deg, rgba(20, 12, 8, 0.35) 0%, rgba(20, 12, 8, 0.15) 40%, rgba(20, 12, 8, 0.82) 100%);
 }
 
-.quoteMark {
-  font-size: 4.5rem;
-  line-height: 1;
-  font-family: Georgia, 'Times New Roman', serif;
-  opacity: 0.4;
-  margin-bottom: 0.5rem;
+.paneHeader {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: flex-start;
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(6px);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
-.quoteBody { flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.quoteBody { display: flex; flex-direction: column; }
 
 /* Each testimonial crossfades in when it becomes active. */
 .quoteText {
-  font-size: 1.4rem;
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: -0.01em;
-  margin: 0 0 1.5rem;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  line-height: 1.42;
+  letter-spacing: -0.015em;
+  margin: 0 0 1.4rem;
+  text-shadow: 0 1px 20px rgba(0, 0, 0, 0.25);
   animation: quoteIn 0.6s ease both;
 }
 @keyframes quoteIn {
@@ -278,32 +247,53 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 0.95rem;
-  color: var(--tile-ink);
+  font-size: 0.9rem;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(6px);
   flex-shrink: 0;
 }
+.authorText { display: flex; flex-direction: column; }
 .authorName { font-weight: 700; font-size: 0.92rem; }
-.authorMeta { font-size: 0.78rem; opacity: 0.85; }
+.authorMeta { display: flex; align-items: center; gap: 0.25rem; font-size: 0.78rem; opacity: 0.9; }
 
-/* Carousel dots. */
-.dots { display: flex; gap: 0.4rem; margin-top: 1.75rem; }
+/* Dots + prev/next arrows row. */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.75rem;
+}
+.dots { display: flex; gap: 0.4rem; }
 .dot {
   width: 7px;
   height: 7px;
   border-radius: var(--radius-full);
   border: 0;
   padding: 0;
-  background: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   transition: background var(--transition-fast), width var(--transition-fast);
 }
-.dotActive { width: 20px; background: var(--brand-contrast); }
+.dotActive { width: 20px; background: #fff; }
 
-.paneHeader { display: flex; align-items: center; gap: 0.5rem; font-size: 0.82rem; font-weight: 600; opacity: 0.9; }
-.paneStats { display: flex; gap: 1.5rem; margin-top: 1.75rem; }
-.stat { display: flex; flex-direction: column; }
-.statNum { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
-.statLabel { font-size: 0.72rem; opacity: 0.85; }
+.arrows { display: flex; gap: 0.5rem; }
+.navArrow {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+.navArrow:hover { background: rgba(255, 255, 255, 0.28); transform: translateY(-1px); }
 
 @media (max-width: 860px) {
   .card { grid-template-columns: 1fr; max-width: 460px; }
@@ -312,6 +302,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card, .reveal, .quoteText, .author, .tile1, .tile2, .tile3, .error { animation: none; }
+  .formInner, .reveal, .quoteText, .author, .error { animation: none; }
+  .quoteBg { transition: opacity 0.4s ease; transform: none; }
+  .quoteBgActive { transform: none; }
   .submitBtn::after { display: none; }
 }
