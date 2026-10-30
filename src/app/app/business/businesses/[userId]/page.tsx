@@ -37,6 +37,16 @@ export default async function BusinessProfileViewPage({ params }: { params: Prom
         <Link href="/app/business/discover?tab=businesses">Businesses</Link> / {business.name}
       </nav>
 
+      {business.cover_image_url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={business.cover_image_url}
+          alt=""
+          className={styles.resultImage}
+          style={{ aspectRatio: '4 / 1', borderRadius: 14, marginBottom: '1.25rem' }}
+        />
+      )}
+
       <header className={styles.header}>
         <div className={styles.profileHead}>
           {business.logo_url ? (

@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { apiFetch } from './client';
+import { apiFetch, apiFetchMultipart } from './client';
 import type {
   BusinessConfig,
   BusinessListing,
@@ -128,4 +128,44 @@ export async function listSubscriptionPlans(cookie: string | undefined): Promise
 
 export async function getMySubscription(cookie: string | undefined): Promise<MySubscription> {
   return apiFetch<MySubscription>('/business/subscriptions/me', { cookie, cache: 'no-store' });
+}
+
+export interface SubscriptionCheckout {
+  subscription_id: number;
+  status: 'PENDING' | 'ACTIVE' | string;
+  /** Paystack's hosted payment page; null for a free plan (already active). */
+  authorization_url: string | null;
+  reference: string;
+}
+
+export async function startSubscriptionCheckout(planId: number, cookie: string | undefined): Promise<SubscriptionCheckout> {
+  return apiFetch<SubscriptionCheckout>('/business/subscriptions/checkout', {
+    method: 'POST',
+    cookie,
+    body: { plan_id: planId, platform: 'web' },
+  });
+}
+
+/** Ask the backend to confirm a plan payment with Paystack. */
+export async function verifySubscription(
+  subscriptionId: number,
+  cookie: string | undefined
+): Promise<{ subscription_id: number; status: string; verified: boolean }> {
+  return apiFetch(`/business/subscriptions/${subscriptionId}/verify`, { method: 'POST', cookie });
+}
+
+// Logo and cover are uploaded files (multipart field "file"), never URLs.
+export type BusinessImageKind = 'logo' | 'cover';
+
+export async function uploadBusinessImage(kind: BusinessImageKind, formData: FormData, cookie: string | undefined): Promise<MyBusiness> {
+  return apiFetchMultipart<MyBusiness>(`/business/me/${kind}`, formData, cookie);
+}
+
+export async function removeBusinessImage(kind: BusinessImageKind, cookie: string | undefined): Promise<MyBusiness> {
+  return apiFetch<MyBusiness>(`/business/me/${kind}`, { method: 'DELETE', cookie });
+}
+
+/** Ask the Markt team to verify the business (only while verification is on). */
+export async function requestBusinessVerification(cookie: string | undefined): Promise<MyBusiness> {
+  return apiFetch<MyBusiness>('/business/me/verification', { method: 'POST', cookie });
 }
