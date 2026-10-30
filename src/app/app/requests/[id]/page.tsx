@@ -3,7 +3,9 @@ import { BadgeCheck, Eye } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
 import { getRequest } from '@/lib/api/requests';
+import { getBusinessConfig } from '@/lib/api/business';
 import { canAcceptOffers } from '@/lib/types/request';
+import { formatNaira, formatQuantity, optionLabel } from '@/lib/types/business';
 import { OfferForm } from './offer-form';
 import { UpvoteButton } from './upvote-button';
 import { OfferActions } from './offer-actions';
@@ -48,14 +50,34 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
   }
 
   const isOwner = request.user_id === user.id;
-  const isSeller = user.current_role === 'seller';
+  // A procurement request is answered from business mode, where the current
+  // buyer/seller role isn't what decides — any seller account can offer.
+  const isProcurement = !!request.is_business;
+  const isSeller = user.current_role === 'seller' || (isProcurement && user.is_seller);
+  const units = isProcurement ? (await getBusinessConfig()).units : [];
+  const procurementDetails: [string, string][] = isProcurement
+    ? ([
+        ['Quantity', formatQuantity(request.quantity, request.unit, units)],
+        ['Deliver to', request.delivery_location ?? ''],
+        ['Needed by', request.required_delivery_date ? new Date(request.required_delivery_date).toLocaleDateString('en-NG') : ''],
+        ...Object.entries(request.specifications ?? {}),
+      ].filter(([, v]) => v) as [string, string][])
+    : [];
+  // Procurement amounts are in naira like the rest of Markt Business; the
+  // consumer request pages still show "$", as they did before.
+  const money = (amount: number) => (isProcurement ? formatNaira(amount) : `$${amount.toFixed(2)}`);
   const myOffer = user.seller_account ? request.offers.find((o) => o.seller_id === user.seller_account!.id) : undefined;
   const replies = request.offers.length;
 
   return (
     <div className={styles.page}>
       <nav className={styles.breadcrumb}>
-        <Link href="/app/requests">Requests</Link> / {request.title}
+        {isProcurement ? (
+          <Link href="/app/business/procurement">Procurement</Link>
+        ) : (
+          <Link href="/app/requests">Requests</Link>
+        )}{' '}
+        / {request.title}
       </nav>
 
       {/* The ask */}
@@ -74,8 +96,20 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
         <h1 className={styles.title}>{request.title}</h1>
         <p className={styles.description}>{request.description}</p>
 
+        {procurementDetails.length > 0 && (
+          <dl className={styles.procurementTerms}>
+            {procurementDetails.map(([label, value]) => (
+              <div key={label} className={styles.procurementTerm}>
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        )}
+
         <div className={styles.metaRow}>
-          {!!request.budget && <span className={styles.budgetChip}>Budget ${request.budget.toFixed(2)}</span>}
+          {isProcurement && <span className={styles.businessChip}>Procurement request</span>}
+          {!!request.budget && <span className={styles.budgetChip}>Budget {money(request.budget)}</span>}
           <span className={styles.views}>
             <Eye size={13} /> {request.views} views
           </span>
@@ -84,11 +118,16 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
       </div>
 
       {/* Seller composer */}
-      {isSeller && !isOwner && canAcceptOffers(request) && !myOffer && <OfferForm requestId={request.id} />}
+      {isSeller && !isOwner && canAcceptOffers(request) && !myOffer && (
+        <OfferForm
+          requestId={request.id}
+          quantityUnit={isProcurement ? optionLabel(units, request.unit).toLowerCase() : undefined}
+        />
+      )}
 
       {myOffer && !isOwner && (
         <div className={styles.myOfferNote}>
-          You offered {myOffer.price ? `$${myOffer.price.toFixed(2)}` : ''} —{' '}
+          You offered {myOffer.price ? money(myOffer.price) : ''} —{' '}
           <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[myOffer.status]])}>{myOffer.status.toLowerCase()}</span>
         </div>
       )}
@@ -117,8 +156,11 @@ export default async function RequestDetailPage({ params }: { params: Promise<{ 
                         <BadgeCheck size={13} style={{ marginLeft: 4, color: 'var(--info)' }} />
                       )}
                     </p>
-                    <span className={styles.offerPrice}>${offer.price.toFixed(2)}</span>
+                    <span className={styles.offerPrice}>{money(offer.price)}</span>
                   </div>
+                  {offer.proposed_quantity != null && (
+                    <p className={styles.offerMessage}>Can supply {formatQuantity(offer.proposed_quantity, request.unit, units)}</p>
+                  )}
                   {offer.message && <p className={styles.offerMessage}>{offer.message}</p>}
                   <span className={cn(styles.offerStatusBadge, styles[OFFER_STATUS_CLASS[offer.status]])}>{offer.status.toLowerCase()}</span>
 

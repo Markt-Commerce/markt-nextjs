@@ -3,11 +3,14 @@ import Link from 'next/link';
 import { Bell } from 'lucide-react';
 import { requireSession, getForwardedCookie } from '@/lib/api/session';
 import { apiFetch } from '@/lib/api/client';
+import { getBusinessConfig } from '@/lib/api/business';
+import { getAppMode } from '@/lib/business-mode';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { HeaderSearch } from './header-search';
 import { UserMenu } from './user-menu';
 import { SidebarShell } from './sidebar-shell';
-import { SidebarNav, BottomNav } from './nav';
+import { SidebarNav, BottomNav, type BusinessNavOptions } from './nav';
+import { ModeSwitch } from './mode-switch';
 import styles from './layout.module.css';
 
 async function getBadgeCounts(cookie: string | undefined) {
@@ -32,7 +35,20 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
   const user = await requireSession();
   const isSeller = user.current_role === 'seller';
   const cookie = await getForwardedCookie();
-  const { cart, notifications, messages } = await getBadgeCounts(cookie);
+  const [{ cart, notifications, messages }, businessConfig, mode] = await Promise.all([
+    getBadgeCounts(cookie),
+    getBusinessConfig(),
+    getAppMode(),
+  ]);
+  const { features } = businessConfig;
+  const business: BusinessNavOptions = {
+    enabled: features.enabled,
+    mode,
+    discovery: features.discovery_enabled,
+    procurement: features.procurement_enabled,
+    subscriptions: features.subscriptions_enabled,
+    canSell: user.is_seller,
+  };
 
   return (
     <div className={styles.shell}>
@@ -46,6 +62,7 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
           <HeaderSearch />
 
           <div className={styles.actions}>
+            {features.enabled && <ModeSwitch mode={mode} />}
             <ThemeToggle className={styles.iconButton} />
 
             <Link href="/app/notifications" className={styles.iconButton} aria-label="Notifications">
@@ -59,14 +76,14 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
       </header>
 
       <div className={styles.body}>
-        <SidebarShell role={user.current_role}>
-          <SidebarNav cartCount={cart} messageCount={messages} isSeller={isSeller} />
+        <SidebarShell role={user.current_role} business={business}>
+          <SidebarNav cartCount={cart} messageCount={messages} isSeller={isSeller} business={business} />
         </SidebarShell>
 
         <main className={styles.main}>{children}</main>
       </div>
 
-      <BottomNav cartCount={cart} messageCount={messages} isSeller={isSeller} />
+      <BottomNav cartCount={cart} messageCount={messages} isSeller={isSeller} business={business} />
     </div>
   );
 }

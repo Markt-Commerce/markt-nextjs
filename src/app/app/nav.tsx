@@ -21,10 +21,18 @@ import {
   ImagePlus,
   UserCircle,
   Newspaper,
+  LayoutDashboard,
+  Search,
+  Package,
+  ClipboardList,
+  Building2,
+  Crown,
   type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getSidebarServerSnapshot, getSidebarSnapshot, subscribeSidebar } from '@/lib/sidebar-storage';
+import type { AppMode } from '@/lib/business-mode';
+import { effectiveMode } from './mode-switch';
 import styles from './layout.module.css';
 
 interface NavLinkDef {
@@ -85,10 +93,55 @@ const SELLER_BOTTOM_LINKS: NavLinkDef[] = [
   { href: '/app/orders', icon: Receipt, label: 'Orders' },
 ];
 
+// --- Markt Business ---------------------------------------------------------
+// Which of these show is decided by the backend's business config and by
+// which Markt accounts the user has (selling needs a seller account), never
+// by a flag kept here.
+export interface BusinessNavOptions {
+  /** Business mode is switched on in the backend. */
+  enabled: boolean;
+  /** The user's remembered mode; business pages override it. */
+  mode: AppMode;
+  discovery: boolean;
+  procurement: boolean;
+  subscriptions: boolean;
+  canSell: boolean;
+}
+
+function businessLinks(opts: BusinessNavOptions): NavLinkDef[] {
+  return [
+    { href: '/app/business', icon: LayoutDashboard, label: 'Business Dashboard' },
+    ...(opts.discovery ? [{ href: '/app/business/discover', icon: Search, label: 'Discover' }] : []),
+    ...(opts.canSell ? [{ href: '/app/business/products', icon: Package, label: 'Products' }] : []),
+    ...(opts.procurement ? [{ href: '/app/business/procurement', icon: ClipboardList, label: 'Procurement' }] : []),
+    { href: '/app/orders', icon: Receipt, label: 'Orders' },
+    { href: '/app/chat', icon: MessageCircle, label: 'Messages', badgeKey: 'messages' },
+    { href: '/app/business/profile', icon: Building2, label: 'Business Profile' },
+    ...(opts.subscriptions ? [{ href: '/app/business/subscription', icon: Crown, label: 'Subscription' }] : []),
+  ];
+}
+
+function businessBottomLinks(opts: BusinessNavOptions): NavLinkDef[] {
+  return [
+    { href: '/app/business', icon: LayoutDashboard, label: 'Business' },
+    ...(opts.discovery ? [{ href: '/app/business/discover', icon: Search, label: 'Discover' }] : []),
+    ...(opts.procurement ? [{ href: '/app/business/procurement', icon: ClipboardList, label: 'Requests' }] : []),
+    { href: '/app/chat', icon: MessageCircle, label: 'Chat', badgeKey: 'messages' },
+    { href: '/app/orders', icon: Receipt, label: 'Orders' },
+  ];
+}
+
+/** Business nav shows when business mode is on and the user is in it. */
+export function useInBusinessMode(business: BusinessNavOptions): boolean {
+  const pathname = usePathname();
+  return business.enabled && effectiveMode(business.mode, pathname) === 'business';
+}
+
 interface NavProps {
   cartCount: number;
   messageCount: number;
   isSeller: boolean;
+  business: BusinessNavOptions;
 }
 
 /**
@@ -98,7 +151,10 @@ interface NavProps {
  * /app/community entry. Longest-match keeps exactly one lit no matter how
  * nav routes nest in future.
  */
-function activeHref(pathname: string, hrefs: string[]): string | null {
+function activeHref(rawPathname: string, hrefs: string[]): string | null {
+  // Listing and business-profile pages are reached from Discover and have no
+  // nav entry of their own; without this they'd light up the dashboard.
+  const pathname = /^\/app\/business\/(listings|businesses)\//.test(rawPathname) ? '/app/business/discover' : rawPathname;
   let best: string | null = null;
   for (const href of hrefs) {
     if (pathname === href || pathname.startsWith(`${href}/`)) {
@@ -112,11 +168,12 @@ function badgeValue(def: NavLinkDef, counts: Record<'cart' | 'messages', number>
   return def.badgeKey ? counts[def.badgeKey] : 0;
 }
 
-export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
+export function SidebarNav({ cartCount, messageCount, isSeller, business }: NavProps) {
   const pathname = usePathname();
   const collapsed = useSyncExternalStore(subscribeSidebar, getSidebarSnapshot, getSidebarServerSnapshot);
+  const inBusiness = useInBusinessMode(business);
   const counts = { cart: cartCount, messages: messageCount };
-  const primaryLinks = [...COMMON_LINKS, ...(isSeller ? SELLER_LINKS : BUYER_LINKS)];
+  const primaryLinks = inBusiness ? businessLinks(business) : [...COMMON_LINKS, ...(isSeller ? SELLER_LINKS : BUYER_LINKS)];
   // Resolved across primary AND account links together, so the two groups
   // can't each light up an entry for the same page.
   const active = activeHref(pathname, [...primaryLinks, ...ACCOUNT_LINKS].map((l) => l.href));
@@ -158,10 +215,11 @@ export function SidebarNav({ cartCount, messageCount, isSeller }: NavProps) {
   );
 }
 
-export function BottomNav({ cartCount, messageCount, isSeller }: NavProps) {
+export function BottomNav({ cartCount, messageCount, isSeller, business }: NavProps) {
   const pathname = usePathname();
+  const inBusiness = useInBusinessMode(business);
   const counts = { cart: cartCount, messages: messageCount };
-  const links = isSeller ? SELLER_BOTTOM_LINKS : BUYER_BOTTOM_LINKS;
+  const links = inBusiness ? businessBottomLinks(business) : isSeller ? SELLER_BOTTOM_LINKS : BUYER_BOTTOM_LINKS;
   const active = activeHref(pathname, links.map((l) => l.href));
 
   return (

@@ -23,11 +23,22 @@ export async function createOfferAction(requestId: string, _prev: OfferFormState
   const price = Number(formData.get('price') ?? 0);
   const message = String(formData.get('message') ?? '').trim();
 
+  // Only procurement requests show this field; empty means "not stated".
+  const quantityRaw = String(formData.get('proposed_quantity') ?? '').trim();
+  const proposedQuantity = quantityRaw ? Number(quantityRaw) : undefined;
+
   if (!message) return { error: 'Please add a message for the buyer.' };
   if (!Number.isFinite(price) || price <= 0) return { error: 'Enter a valid price.' };
+  if (proposedQuantity !== undefined && (!Number.isFinite(proposedQuantity) || proposedQuantity < 0)) {
+    return { error: 'Enter a valid quantity.' };
+  }
 
   try {
-    await createOffer(requestId, { price, message }, await getForwardedCookie());
+    await createOffer(
+      requestId,
+      { price, message, ...(proposedQuantity !== undefined ? { proposed_quantity: proposedQuantity } : {}) },
+      await getForwardedCookie()
+    );
   } catch (err) {
     return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not send offer.' };
   }

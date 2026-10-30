@@ -17,8 +17,19 @@ export interface SellerOffer {
   product_id?: string | null;
   price: number;
   message?: string;
+  /** Procurement offers: how much of the requested quantity, in its unit. */
+  proposed_quantity?: number | null;
   status: OfferStatus;
   created_at: string;
+}
+
+/** Markt Business procurement details; optional on every request. */
+export interface ProcurementFields {
+  quantity?: number | null;
+  unit?: string | null;
+  specifications?: Record<string, string> | null;
+  delivery_location?: string | null;
+  required_delivery_date?: string | null;
 }
 
 export interface RequestUser {
@@ -27,8 +38,10 @@ export interface RequestUser {
   profile_picture_url?: string;
 }
 
-export interface BuyerRequest {
+export interface BuyerRequest extends ProcurementFields {
   id: string;
+  /** Posted by a Markt Business account: a procurement request. */
+  is_business?: boolean;
   user_id: string;
   user?: RequestUser;
   title: string;

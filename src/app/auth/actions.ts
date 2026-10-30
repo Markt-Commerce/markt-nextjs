@@ -3,6 +3,7 @@
 import { redirect } from 'next/navigation';
 import { apiFetch, apiFetchRaw, ApiError } from '@/lib/api/client';
 import { relaySetCookies, clearSession, getForwardedCookie, setMockSession } from '@/lib/api/session';
+import { safeReturnUrl } from '@/lib/return-url';
 
 export interface FormState {
   error?: string;
@@ -29,7 +30,8 @@ function messageFor(err: unknown, fallback: string): string {
 export async function loginAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const email = String(formData.get('email') ?? '').trim();
   const password = String(formData.get('password') ?? '');
-  const returnUrl = String(formData.get('returnUrl') ?? '') || '/app/dashboard';
+  // Validated again here: the hidden field is client-controlled.
+  const returnUrl = safeReturnUrl(String(formData.get('returnUrl') ?? ''));
 
   if (!email || !password) return { error: 'Email and password are required.' };
 

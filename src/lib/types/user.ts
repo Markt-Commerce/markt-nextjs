@@ -52,6 +52,8 @@ export interface UserProfile {
   current_role: UserRole;
   is_buyer: boolean;
   is_seller: boolean;
+  /** Effective Markt Business status, computed by the backend. */
+  is_business?: boolean;
   email_verified: boolean;
   created_at: string;
   updated_at: string;
