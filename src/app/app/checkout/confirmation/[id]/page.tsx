@@ -11,6 +11,25 @@ import { PayNowButton } from './pay-now-button';
 import { AutoRefresh } from './auto-refresh';
 import styles from './page.module.css';
 
+/**
+ * Collapse whatever status string the verify endpoint hands back (Paystack's
+ * transaction status, or the backend's own payment status — the endpoint is
+ * undocumented, so we accept both vocabularies and dig one level into `data`)
+ * into our three outcomes. Anything unrecognised stays `pending` so we keep
+ * polling rather than wrongly declaring success or failure.
+ */
+function readVerifyOutcome(v: Record<string, unknown> | null): 'paid' | 'failed' | 'pending' | null {
+  if (!v) return null;
+  const data = (v.data ?? null) as Record<string, unknown> | null;
+  const raw = v.status ?? v.payment_status ?? data?.status ?? data?.payment_status;
+  if (!raw) return null;
+  const s = String(raw).toLowerCase();
+  if (['success', 'successful', 'completed', 'paid'].includes(s)) return 'paid';
+  if (['failed', 'abandoned', 'cancelled', 'canceled', 'reversed', 'declined', 'refunded'].includes(s))
+    return 'failed';
+  return 'pending';
+}
+
 export default async function OrderConfirmationPage({
   params,
   searchParams,
@@ -22,7 +41,12 @@ export default async function OrderConfirmationPage({
 }) {
   const { id } = await params;
   const sp = await searchParams;
-  const returningFromPayment = sp.paid === '1' || !!sp.reference || !!sp.trxref;
+  // Any of these means "the buyer is coming back from the payment page". We test
+  // `paid` loosely (presence, not `=== '1'`) because a gateway/callback that
+  // appends its params with a stray `?` instead of `&` can leave it as
+  // `paid=1?reference=…` — we still want to treat that as a return, and the
+  // gateway-verify step below settles the real outcome regardless.
+  const returningFromPayment = sp.paid != null || !!sp.reference || !!sp.trxref || sp.status === 'failed';
   const cookie = await getForwardedCookie();
 
   let order: Order;
@@ -46,8 +70,14 @@ export default async function OrderConfirmationPage({
   // Coming back from Paystack but the order still reads unpaid: don't just wait
   // on the webhook — actively verify with the gateway, then re-read the
   // canonical state. This turns an optimistic "confirming" into a real answer.
+  // We also keep the gateway's *own* verdict: Paystack's /verify is synchronous
+  // and authoritative, so when a buyer cancels/abandons the charge it tells us
+  // "failed/abandoned" immediately — without it the page would sit on
+  // "confirming…" forever waiting for a DB write that never comes.
+  let verifyOutcome: 'paid' | 'failed' | 'pending' | null = null;
   if (returningFromPayment && payment && order.status === 'pending_payment' && payment.status !== 'completed') {
-    await verifyPayment(payment.id, cookie).catch(() => {});
+    const v = await verifyPayment(payment.id, cookie).catch(() => null);
+    verifyOutcome = readVerifyOutcome(v);
     const [freshOrder, freshPayment] = await Promise.all([
       getOrder(id, cookie).catch(() => order),
       getPayment(payment.id, cookie).catch(() => payment),
@@ -56,10 +86,16 @@ export default async function OrderConfirmationPage({
     payment = freshPayment;
   }
 
-  // Truth from two independent signals: the order left pending_payment, or the
-  // payment record is completed. Either is enough to call it paid.
-  const paidOk = order.status !== 'pending_payment' || payment?.status === 'completed';
-  const failed = !paidOk && (payment?.status === 'failed' || payment?.status === 'refunded' || sp.status === 'failed');
+  // Truth from independent signals: the order left pending_payment, the payment
+  // record is completed, or the gateway's verify said success. Any one is enough.
+  const paidOk =
+    order.status !== 'pending_payment' || payment?.status === 'completed' || verifyOutcome === 'paid';
+  const failed =
+    !paidOk &&
+    (payment?.status === 'failed' ||
+      payment?.status === 'refunded' ||
+      sp.status === 'failed' ||
+      verifyOutcome === 'failed');
   // Came back, gateway hasn't confirmed yet, but it hasn't failed either.
   const confirming = !paidOk && !failed && returningFromPayment;
   // Never started (or abandoned before paying).

@@ -43,10 +43,15 @@ export async function initializePayment(
   return apiFetch<PaymentInitializeResponse>('/payments/initialize', {
     method: 'POST',
     cookie,
-    // `callback_url` tells Paystack where to send the buyer back after paying.
-    // Mirrored into `metadata` (some Paystack setups read it there), along with
-    // `platform: web` so the backend's own callback redirect targets the web
-    // app rather than the mobile deep link.
+    // The documented body (`PaymentCreate`) has no top-level `callback_url`
+    // field — the backend owns the Paystack redirect via
+    // `GET /payments/callback/{payment_id}`, which "redirects to the mobile app
+    // or web app". `metadata` is free-form, so that's our supported channel:
+    //   - `platform: 'web'` tells that callback to pick the WEB target, not the
+    //     mobile deep link (the off-app 404 we previously hit);
+    //   - `callback_url` hands it the exact confirmation URL to return to.
+    // We still mirror `callback_url` top-level as a harmless belt-and-suspenders
+    // in case a Paystack-native flow reads it (extra fields are ignored).
     body: {
       order_id: orderId,
       metadata: { platform: 'web', ...(callbackUrl ? { callback_url: callbackUrl } : {}) },
