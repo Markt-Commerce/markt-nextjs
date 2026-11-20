@@ -24,13 +24,17 @@ export async function findPaymentForOrder(orderId: string, cookie: string | unde
   return matches.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0];
 }
 
-// The real /payments/initialize response schema isn't documented in the
-// OpenAPI spec (200 OK, no content schema) — this is a best-effort shape
-// based on Paystack's own convention (an authorization_url to redirect to).
-// Unverified end-to-end: no test Paystack credentials available while
-// building this.
+// The /payments/initialize response. The OpenAPI spec leaves it as an
+// untyped 200, but the mobile client's `InitializeResponse` documents the
+// real shape — crucially it includes our own `payment_id`, which lets the
+// confirmation page verify THIS payment directly (`GET /payments/{id}`)
+// instead of listing every payment to find it by order. That matters: the
+// `GET /payments/` list has been observed returning 500, so depending on it
+// to locate the payment on return is fragile.
 export interface PaymentInitializeResponse {
   authorization_url?: string;
+  access_code?: string;
+  payment_id?: string;
   reference?: string;
   [key: string]: unknown;
 }
@@ -43,19 +47,17 @@ export async function initializePayment(
   return apiFetch<PaymentInitializeResponse>('/payments/initialize', {
     method: 'POST',
     cookie,
-    // The documented body (`PaymentCreate`) has no top-level `callback_url`
-    // field — the backend owns the Paystack redirect via
-    // `GET /payments/callback/{payment_id}`, which "redirects to the mobile app
-    // or web app". `metadata` is free-form, so that's our supported channel:
-    //   - `platform: 'web'` tells that callback to pick the WEB target, not the
-    //     mobile deep link (the off-app 404 we previously hit);
-    //   - `callback_url` hands it the exact confirmation URL to return to.
-    // We still mirror `callback_url` top-level as a harmless belt-and-suspenders
-    // in case a Paystack-native flow reads it (extra fields are ignored).
+    // The body (`PaymentCreate`) has no top-level `callback_url` and the backend
+    // now REJECTS unknown top-level fields with a 422 ("callback_url: Unknown
+    // field"), so it must live only inside `metadata`, which is free-form. The
+    // backend owns the Paystack redirect via `GET /payments/callback/{payment_id}`
+    // ("redirects to the mobile app or web app"), reading:
+    //   - `platform: 'web'` — pick the WEB target, not the mobile deep link
+    //     (the off-app 404 we previously hit);
+    //   - `callback_url` — the exact confirmation URL to return to.
     body: {
       order_id: orderId,
       metadata: { platform: 'web', ...(callbackUrl ? { callback_url: callbackUrl } : {}) },
-      ...(callbackUrl ? { callback_url: callbackUrl } : {}),
     },
   });
 }

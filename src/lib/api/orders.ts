@@ -1,6 +1,6 @@
 import 'server-only';
 import { apiFetch } from './client';
-import type { BuyerOrder, Order, Tracking } from '@/lib/types/order';
+import type { BuyerOrder, Order, Tracking, PodCode } from '@/lib/types/order';
 
 export async function listOrders(cookie: string | undefined): Promise<BuyerOrder[]> {
   return apiFetch<BuyerOrder[]>('/orders/', { cookie, cache: 'no-store' });
@@ -49,6 +49,15 @@ export async function getOrder(id: string, cookie: string | undefined): Promise<
 
 export async function trackOrder(id: string, cookie: string | undefined): Promise<Tracking> {
   return apiFetch<Tracking>(`/orders/${encodeURIComponent(id)}/track`, { cookie, cache: 'no-store' });
+}
+
+/**
+ * The buyer's proof-of-delivery code for an order (10.6). Returns `ready: false`
+ * when there's no live code — before a rider is on the way, or after the handoff
+ * is complete — which is a normal state, not an error.
+ */
+export async function getPodCode(id: string, cookie: string | undefined): Promise<PodCode> {
+  return apiFetch<PodCode>(`/orders/${encodeURIComponent(id)}/pod-code`, { cookie, cache: 'no-store' });
 }
 
 export async function cancelOrder(id: string, reason: string | undefined, cookie: string | undefined): Promise<void> {

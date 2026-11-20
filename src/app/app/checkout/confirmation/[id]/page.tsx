@@ -9,6 +9,7 @@ import type { Payment } from '@/lib/types/payment';
 import type { Order } from '@/lib/types/order';
 import { PayNowButton } from './pay-now-button';
 import { AutoRefresh } from './auto-refresh';
+import { RecoverPaymentId } from './recover-payment-id';
 import styles from './page.module.css';
 
 /**
@@ -37,7 +38,15 @@ export default async function OrderConfirmationPage({
   params: Promise<{ id: string }>;
   // Paystack (or the backend callback) may return with any of these — treat any
   // of them as "the buyer is coming back from the payment page".
-  searchParams: Promise<{ paid?: string; reference?: string; trxref?: string; status?: string }>;
+  searchParams: Promise<{
+    paid?: string;
+    reference?: string;
+    trxref?: string;
+    status?: string;
+    // Our own payment id, threaded back across the round-trip (see
+    // RecoverPaymentId) so we can verify this payment without the list lookup.
+    payment_id?: string;
+  }>;
 }) {
   const { id } = await params;
   const sp = await searchParams;
@@ -65,7 +74,14 @@ export default async function OrderConfirmationPage({
     );
   }
 
-  let payment: Payment | null = await findPaymentForOrder(id, cookie);
+  // Prefer the payment id threaded back from initialize: a single
+  // `GET /payments/{id}` is both exact and avoids the payments-list lookup,
+  // which has been observed to 500. Fall back to matching by order in the list
+  // only when we weren't handed an id (e.g. storage disabled, cold deep-link).
+  let payment: Payment | null = sp.payment_id
+    ? await getPayment(sp.payment_id, cookie).catch(() => null)
+    : null;
+  if (!payment) payment = await findPaymentForOrder(id, cookie);
 
   // Coming back from Paystack but the order still reads unpaid: don't just wait
   // on the webhook — actively verify with the gateway, then re-read the
@@ -114,6 +130,9 @@ export default async function OrderConfirmationPage({
 
   return (
     <div className={styles.page}>
+      {/* On return without an id in the URL, pull the one we stashed at
+          initialize into the query so we can verify by id (no list lookup). */}
+      {returningFromPayment && !sp.payment_id && <RecoverPaymentId orderId={id} hasPaymentId={false} />}
       {confirming && <AutoRefresh />}
 
       <div className={iconClass}>{icon}</div>
@@ -125,7 +144,9 @@ export default async function OrderConfirmationPage({
       {confirming && (
         <p className={styles.note}>
           We&apos;re checking with the payment provider — this usually takes only a few seconds and updates on its own.{' '}
-          <Link href={`/app/checkout/confirmation/${order.id}?paid=1`}>Refresh now</Link>
+          <Link href={`/app/checkout/confirmation/${order.id}?paid=1${sp.payment_id ? `&payment_id=${encodeURIComponent(sp.payment_id)}` : ''}`}>
+            Refresh now
+          </Link>
         </p>
       )}
 

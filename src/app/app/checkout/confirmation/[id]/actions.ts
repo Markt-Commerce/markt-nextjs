@@ -13,14 +13,31 @@ async function appOrigin(): Promise<string> {
   return `${proto}://${host}`;
 }
 
-export async function initiatePaymentAction(orderId: string): Promise<{ url?: string; error?: string }> {
+export async function initiatePaymentAction(
+  orderId: string
+): Promise<{ url?: string; paymentId?: string; error?: string }> {
   try {
     // Bring the buyer back to their order confirmation after paying.
     const callbackUrl = `${await appOrigin()}/app/checkout/confirmation/${orderId}?paid=1`;
     const res = await initializePayment(orderId, await getForwardedCookie(), callbackUrl);
     if (!res.authorization_url) return { error: 'Payment could not be started (no redirect URL returned).' };
-    return { url: res.authorization_url };
+    // Hand the payment id back so the client can stash it before redirecting;
+    // on return the confirmation page verifies this exact payment directly
+    // rather than scanning the (sometimes-500ing) payments list to find it.
+    return { url: res.authorization_url, paymentId: res.payment_id };
   } catch (err) {
-    return { error: err instanceof ApiError ? `${err.message} (${err.status})` : 'Could not start payment.' };
+    // The raw API detail (e.g. "callback_url: Unknown field (422)") is already
+    // logged server-side by client.ts — never show that plumbing to the buyer.
+    // They get one calm, actionable line; a 4xx that isn't a server fault hints
+    // it may be worth another try.
+    if (err instanceof ApiError) {
+      return {
+        error:
+          err.status >= 500
+            ? 'Our payment service is having a moment. Please try again shortly.'
+            : 'We couldn’t start your payment. Please try again.',
+      };
+    }
+    return { error: 'We couldn’t start your payment. Please try again.' };
   }
 }

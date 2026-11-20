@@ -186,3 +186,78 @@
 .fulfilBtn:hover:not(:disabled) { background: var(--brand-hover); transform: translateY(-1px); }
 .fulfilBtn:disabled { opacity: 0.6; cursor: not-allowed; }
 .fulfilDone { flex-shrink: 0; font-size: 0.82rem; font-weight: 600; color: var(--success-text); }
+
+/* --- Delivery: rider card --- */
+.riderCard {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--surface-sunken);
+  border-radius: var(--radius-md);
+  padding: 0.85rem;
+  margin-bottom: 0.9rem;
+}
+.riderAvatar {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-subtle);
+  overflow: hidden;
+}
+.riderAvatarImg { width: 100%; height: 100%; object-fit: cover; }
+.riderBody { flex: 1; min-width: 0; }
+.riderName { font-size: 0.9rem; font-weight: 700; margin: 0; }
+.riderStep { font-size: 0.8rem; color: var(--text-muted); margin: 0.1rem 0 0; }
+.riderMeta { display: flex; gap: 0.9rem; margin-top: 0.3rem; }
+.riderMetaItem { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.75rem; color: var(--text-subtle); }
+.riderCall {
+  flex-shrink: 0;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-full);
+  background: var(--brand-soft);
+  color: var(--brand-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+.riderCall:hover { background: var(--brand); color: var(--brand-contrast); }
+
+/* --- Delivery: POD link --- */
+.podLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--brand-text);
+  text-decoration: none;
+  margin-bottom: 0.9rem;
+}
+.podLink:hover { text-decoration: underline; }
+
+/* --- Delivery: timeline --- */
+.timeline { list-style: none; margin: 0; padding: 0; }
+.timelineRow { display: flex; gap: 0.7rem; }
+.timelineMarker { display: flex; flex-direction: column; align-items: center; }
+.timelineDot {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+  background: var(--surface-sunken);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.timelineLine { flex: 1; width: 2px; background: var(--border); margin: 2px 0; }
+.timelineBody { padding-bottom: 1.1rem; }
+.timelineRow:last-child .timelineBody { padding-bottom: 0; }
+.timelineLabel { font-size: 0.86rem; font-weight: 600; margin: 0.15rem 0 0; }

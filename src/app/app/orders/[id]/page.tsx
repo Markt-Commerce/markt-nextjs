@@ -1,14 +1,26 @@
 import Link from 'next/link';
 import { formatNaira } from '@/lib/format';
-import { Check, Truck, XCircle } from 'lucide-react';
+import { Check, CheckCircle2, Clock, PackageCheck, QrCode, Truck, XCircle } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { getForwardedCookie, requireSession } from '@/lib/api/session';
-import { getOrder, listSellerOrders, trackOrder } from '@/lib/api/orders';
+import { getOrder, getPodCode, listSellerOrders, trackOrder } from '@/lib/api/orders';
+import { deliveryInFlight, hasLiveDeliveryCode } from '@/lib/types/order';
 import { getProduct } from '@/lib/api/products';
 import { primaryImageUrl } from '@/lib/types/product';
 import { CancelButton } from './cancel-button';
 import { FulfilButton } from './fulfil-button';
+import { RiderCard } from './rider-card';
+import { DeliveryLive } from './delivery-live';
 import styles from './page.module.css';
+
+// Backend timeline statuses → a small icon the buyer can read at a glance.
+function timelineIcon(status: string) {
+  if (status === 'cancelled' || status === 'failed') return <XCircle size={14} />;
+  if (status === 'delivered') return <CheckCircle2 size={14} />;
+  if (status === 'shipped') return <Truck size={14} />;
+  if (status === 'paid') return <PackageCheck size={14} />;
+  return <Clock size={14} />;
+}
 
 // What a seller can advance an item to next (delivery is confirmed here too,
 // since not every shop uses the rider flow).
@@ -90,6 +102,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     : [];
 
   const tracking = await trackOrder(id, cookie).catch(() => null);
+  // The buyer's live delivery code, if a rider is on the way. Sellers don't
+  // have one; `ready: false` (no live code) is normal, not an error.
+  const pod = isSeller ? null : await getPodCode(id, cookie).catch(() => null);
   const products = await Promise.all(order.items.map((item) => getProduct(item.product_id, cookie).catch(() => null)));
 
   const address = order.shipping_address;
@@ -124,6 +139,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className={styles.page}>
+      {/* Keep the rider's progress and the delivery code fresh while in motion. */}
+      {tracking && deliveryInFlight(tracking.delivery) && <DeliveryLive />}
+
       <nav className={styles.breadcrumb}>
         <Link href="/app/orders">Orders</Link> / #{order.order_number}
       </nav>
@@ -230,17 +248,44 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {tracking && tracking.timeline.length > 0 && (
+      {tracking && (tracking.delivery || tracking.timeline.length > 0) && (
         <div className={styles.section}>
           <p className={styles.sectionTitle}>
-            <Truck size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: -2 }} /> Activity
+            <Truck size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: -2 }} /> Delivery
           </p>
-          {tracking.timeline.map((cp, i) => (
-            <div key={i} className={styles.item} style={{ alignItems: 'baseline' }}>
-              <span style={{ flex: 1, fontSize: '0.85rem' }}>{str(cp, 'status') ?? tracking.status}</span>
-              <span className={styles.noteText}>{str(cp, 'occurred_at') ? new Date(str(cp, 'occurred_at')!).toLocaleDateString() : ''}</span>
-            </div>
-          ))}
+
+          {/* Who's bringing it + a way to reach them. */}
+          {tracking.delivery && <RiderCard delivery={tracking.delivery} />}
+
+          {/* The buyer's proof-of-delivery handoff, only while a code is live. */}
+          {hasLiveDeliveryCode(pod) && (
+            <Link href={`/app/orders/${order.id}/pod`} className={styles.podLink}>
+              <QrCode size={15} /> View my delivery code
+            </Link>
+          )}
+
+          {/* Backend-driven progress, most-recent step at the bottom. */}
+          {tracking.timeline.length > 0 && (
+            <ol className={styles.timeline}>
+              {tracking.timeline.map((s, i) => {
+                const last = i === tracking.timeline.length - 1;
+                return (
+                  <li key={`${s.status}-${i}`} className={styles.timelineRow}>
+                    <span className={styles.timelineMarker}>
+                      <span className={styles.timelineDot}>{timelineIcon(s.status)}</span>
+                      {!last && <span className={styles.timelineLine} />}
+                    </span>
+                    <div className={styles.timelineBody}>
+                      <p className={styles.timelineLabel}>{s.label || s.status.replace(/_/g, ' ')}</p>
+                      {s.timestamp && (
+                        <p className={styles.noteText}>{new Date(s.timestamp).toLocaleString()}</p>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
         </div>
       )}
 

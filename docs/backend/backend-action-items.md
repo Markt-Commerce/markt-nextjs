@@ -1,256 +1,204 @@
 # Markt — Backend Action Items
 
-**For:** Markt backend team · **From:** Markt web app · **Date:** 2026-10-03
-(updated — see "Resolved since last review" below)
-**Status:** the web app is built and wired to the live API; the items below are the
-backend-owned fixes and additions that stand between "good demo" and "people can
-actually rely on this."
-
-The login/register **500s are cleared** — auth, products, and socials work. What
-remains is trust plumbing (email, payment proof, notifications), one security hole,
-a few data-shape fixes, and one new flow (seller application / store review). Everything
-here is grounded in behaviour observed while building the app, not guesswork; where
-something is unverified end-to-end it says so.
+**For:** Markt backend team · **From:** Markt web app · **Date:** 2026-11-20
+(current snapshot — supersedes the 2026-10-03 revision)
+**Status:** the web app is built and wired to the live API. This is a fresh pass
+against the live OpenAPI spec (281 paths / 472 operations as of this date) plus
+behaviour observed while using the app. It lists what you've since shipped, one
+new regression, and the trust-plumbing items that still stand between "good demo"
+and "people can rely on this." Where something can't be verified from the public
+spec (auth-gating, whether an event fires), it says so rather than guessing.
 
 ---
 
-## Resolved since last review (2026-09-05 → 2026-10-03)
+## Status at a glance
 
-Confirmed working now — no action needed, listed so the team isn't chasing done work:
-
-- **Post product tagging** — `POST /socials/posts` with `products: [{product_id}]`
-  persists and `GET /socials/posts` returns `products`; the web composer "Tag product"
-  flow works end-to-end.
-- **Viewer relationship flags on posts** — `PostDetail` now returns `liked_by_me` and
-  `is_saved`, so like/bookmark buttons seed in the correct state (was a data-shape gap).
-- **Onboarding object** — `GET /users/profile` returns an `onboarding` object; the web
-  app now routes post-signup on `onboarding.next_step`.
-
-Still open and unchanged: the blockers below (media auth, payment proof, email,
-event notifications) remain the real gate — none are verified resolved.
-
----
-
-## How to read this
-
-Each item has:
-- **Severity** — BLOCKER (people abandon / money at risk), MAJOR (trust/friction),
-  MINOR (livable).
-- **What we see** — the observed behaviour from the app side.
-- **What we need** — the concrete backend change.
-
-Priority order is top to bottom.
+| # | Item | Severity | Status |
+|---|------|----------|--------|
+| 0 | `GET /payments/` returns 500 | BLOCKER | **NEW — open** |
+| 1 | `GET /media/` has no auth | BLOCKER·SEC | **Partial** (scoped read paths added; flat list auth unverified) |
+| 2 | Payment round-trip lands off-app | BLOCKER | **Mostly done** (callback + verify shipped; needs test creds) |
+| 3 | No transactional email | BLOCKER | **Open** (no email channel seen) |
+| 4 | State changes don't notify the other party | MAJOR | **Unverified** (can't see events from spec) |
+| 5 | Order status lags its items | MAJOR | **Unverified** |
+| 6 | Email-verification gate / resend | MAJOR | **Done** (send + verify endpoints live) |
+| 7 | Data-shape gaps | MINOR | **Partial** |
+| 9 | Seller application review flow | MAJOR | **Open** (still instant `create-seller`) |
 
 ---
 
-## 1. [BLOCKER · SECURITY] `GET /media/` has no authentication
+## 0. [BLOCKER · NEW] `GET /api/v1/payments/` returns 500
 
-**What we see:** `GET /media/` returns every user's uploaded files with zero auth.
-The web app mitigates by passing `?user_id=` and filtering client-side, but the raw
-endpoint still exposes all users' media to anyone.
+**What we see:** `GET /payments/` responds **500 with an empty body (`{}`)**. This is
+the endpoint that lists a user's payments; the web app used it to locate the
+payment for an order on the post-checkout confirmation screen.
 
-**What we need:**
-- Require authentication on `GET /media/`.
-- Scope results to the authenticated user server-side (don't trust a client
-  `user_id` param for authorization).
-- If some media must be public (e.g. product images on the public marketplace),
-  expose those through a *separate, intentionally-public* read path (e.g. product
-  payloads already carrying image URLs) rather than an open list of everyone's files.
+**Impact:** on its own this blinds the confirmation page's "verify on return" step —
+it can't find the order's payment to confirm it. (The web app has since routed
+around this by threading the `payment_id` from `/payments/initialize` through the
+checkout round-trip and calling `GET /payments/{id}` directly, so we're no longer
+*blocked* by it — but the list endpoint is still broken and anything else that
+needs it, e.g. a payments history screen, will fail.)
 
-**Why first:** this is a live data-exposure bug, independent of any feature work.
+**What we need:** fix the unhandled error on `GET /payments/` (most likely a
+serialization issue on one of the payment records or the list wrapper). A 500 with
+no body gives us nothing to act on — if there's a shape we're sending wrong, a 422
+with a field would help; if it's server-side, it just needs the fix.
 
 ---
 
-## 2. [BLOCKER] Payment round-trip is unproven / lands off-app
+## 1. [BLOCKER · SECURITY] `GET /media/` authentication — partially addressed
 
-**What we see:** After paying via Paystack, a real payment did **not** return to the
-app — the observed result was a 404, because the backend's Paystack callback
-redirected somewhere off-app. The web app now passes a `callback_url` on initialize
-(and mirrors it in `metadata.callback_url`), but the documented
-`POST /payments/initialize` body doesn't officially accept one, so the backend may
-be ignoring it.
+**Progress:** you've added the *scoped, intentionally-public* read paths we asked
+for — `GET /media/products/{id}/images`, `/media/social-posts/{id}/media`,
+`/media/requests/{id}/images`. That's the right shape for public product/post
+images.
 
-**What we need:**
-- Honor a `callback_url` on `POST /payments/initialize` **or** configure the
-  Paystack redirect target server-side to:
-  `{web_origin}/app/checkout/confirmation/{order_id}?paid=1`
-- After Paystack redirects back, the order/payment state must be verifiable
-  (`GET /payments/verify` or equivalent) so the confirmation page can show a true
-  "payment received" rather than an optimistic one.
-- Provide **test credentials / a sandbox key** so we can prove one full round-trip
-  (initialize → pay → return → verified). Right now this can't be tested at all.
+**Still needed / unverified:** the flat `GET /media/` list still exists. We can't
+tell from the public spec whether it now requires auth and scopes to the caller.
+Please confirm `GET /media/` is authenticated and server-scoped to the
+authenticated user (not trusting a client `user_id`), so it can't enumerate every
+user's uploads.
 
-**The web side is now hardened and waiting on you.** The confirmation page already:
-finds the payment by `order_id`, calls `GET /payments/{id}/verify` on return, re-reads
-the canonical order/payment status, and renders a real paid / failed / confirming /
-needs-payment state (with auto-refresh while settling). It also sends
-`metadata.platform: "web"` on initialize. So we only need two precise answers to
-close this:
+---
 
-1. **Does `POST /payments/initialize` honor our `callback_url`** (we send it top-level
-   *and* in `metadata.callback_url`)? If **not**, set the Paystack redirect target
-   server-side to `{web_origin}/app/checkout/confirmation/{order_id}?paid=1`, and tell
-   us which query params you append on redirect (we already read `reference` / `trxref`
-   / `paid`).
-2. **Does `GET /payments/{id}/verify` update state synchronously** — i.e. after it
-   returns, will `GET /orders/{id}` and `GET /payments/{id}` already reflect
-   paid/failed — or does it only *queue* reconciliation (so we must keep polling)?
-   If synchronous, our verify-on-return resolves instantly; if not, tell us the
-   expected settle window.
+## 2. [BLOCKER] Payment round-trip — mostly done, two things remain
+
+**Shipped since last review (thank you):**
+- `GET /payments/callback/{payment_id}` — "redirects to the mobile app or web
+  app." This is the server-owned Paystack redirect we asked for.
+- `GET /payments/{payment_id}/verify` — lets us confirm state on return.
+- `POST /payments/checkout/initialize` — payment-first checkout (reserves stock,
+  creates the Order only after payment). Noted; not yet wired on web.
+
+**Contract we've now adopted (no action needed, just confirming):** `PaymentCreate`
+has no top-level `callback_url`, and the API now **rejects unknown top-level fields
+with a 422** (`callback_url: Unknown field`). We've moved our redirect hint into
+`metadata` accordingly — we send `metadata.platform: "web"` and
+`metadata.callback_url = {web_origin}/app/checkout/confirmation/{order_id}?paid=1`.
+**Please confirm the web callback honors `metadata.platform: "web"`** and redirects
+to that web URL (not the mobile deep link), and tell us which query params you
+append on redirect (we read `reference` / `trxref` / `paid` / `payment_id`).
+
+**Still blocking a real proof:** we still have **no Paystack test credentials / sandbox
+key**, so a full round-trip (initialize → pay → return → verified) has never been run
+end to end. This is the one thing stopping us from calling payments "proven."
 
 **Definition of done:** one real payment starts in the app and lands back on the
 confirmation page showing verified success.
 
 ---
 
-## 3. [BLOCKER] No transactional email anywhere
+## 3. [BLOCKER] Transactional email — still not seen
 
-**What we see:** Nothing is emailed — no order confirmation, no "shipped", no
-receipt, no payment success. Email verification itself isn't wired to the app's own
-branded email system. People do not trust money-in-an-app with zero email trail.
+**What we see:** the notifications surface exposes `GET /notifications/`,
+`mark-read`, `unread/count`, and an **Expo push-token** register/remove — i.e. push
+for mobile. We see **no email channel and no email-preference endpoints**. Nothing
+indicates order/payment emails are being sent.
 
-**What we need:** add **email as a delivery channel on the existing notification
-pipeline** (do not build a parallel email system). Full spec already written:
-**`docs/backend/email-notifications-spec.md`** — covers the fan-out design,
-preference endpoints, category model, digest vs immediate, templates, deliverability
-(SPF/DKIM/DMARC, bounces, idempotency), and compliance.
-
+**What we need:** email as a delivery channel on the existing notification pipeline
+(not a parallel system). Full spec: **`docs/backend/email-notifications-spec.md`**.
 Minimum to start: email on **order placed, shipped, delivered, and payment success**,
-only to **verified** addresses.
+to **verified** addresses only.
 
 ---
 
-## 4. [MAJOR] State changes don't notify the other party (no notification is even created)
+## 4. [MAJOR] State changes should create a notification for the other party
 
-**What we see:** This is the gap behind #3 and #5. Several transitions change state
-**without creating a notification**, so email/push have nothing to fan out from:
-- A seller advances an item (`PATCH /orders/seller/items/{id}`) → the **buyer** gets
-  nothing. No "your order is being prepared / shipped / delivered."
-- A buyer places an order → the **seller** gets no "new order to prepare."
-- Payment success/failure, payout, refund → no notification.
+**Unverifiable from the spec**, so flagging it as still-open until confirmed: on each
+of these, an in-app `Notification` should be created (which then fans out to
+push/email), carrying `reference_type` + `reference_id` for deep-linking:
+- seller advances an item (`PATCH /orders/seller/items/{id}`) → notify the **buyer**;
+- buyer places an order → notify the **seller**;
+- payment success/failure, payout, refund → notify the relevant party.
 
-**What we need:** on each of those transitions, **create an in-app `Notification`**
-(which then fans out to push/email per prefs), carrying `reference_type` +
-`reference_id` (e.g. `order` + order id) so the app deep-links correctly. Trigger
-points are enumerated in §3.1 of the email spec.
-
-**Definition of done:** seller marks an item shipped → buyer immediately has an
-in-app notification (and, once #3 ships, an email).
+If these already fire, tell us the notification `type` values so we can render and
+deep-link them correctly.
 
 ---
 
-## 5. [MAJOR] Order-level status lags its items (server-side rollup missing)
+## 5. [MAJOR] Order-level status should roll up from its items
 
-**What we see:** Sellers advance **items** (`PATCH /orders/seller/items/{id}`), but
-the **order-level** `status` doesn't roll up, so it lags behind. The web app
-compensates by deriving the shown status from the items' progress (an order is only
-as far along as its least-advanced item) — but the underlying data is inconsistent.
-
-**What we need:** roll the order's `status` up from its items server-side so
-`GET /orders/{id}.status` reflects real progress. Suggested rule: order status =
-the **least-advanced** item's status (all shipped → order shipped; all delivered →
-delivered). This also makes #4's buyer notifications accurate.
+**Unverifiable from the spec.** The web app still *derives* the shown status from the
+items' progress (an order is only as far along as its least-advanced item) to paper
+over lag. If `GET /orders/{id}.status` now rolls up server-side (least-advanced item
+wins), confirm it and we'll trust it directly.
 
 ---
 
-## 6. [MAJOR] Email-verification gate causes onboarding drop-off
+## 6. [DONE] Email-verification send + resend
 
-**What we see:** A new account **cannot sign in until its email is verified**
-(backend returns 403). If the verification email is slow, unbranded, or lands in
-spam, this is where new users bounce — the single biggest onboarding risk.
-
-**What we need:**
-- Send the verification email **fast**, first-party and branded (ties into #3's ESP
-  + SPF/DKIM/DMARC).
-- A reliable **resend** endpoint that doesn't rate-limit a legitimate first resend
-  into a dead-end.
-- Confirm the exact contract the app should show: is the 403 distinguishable as
-  "unverified" vs "bad credentials"? We need a clear, machine-readable reason so the
-  app can route the user straight to the verify-email screen instead of showing a
-  generic login error.
+`POST /users/email-verification/send` and `POST /users/email-verification/verify`
+are live, so the resend path exists. Remaining soft asks (not blockers): make the
+verification email fast/branded (ties into #3), and make the sign-in 403 for an
+unverified account **machine-readable** ("unverified" vs "bad credentials") so we can
+route straight to the verify screen instead of a generic login error.
 
 ---
 
-## 7. [MINOR] Data-shape gaps that limit the UI
+## 7. [MINOR] Data-shape gaps
 
-Small backend additions that unlock better screens:
-
-- **Follow state on lists.** `GET /socials/...` suggestion/people lists don't carry a
-  per-user `is_followed` flag, so "People to follow" still shows *Follow* after you
-  follow + refresh. (Single-profile `GET` already returns `is_followed` — we use it.)
-  Please add `is_followed` to the user objects in follow/suggestion lists.
-- **Category on the product payload.** The product list payload doesn't expose the
-  product's category, so the inventory table can't show a category per row and the
-  parent-category filter can't include children. Include `category_ids` (or a small
-  category summary) on listed products.
-- **Seller metrics period.** Seller stats expose lifetime "units ordered" only.
-  A period (last 30 days) on `GET /orders/seller/stats` would let us show trend, not
-  just a lifetime count.
+Still worth closing where not already:
+- **`is_followed` on follow/suggestion lists.** Single-profile `GET` has it; the
+  list objects (People to follow) still need it so Follow state seeds correctly.
+- **Category on the product list payload** (`category_ids` or a small summary) so the
+  inventory table can show/filter by category per row.
+- **Seller metrics period.** A 30-day window on `GET /orders/seller/stats` (it exposes
+  lifetime totals) to show trend, not just a lifetime count.
 
 ---
 
-## 8. [MINOR] Whole domains exist in the API but have no events/notifications wired
+## 9. [MAJOR] Seller application / store-creation review flow — still open
 
-The delivery/rider + POD domain, wallet payout, and refund/return flows exist as
-endpoints but don't emit notifications (see #4) and, for delivery, there's no
-independent "delivered" confirmation feeding back to the order. When these start
-emitting events, the app can surface true delivery confirmation and payout status
-instead of relying on the seller manually marking "delivered."
+**What we see:** still only `POST /users/create-seller`, which activates a shop
+**immediately** with no documents and no review. There's **no seller-application
+endpoint** and nothing moves a shop through an admin review.
 
----
+**What we need (unchanged):**
+1. A seller-application endpoint that does **not** auto-activate — creates the record
+   in `verification_status: pending` with required documents (gov ID, proof of
+   address/registration, shop photos via `media_id`).
+2. Admin review surface: list pending applications + docs; approve → `verified` +
+   `is_seller: true`; reject → `rejected` with a reason the applicant can read.
+3. Notify the applicant on submit **and** decision (in-app + email, ties into #3).
+4. A way to read current application status (expose `verification_status` + any
+   rejection reason on `GET /users/profile`).
 
-## 9. [MAJOR · NEW] Seller application / store-creation review flow
-
-**What we see / want:** today `POST /users/create-seller` activates a shop **immediately**
-with no documents and no review. The product now needs a buyer→seller upgrade to be an
-**application an admin approves**, not an instant toggle. `SellerProfile.verification_status`
-already has the right enum (`unverified | pending | verified | rejected | suspended`), but
-there is **no endpoint to submit an application with documents**, and nothing moves a shop
-through that review. The web app is building the application form; it needs a real endpoint
-behind it.
-
-**What we need:**
-
-1. **A seller-application endpoint that does NOT auto-activate.** Suggested:
-   `POST /api/v1/users/seller-application` (multipart or JSON + media ids). Body: shop
-   name, description, category_ids, and **required verification documents** — e.g.
-   government ID, proof of address / business registration, and one or more shop/product
-   photos (uploaded via the existing `POST /media/upload`, referenced here by `media_id`).
-   It creates the seller record in **`verification_status: pending`** (or a separate
-   `SellerApplication` row) — the user is **not** a live seller until an admin approves.
-2. **Admin review surface** (admin app): list pending applications with their documents;
-   approve → `verification_status: verified` + `is_seller: true`; reject → `rejected` with
-   a reason the applicant can see.
-3. **Notify the applicant on submit AND on decision** — in-app **and** email (ties into
-   items 3 & 4): "Your store request was submitted / approved / needs changes." The
-   submit notification is the one the web app expects right after the form posts.
-4. **A way to read the current application status** so the UI can show
-   "Pending review" / "Approved" / "Rejected (reason)" — e.g. include it on
-   `GET /users/profile` (the `seller_account.verification_status` already exists; expose a
-   rejection reason alongside it).
-
-**Interim on the web side:** until this exists, the form can only upload documents and call
-`create-seller` (which activates immediately and stashes document references in the
-freeform `policies` blob) — i.e. no real admin gate and no email. That's a stopgap, not
-the intended flow; items 1–3 are what make it real.
+**Interim on web:** the form still falls back to `create-seller` (instant activation,
+documents stashed in the `policies` blob). That's a stopgap, not the real gate.
 
 ---
 
-## Summary — what would most make the app better
+## New backend surface we noticed (FYI — mostly not yet wired on web)
 
-The interface is done and production-shaped. **Almost every remaining "would I
-actually use this?" gap is backend trust plumbing, not UI.** In order of impact:
+The spec has grown a full **logistics/B2B** layer since the last review. Flagging so
+we're aligned on what exists:
+- **`deliveries/`** (30 paths) — rider/partner app: partner auth, assignments, runs
+  (multi-stop pickup → POD-QR confirm), failures.
+- **`fulfilment/`** (7) — seller allocation workflow (accept/decline, substitutions).
+- **`delivery/`** (4) — `quote`, `quote/combined`, `serviceable`, job status.
+- **`business/`** (13) — business accounts, discover, listings, verification, paid
+  subscriptions.
+- Buyer-facing order delivery: `GET /orders/{id}/track`, `/pod-code`, `/events`,
+  `POST /orders/{id}/delivery-wait-choice`. **The web app is building against these
+  now** (buyer tracking + proof-of-delivery first).
 
-1. **Close the security hole** — auth-gate `GET /media/` (#1).
-2. **Prove one payment** end-to-end back into the app, with test creds (#2).
-3. **Turn on transactional email**, starting with orders + payments (#3) — spec is
-   ready in `email-notifications-spec.md`.
-4. **Emit a notification on every state change** so buyers and sellers actually hear
-   about each other's actions (#4).
-5. **Roll order status up from items** so tracking is truthful server-side (#5).
-6. **Make email verification fast, branded, and clearly signalled** to cut
-   onboarding drop-off (#6).
+Where these emit (or should emit) notifications/events, the same ask as #4 applies —
+a delivery reaching "delivered" should feed an in-app notification and the order's
+own state so we're not relying on the seller manually marking it.
 
-Do 1–4 and Markt crosses from "impressive demo" to "a marketplace a stranger can
-trust with a purchase." 5–6 remove the last visible rough edges; 7–8 are polish that
-unlocks nicer screens once the essentials are in.
+---
+
+## Summary — what's actually left
+
+1. **Fix `GET /payments/` 500** (#0) — new, straightforward.
+2. **Give us Paystack test creds** so we can prove one payment end-to-end (#2).
+3. **Confirm `GET /media/` is auth-gated + scoped** (#1).
+4. **Turn on transactional email**, orders + payments first (#3) — spec is ready.
+5. **Build the seller-application review flow** (#9).
+6. **Confirm notifications fire on state changes** and order status rolls up (#4, #5) —
+   or tell us they do and we'll wire to them.
+
+Items 1–2 are the shortest path to "payments are real." 3–5 are the remaining trust
+gaps. Everything in "Status at a glance" marked Done/Partial is you making ground —
+this list is mostly short now.

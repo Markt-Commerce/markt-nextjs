@@ -1,0 +1,53 @@
+.page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.75rem 1.5rem 4rem;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 1rem;
+}
+.back:hover { color: var(--brand-text); }
+
+.title { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 1.5rem; }
+
+/* Empty / terminal states */
+.stateBox {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.5rem 1.5rem;
+}
+.stateIconMuted { color: var(--text-subtle); }
+.stateIconOk { color: var(--success-text); }
+.stateTitle { font-size: 1.05rem; font-weight: 700; margin: 0.9rem 0 0.4rem; }
+.stateText { font-size: 0.85rem; color: var(--text-muted); margin: 0 auto; max-width: 22rem; line-height: 1.5; }
+
+/* Live code */
+.codeCard {
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 1.5rem;
+}
+.codeLede { font-size: 0.88rem; color: var(--text-muted); margin: 0 0 1.25rem; }
+.code {
+  font-size: 2.1rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  /* The letter-spacing adds a trailing gap; nudge back so it reads centered. */
+  text-indent: 0.2em;
+  margin: 0;
+  color: var(--text);
+  word-break: break-all;
+  user-select: all;
+}
+.codeNote { font-size: 0.78rem; color: var(--text-subtle); margin: 1.25rem auto 0; max-width: 20rem; line-height: 1.5; }
